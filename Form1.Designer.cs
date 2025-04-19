@@ -92,7 +92,7 @@
             FilePath = new TextBox();
             AutoRun = new GroupBox();
             SheetName = new TextBox();
-            ReadCommands = new RichTextBox();
+            ShowData = new RichTextBox();
             Dashboard.SuspendLayout();
             SpinCoater.SuspendLayout();
             AutoRun.SuspendLayout();
@@ -183,11 +183,11 @@
             // 
             // Response
             // 
-            Response.Location = new Point(339, 242);
+            Response.Location = new Point(260, 242);
             Response.Margin = new Padding(2, 3, 2, 3);
             Response.Name = "Response";
             Response.ReadOnly = true;
-            Response.Size = new Size(245, 23);
+            Response.Size = new Size(421, 23);
             Response.TabIndex = 17;
             // 
             // ServoSerialSwitch
@@ -693,7 +693,7 @@
             // AutoRun
             // 
             AutoRun.Controls.Add(SheetName);
-            AutoRun.Controls.Add(ReadCommands);
+            AutoRun.Controls.Add(ShowData);
             AutoRun.Controls.Add(FilePath);
             AutoRun.Controls.Add(AutoRead);
             AutoRun.Location = new Point(542, 290);
@@ -710,13 +710,13 @@
             SheetName.Size = new Size(174, 23);
             SheetName.TabIndex = 50;
             // 
-            // ReadCommands
+            // ShowData
             // 
-            ReadCommands.Location = new Point(59, 141);
-            ReadCommands.Name = "ReadCommands";
-            ReadCommands.Size = new Size(200, 104);
-            ReadCommands.TabIndex = 49;
-            ReadCommands.Text = "";
+            ShowData.Location = new Point(59, 141);
+            ShowData.Name = "ShowData";
+            ShowData.Size = new Size(200, 104);
+            ShowData.TabIndex = 49;
+            ShowData.Text = "";
             // 
             // Form1
             // 
@@ -832,7 +832,7 @@
         private CheckBox AutoRead;
         private TextBox FilePath;
         private GroupBox AutoRun;
-        private RichTextBox ReadCommands;
+        private RichTextBox ShowData;
         private TextBox SheetName;
     }
 }

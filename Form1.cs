@@ -46,6 +46,21 @@ namespace WinFormsApp_Draft
 
         //auto declarations
         private ExcelReader mExcelReader = new ExcelReader();
+        public static Workbook mWorkbook;
+        public static SharedStringTable mSharedStringTable; 
+        public static WorkbookPart mWorkbookPart;
+        private static Sheet mSheet;
+        public static Worksheet mWorksheet;
+        public static List<string>? param_names;
+        public static List<List<string>>? param_list;
+        
+        public static sheet_properties properties;
+        public struct sheet_properties
+        {
+            public int parameters { get; init; }
+            public int rounds { get; set; }
+        }
+
 
         public Form1()
         {
@@ -530,7 +545,6 @@ namespace WinFormsApp_Draft
             return iValue;
         }
 
-
         private bool IsValidIP(string strIp)
         {
             try
@@ -693,21 +707,36 @@ namespace WinFormsApp_Draft
             {
                 DisableCoater();
                 DisableDashboard();
+
                 try
                 {
                     using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(FilePath.Text, false))
                     {
-                        WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
-                        SharedStringTablePart stringTable = workbookPart.SharedStringTablePart;
-                        if (workbookPart != null)
-                        {
-                            Sheet sheet = workbookPart.Workbook.Sheets.Elements<Sheet>().FirstOrDefault(s => s.Name == SheetName.Text);
-                            string sheet_Id = sheet.Id;
+                        WorkbookPart mWorkbookPart = spreadsheetDocument.WorkbookPart;
+                        mWorkbook = mWorkbookPart.Workbook;
 
-                            WorksheetPart worksheetPart = (WorksheetPart)workbookPart.GetPartById(sheet_Id);
-                            Worksheet worksheet = worksheetPart.Worksheet;
+                        if (mWorkbookPart != null)
+                        {
+                            mSharedStringTable = mWorkbookPart.SharedStringTablePart.SharedStringTable;
+
+                            mSheet = mWorkbook.Sheets.Elements<Sheet>().FirstOrDefault(s => s.Name == SheetName.Text);
+                            WorksheetPart worksheetPart = (WorksheetPart)mWorkbookPart.GetPartById(mSheet.Id);
+                            mWorksheet = worksheetPart.Worksheet;
+
+                            param_names = new List<string>();
+                            param_list = new List<List<string>>();
+
+                            mExcelReader.init_Properties();
+                            mExcelReader.init_ParamNames();
+                            for (int i = 1; i <= properties.rounds; i++)
+                            {
+                                param_list.Add(mExcelReader.GetRowData(i));
+                            }
+                            mExcelReader.printData(ShowData);
                         }
                     }
+
+
                 }
                 catch (Exception ex) 
                 {
@@ -725,7 +754,7 @@ namespace WinFormsApp_Draft
                     EnableCoater();
                 } 
                 Response.Clear();
-                ReadCommands.Clear();
+                ShowData.Clear();
             }
         }
     }
