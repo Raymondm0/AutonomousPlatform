@@ -16,31 +16,35 @@ namespace WinFormsApp_Draft
 {
     public partial class Form1 : Form
     {
+        //general declarations
         private SerialPort motor_port = new SerialPort();
         private SerialPort servo_port = new SerialPort();
         private IModbusMaster master;
-        private System.Timers.Timer spin_timer = new System.Timers.Timer();
-        private System.Timers.Timer mTimerReader = new System.Timers.Timer(300);
+
+        //coater declarations
         private MotorAsync motorAsync = new MotorAsync();
-        private ServoAsync servoAsync = new ServoAsync();
-
         private static int spin_speed = 0;
-
-        private static bool arm_connect_state = false;
-        private static bool coater_connect_state = false;
-        private static bool arm_running_state = false;
-        private static bool coater_running_state = false;
-        private const string move_away = "1";
-        private const string move_back = "2";
+        private System.Timers.Timer spin_timer = new System.Timers.Timer();
         private CancellationTokenSource cancellationTokenSource_pos;
         private CancellationTokenSource cancellationTokenSource_beat;
-        private CancellationTokenSource cancellationTokenSource_send;
+        private static bool coater_connect_state = false;
+        public static bool coater_running_state = false;
 
+        //servo declarations
+        private ServoAsync servoAsync = new ServoAsync();
+        private const string move_away = "1";
+        private const string move_back = "2";
+
+        //arm declarations
+        private System.Timers.Timer mTimerReader = new System.Timers.Timer(300);
+        private static bool arm_connect_state = false;
+        public static bool arm_running_state = false;
         private DobotMove mDobotMove = new DobotMove();
         private Feedback mFeedback = new Feedback();
         private Dashboard mDashboard = new Dashboard();
         private bool mIsManualDisconnect = false;
 
+        //auto declarations
         private ExcelReader mExcelReader = new ExcelReader();
 
         public Form1()
@@ -257,7 +261,7 @@ namespace WinFormsApp_Draft
         }
 
         //如果AutoSpin的前3个方法能动的话，可写到MotorAsyc中
-        private async Task SendRequestAsync(CancellationToken cancellationToken)
+        private async Task SendRequestAsync()
         {
             if (motor_port.IsOpen == true)
             {
@@ -310,9 +314,7 @@ namespace WinFormsApp_Draft
 
         private async void SendRequest_Click(object sender, EventArgs e)
         {
-            cancellationTokenSource_send = new CancellationTokenSource();
-            await Task.Run(() => SendRequestAsync(cancellationTokenSource_send.Token));
-            cancellationTokenSource_send.Cancel();
+            await Task.Run(() => SendRequestAsync());
         }
 
         private void FreeStop_timer(object sender, ElapsedEventArgs e)

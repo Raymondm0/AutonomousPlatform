@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using DocumentFormat.OpenXml.Presentation;
 using Modbus.Device;
+using WinFormsApp_Draft;
 
 namespace WinFormsApp_Draft.Auto
 {
@@ -64,16 +66,34 @@ namespace WinFormsApp_Draft.Auto
 
         public async Task CoaterRunningState(IModbusMaster master)
         {
-            double prev_pos;
-            do
+            byte slaveID = 0x01;
+            ushort posAddress = 0x1392;
+
+            int prev_pos;
+            int cur_pos;
+            prev_pos = get_pos(master);
+            await Task.Delay(1000);
+            cur_pos = get_pos(master);
+
+            if (cur_pos != prev_pos)
             {
-                byte slaveID = 0x01;
-                ushort posAddress = 0x1392;
-                ushort[] pos = master.ReadInputRegisters(slaveID, posAddress, 2);
-                int high = pos[0];
-                int low = pos[1];
-                prev_pos = ((high << 16) + low) / 100 + 1;
-            } while (true);
+                WinFormsApp_Draft.Form1.coater_running_state = true;
+            }
+            else
+            {
+                WinFormsApp_Draft.Form1.coater_running_state = false;
+            }
+        }
+
+        private static int get_pos(IModbusMaster master)
+        {
+            byte slaveID = 0x01;
+            ushort posAddress = 0x1392;
+            ushort[] pos = master.ReadInputRegisters(slaveID, posAddress, 2);
+            int high = pos[0];
+            int low = pos[1];
+            int cur_pos = ((high << 16) + low) / 100 + 1;
+            return cur_pos;
         }
     }
 }
