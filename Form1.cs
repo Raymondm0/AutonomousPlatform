@@ -27,8 +27,8 @@ namespace WinFormsApp_Draft
         private System.Timers.Timer spin_timer = new System.Timers.Timer();
         private CancellationTokenSource cancellationTokenSource_pos;
         private CancellationTokenSource cancellationTokenSource_beat;
-        private static bool coater_connect_state = false;
-        public static bool coater_running_state = false;
+        public static bool coater_connect_state = false;
+        //public static bool coater_running_state = false;
 
         //servo declarations
         private ServoAsync servoAsync = new ServoAsync();
@@ -38,7 +38,7 @@ namespace WinFormsApp_Draft
         //arm declarations
         private System.Timers.Timer mTimerReader = new System.Timers.Timer(300);
         private static bool arm_connect_state = false;
-        public static bool arm_running_state = false;
+        //public static bool arm_running_state = false;
         private DobotMove mDobotMove = new DobotMove();
         private Feedback mFeedback = new Feedback();
         private Dashboard mDashboard = new Dashboard();
@@ -701,12 +701,15 @@ namespace WinFormsApp_Draft
         }
 
         // auto read functions, complete automatic
-        private void AutoRead_CheckedChanged(object sender, EventArgs e)
+        private async void AutoRead_CheckedChanged(object sender, EventArgs e)
         {
             if (AutoRead.Checked)
             {
                 DisableCoater();
                 DisableDashboard();
+
+                cancellationTokenSource_pos = new CancellationTokenSource();
+                Task.Run(() => motorAsync.UpdatePositionAsync(Update, Position, master, cancellationTokenSource_pos.Token));
 
                 try
                 {
@@ -732,11 +735,11 @@ namespace WinFormsApp_Draft
                             {
                                 param_list.Add(mExcelReader.GetRowData(i));
                             }
-                            mExcelReader.printData(ShowData);
+                            //mExcelReader.printData(ShowData);
+
+
                         }
                     }
-
-
                 }
                 catch (Exception ex) 
                 {

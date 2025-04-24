@@ -47,24 +47,47 @@ namespace WinFormsApp_Draft.Auto
             master.WriteSingleRegister(slaveID, modeAddress, 0x0001);
         }
 
-        public async Task SendDurationAsync(int spin_duration, System.Timers.Timer timer, IModbusMaster master)
+        public async Task SendDurResAsync(int spin_duration, System.Timers.Timer timer,int spin_speed ,IModbusMaster master)
         {
-            //timer.Elapsed += new ElapsedEventHandler(FreeStop_timer);
-            timer.Elapsed += (sender, e) => 
+            var task_start = new TaskCompletionSource<bool>();
+            timer.Elapsed += async (sender, e) => 
             {
                 byte slaveID = 0x01;
-                ushort stopAddress = 0x177E;
                 ushort modeAddress = 0x1771;
+                ushort stopAddress = 0x177E;
+                ushort cur_posAddress = 0x1392;
+                ushort resetAddress = 0x1776;
+
                 master.WriteSingleRegister(slaveID, stopAddress, 0x0000);
                 master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
+                await Task.Delay(spin_speed / 7);
+
+                ushort[] pos = master.ReadInputRegisters(slaveID, cur_posAddress, 2);
+                int high = pos[0];
+                int low = pos[1];
+                int cur_pos = ((high << 16) + low) / 100 + 1; ;
+
+                int reset_pos = 100 * (cur_pos - (cur_pos % 360));
+                ushort high_convert = (ushort)(reset_pos >> 16);
+                ushort low_convert = (ushort)reset_pos;
+                ushort[] reset_to = { high_convert, low_convert };
+
+                master.WriteSingleRegister(slaveID, modeAddress, 0xFFFF);
+                master.WriteMultipleRegisters(slaveID, resetAddress, reset_to);
+                master.WriteSingleRegister(slaveID, modeAddress, 0x0003);
+
+                task_start.SetResult(true);
+                Form1.coater_running_state = false;
                 timer.Stop();
+                timer.Dispose();
             };
             timer.Interval = spin_duration * 1000;
             timer.AutoReset = false;
             timer.Start();
+            Form1.coater_running_state = true;
         }
 
-        public async Task CoaterRunningState(IModbusMaster master)
+        public async Task<bool> CoaterRunningState(IModbusMaster master)
         {
             byte slaveID = 0x01;
             ushort posAddress = 0x1392;
@@ -72,16 +95,16 @@ namespace WinFormsApp_Draft.Auto
             int prev_pos;
             int cur_pos;
             prev_pos = get_pos(master);
-            await Task.Delay(1000);
+            await Task.Delay(500);
             cur_pos = get_pos(master);
 
             if (cur_pos != prev_pos)
             {
-                WinFormsApp_Draft.Form1.coater_running_state = true;
+                return true;
             }
             else
             {
-                WinFormsApp_Draft.Form1.coater_running_state = false;
+                return false;
             }
         }
 
