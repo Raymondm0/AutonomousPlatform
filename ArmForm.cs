@@ -45,6 +45,12 @@ namespace CSharpTcpDemo
             ErrorInfoHelper.ParseServoJsonFile(strPath + "alarm_servo.json");
         }
 
+        private void BindBtn_MoveEvent(Button btn, string strTag)
+        {
+            btn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OnMoveJogEvent);
+            btn.MouseUp += new System.Windows.Forms.MouseEventHandler(this.OnStopMoveJogEvent);
+            btn.Tag = strTag;
+        }
 
         private void ArmForm_Load(object sender, EventArgs e) { }
 
@@ -508,6 +514,12 @@ namespace CSharpTcpDemo
 
         private void ShowDataResult()
         {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(ShowDataResult));
+                return;
+            }
+
             if (null != mFeedback.feedbackData.QActual && mFeedback.feedbackData.QActual.Length >= 4)
             {
                 this.labJ1.Text = string.Format("J1:{0:F3}", mFeedback.feedbackData.QActual[0]);

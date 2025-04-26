@@ -63,7 +63,7 @@ namespace WinFormsApp_Draft
         {
             InitializeComponent();
             DisableCoater();
-            DisableDashboard();
+            //DisableDashboard();
             //DisableAuto();
 
             string[] ports = SerialPort.GetPortNames();
@@ -79,17 +79,17 @@ namespace WinFormsApp_Draft
             MotorBaudRate.Items.Add("115200");
             MotorBaudRate.SelectedIndex = 0;
 
-            ArmIP.Text = "192.168.1.6";
-            DashboardPort.Text = "29999";
-            MovePort.Text = "30003";
-            FeedbackPort.Text = "30004";
+            //ArmIP.Text = "192.168.1.6";
+            //DashboardPort.Text = "29999";
+            //MovePort.Text = "30003";
+            //FeedbackPort.Text = "30004";
 
-            mFeedback.NetworkErrorEvent += new DobotClient.OnNetworkError(this.OnNetworkErrorEvent_Feedback);
-            mDobotMove.NetworkErrorEvent += new DobotClient.OnNetworkError(this.OnNetworkErrorEvent_DobotMove);
-            mDashboard.NetworkErrorEvent += new DobotClient.OnNetworkError(this.OnNetworkErrorEvent_Dashboard);
+            //mFeedback.NetworkErrorEvent += new DobotClient.OnNetworkError(this.OnNetworkErrorEvent_Feedback);
+            //mDobotMove.NetworkErrorEvent += new DobotClient.OnNetworkError(this.OnNetworkErrorEvent_DobotMove);
+            //mDashboard.NetworkErrorEvent += new DobotClient.OnNetworkError(this.OnNetworkErrorEvent_Dashboard);
 
-            mTimerReader.Elapsed += new System.Timers.ElapsedEventHandler(TimeoutEvent);
-            mTimerReader.AutoReset = true;
+            //mTimerReader.Elapsed += new System.Timers.ElapsedEventHandler(TimeoutEvent);
+            //mTimerReader.AutoReset = true;
 
             string strPath = System.Windows.Forms.Application.StartupPath + "\\";
             ErrorInfoHelper.ParseControllerJsonFile(strPath + "alarm_controller.json");
@@ -125,16 +125,16 @@ namespace WinFormsApp_Draft
             }
         }
 
-        private void EnableDashboard()
-        {
-            foreach (System.Windows.Forms.Control ctr in Controls)
-            {
-                if (ctr == Dashboard)
-                {
-                    ctr.Enabled = true;
-                }
-            }
-        }
+        //private void EnableDashboard()
+        //{
+        //    foreach (System.Windows.Forms.Control ctr in Controls)
+        //    {
+        //        if (ctr == Dashboard)
+        //        {
+        //            ctr.Enabled = true;
+        //        }
+        //    }
+        //}
 
         private void EnableAuto()
         {
@@ -158,16 +158,16 @@ namespace WinFormsApp_Draft
             }
         }
 
-        private void DisableDashboard()
-        {
-            foreach (System.Windows.Forms.Control ctr in Controls)
-            {
-                if (ctr == Dashboard)
-                {
-                    ctr.Enabled = false;
-                }
-            }
-        }
+        //private void DisableDashboard()
+        //{
+        //    foreach (System.Windows.Forms.Control ctr in Controls)
+        //    {
+        //        if (ctr == Dashboard)
+        //        {
+        //            ctr.Enabled = false;
+        //        }
+        //    }
+        //}
 
         private void DisableAuto()
         {
@@ -355,275 +355,275 @@ namespace WinFormsApp_Draft
         }
 
         // Robot Arm Functions
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            mTimerReader.Close();
-            if (mFeedback != null)
-            {
-                mFeedback.Disconnect();
-            }
-            if (mDobotMove != null)
-            {
-                mDobotMove.Disconnect();
-            }
-            if (mDashboard != null)
-            {
-                mDashboard.Disconnect();
-            }
-        }
+        //private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        //{
+        //    mTimerReader.Close();
+        //    if (mFeedback != null)
+        //    {
+        //        mFeedback.Disconnect();
+        //    }
+        //    if (mDobotMove != null)
+        //    {
+        //        mDobotMove.Disconnect();
+        //    }
+        //    if (mDashboard != null)
+        //    {
+        //        mDashboard.Disconnect();
+        //    }
+        //}
 
-        private void TimeoutEvent(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            if (!mFeedback.DataHasRead)
-            {
-                return;
-            }
-            mFeedback.DataHasRead = false;
-            this.textBoxX.Invoke(new Action(() =>
-            {
-                ShowDataResult();
-            }));
-        }
+        //private void TimeoutEvent(object sender, System.Timers.ElapsedEventArgs e)
+        //{
+        //    if (!mFeedback.DataHasRead)
+        //    {
+        //        return;
+        //    }
+        //    mFeedback.DataHasRead = false;
+        //    this.textBoxX.Invoke(new Action(() =>
+        //    {
+        //        ShowDataResult();
+        //    }));
+        //}
 
-        private void DoNetworkErrorEvent(DobotClient sender, string strIp, int iPort)
-        {
-            DisableDashboard();
-            Thread thd = new Thread(() =>
-            {
-                sender.Disconnect();
+        //private void DoNetworkErrorEvent(DobotClient sender, string strIp, int iPort)
+        //{
+        //    DisableDashboard();
+        //    Thread thd = new Thread(() =>
+        //    {
+        //        sender.Disconnect();
 
-                mTimerReader.Stop();
+        //        mTimerReader.Stop();
 
-                if (!sender.Connect(strIp, iPort))
-                {
-                    Thread.Sleep(500);
-                    DoNetworkErrorEvent(sender, strIp, iPort);
-                    return;
-                }
+        //        if (!sender.Connect(strIp, iPort))
+        //        {
+        //            Thread.Sleep(500);
+        //            DoNetworkErrorEvent(sender, strIp, iPort);
+        //            return;
+        //        }
 
-                mTimerReader.Start();
+        //        mTimerReader.Start();
 
-                this.Invoke(new Action(() =>
-                {
-                    EnableDashboard();
-                    if (coater_connect_state)
-                    {
-                        EnableAuto();
-                    }
-                }));
-            });
-            thd.Start();
-            arm_connect_state = true;
-        }
+        //        this.Invoke(new Action(() =>
+        //        {
+        //            EnableDashboard();
+        //            if (coater_connect_state)
+        //            {
+        //                EnableAuto();
+        //            }
+        //        }));
+        //    });
+        //    thd.Start();
+        //    arm_connect_state = true;
+        //}
 
-        private void OnNetworkErrorEvent_Feedback(DobotClient sender, SocketError iErrCode)
-        {
-            if (mIsManualDisconnect) return;
-            this.BeginInvoke(new Action(() =>
-            {
-                string strIp = ArmIP.Text;
-                int iPort = Parse2Int(this.FeedbackPort.Text);
-                DoNetworkErrorEvent(mFeedback, strIp, iPort);
-            }));
-        }
-        private void OnNetworkErrorEvent_DobotMove(DobotClient sender, SocketError iErrCode)
-        {
-            if (mIsManualDisconnect) return;
-            this.BeginInvoke(new Action(() =>
-            {
-                string strIp = ArmIP.Text;
-                int iPort = Parse2Int(this.MovePort.Text);
-                DoNetworkErrorEvent(mDobotMove, strIp, iPort);
-            }));
-        }
-        private void OnNetworkErrorEvent_Dashboard(DobotClient sender, SocketError iErrCode)
-        {
-            if (mIsManualDisconnect) return;
-            this.BeginInvoke(new Action(() =>
-            {
-                string strIp = ArmIP.Text;
-                int iPort = Parse2Int(this.DashboardPort.Text);
-                DoNetworkErrorEvent(mDashboard, strIp, iPort);
-            }));
-        }
+        //private void OnNetworkErrorEvent_Feedback(DobotClient sender, SocketError iErrCode)
+        //{
+        //    if (mIsManualDisconnect) return;
+        //    this.BeginInvoke(new Action(() =>
+        //    {
+        //        string strIp = ArmIP.Text;
+        //        int iPort = Parse2Int(this.FeedbackPort.Text);
+        //        DoNetworkErrorEvent(mFeedback, strIp, iPort);
+        //    }));
+        //}
+        //private void OnNetworkErrorEvent_DobotMove(DobotClient sender, SocketError iErrCode)
+        //{
+        //    if (mIsManualDisconnect) return;
+        //    this.BeginInvoke(new Action(() =>
+        //    {
+        //        string strIp = ArmIP.Text;
+        //        int iPort = Parse2Int(this.MovePort.Text);
+        //        DoNetworkErrorEvent(mDobotMove, strIp, iPort);
+        //    }));
+        //}
+        //private void OnNetworkErrorEvent_Dashboard(DobotClient sender, SocketError iErrCode)
+        //{
+        //    if (mIsManualDisconnect) return;
+        //    this.BeginInvoke(new Action(() =>
+        //    {
+        //        string strIp = ArmIP.Text;
+        //        int iPort = Parse2Int(this.DashboardPort.Text);
+        //        DoNetworkErrorEvent(mDashboard, strIp, iPort);
+        //    }));
+        //}
 
-        private double Parse2Double(string str)
-        {
-            double value = 0.0;
-            try
-            {
-                value = Double.Parse(str);
-            }
-            catch { }
-            return value;
-        }
-        private int Parse2Int(string str)
-        {
-            int iValue = 0;
-            try
-            {
-                iValue = int.Parse(str);
-            }
-            catch
-            {
-            }
-            return iValue;
-        }
+        //private double Parse2Double(string str)
+        //{
+        //    double value = 0.0;
+        //    try
+        //    {
+        //        value = Double.Parse(str);
+        //    }
+        //    catch { }
+        //    return value;
+        //}
+        //private int Parse2Int(string str)
+        //{
+        //    int iValue = 0;
+        //    try
+        //    {
+        //        iValue = int.Parse(str);
+        //    }
+        //    catch
+        //    {
+        //    }
+        //    return iValue;
+        //}
 
-        private bool IsValidIP(string strIp)
-        {
-            try
-            {
-                System.Net.IPAddress.Parse(strIp);
-            }
-            catch
-            {
-                return false;
-            }
-            return true;
-        }
-        private void Connect()
-        {
-            string strIp = ArmIP.Text;
-            if (!IsValidIP(strIp))
-            {
-                MessageBox.Show("IP Address Invalid");
-                return;
-            }
-            int iPortFeedback = Parse2Int(FeedbackPort.Text);
-            int iPortMove = Parse2Int(MovePort.Text);
-            int iPortDashboard = Parse2Int(DashboardPort.Text);
+        //private bool IsValidIP(string strIp)
+        //{
+        //    try
+        //    {
+        //        System.Net.IPAddress.Parse(strIp);
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //    return true;
+        //}
+        //private void Connect()
+        //{
+        //    string strIp = ArmIP.Text;
+        //    if (!IsValidIP(strIp))
+        //    {
+        //        MessageBox.Show("IP Address Invalid");
+        //        return;
+        //    }
+        //    int iPortFeedback = Parse2Int(FeedbackPort.Text);
+        //    int iPortMove = Parse2Int(MovePort.Text);
+        //    int iPortDashboard = Parse2Int(DashboardPort.Text);
 
-            Thread thd = new Thread(() =>
-            {
-                if (!mDashboard.Connect(strIp, iPortDashboard))
-                {
-                    Response.Text = string.Format("Connect {0}:{1} Fail!!", strIp, iPortDashboard);
-                    return;
-                }
-                if (!mDobotMove.Connect(strIp, iPortMove))
-                {
-                    Response.Text = string.Format("Connect {0}:{1} Fail!!", strIp, iPortMove);
-                    return;
-                }
-                if (!mFeedback.Connect(strIp, iPortFeedback))
-                {
-                    Response.Text = string.Format("Connect {0}:{1} Fail!!", strIp, iPortFeedback);
-                    return;
-                }
+        //    Thread thd = new Thread(() =>
+        //    {
+        //        if (!mDashboard.Connect(strIp, iPortDashboard))
+        //        {
+        //            Response.Text = string.Format("Connect {0}:{1} Fail!!", strIp, iPortDashboard);
+        //            return;
+        //        }
+        //        if (!mDobotMove.Connect(strIp, iPortMove))
+        //        {
+        //            Response.Text = string.Format("Connect {0}:{1} Fail!!", strIp, iPortMove);
+        //            return;
+        //        }
+        //        if (!mFeedback.Connect(strIp, iPortFeedback))
+        //        {
+        //            Response.Text = string.Format("Connect {0}:{1} Fail!!", strIp, iPortFeedback);
+        //            return;
+        //        }
 
-                mIsManualDisconnect = false;
-                mTimerReader.Start();
+        //        mIsManualDisconnect = false;
+        //        mTimerReader.Start();
 
-                Invoke(new Action(() =>
-                {
-                    EnableDashboard();
-                    btnConnect.Text = "Disconnect";
-                }));
-            });
-            thd.Start();
-        }
-        private void Disconnect()
-        {
-            Thread thd = new Thread(() =>
-            {
-                mFeedback.Disconnect();
-                mDobotMove.Disconnect();
-                mDashboard.Disconnect();
-                arm_connect_state = false;
-                DisableAuto();
+        //        Invoke(new Action(() =>
+        //        {
+        //            EnableDashboard();
+        //            btnConnect.Text = "Disconnect";
+        //        }));
+        //    });
+        //    thd.Start();
+        //}
+        //private void Disconnect()
+        //{
+        //    Thread thd = new Thread(() =>
+        //    {
+        //        mFeedback.Disconnect();
+        //        mDobotMove.Disconnect();
+        //        mDashboard.Disconnect();
+        //        arm_connect_state = false;
+        //        DisableAuto();
 
-                mTimerReader.Stop();
+        //        mTimerReader.Stop();
 
-                Invoke(new Action(() =>
-                {
-                    btnConnect.Text = "Connect";
-                }));
-            });
-            thd.Start();
-        }
+        //        Invoke(new Action(() =>
+        //        {
+        //            btnConnect.Text = "Connect";
+        //        }));
+        //    });
+        //    thd.Start();
+        //}
 
-        private void ShowDataResult()
-        {
-            if (null != mFeedback.feedbackData.ToolVectorActual && mFeedback.feedbackData.ToolVectorActual.Length >= 4)
-            {
-                curX.Text = string.Format("X:{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
-                curY.Text = string.Format("Y:{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
-                curZ.Text = string.Format("Z:{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
-                if (textBoxX.Text.Length == 0)
-                {
-                    textBoxX.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
-                    textBoxY.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
-                    textBoxZ.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
-                }
-            }
-        }
+        //private void ShowDataResult()
+        //{
+        //    if (null != mFeedback.feedbackData.ToolVectorActual && mFeedback.feedbackData.ToolVectorActual.Length >= 4)
+        //    {
+        //        curX.Text = string.Format("X:{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
+        //        curY.Text = string.Format("Y:{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
+        //        curZ.Text = string.Format("Z:{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
+        //        if (textBoxX.Text.Length == 0)
+        //        {
+        //            textBoxX.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
+        //            textBoxY.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
+        //            textBoxZ.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
+        //        }
+        //    }
+        //}
 
-        private void btnConnect_Click(object sender, EventArgs e)
-        {
-            if (btnConnect.Text == "Disconnect")
-            {
-                mIsManualDisconnect = true;
-                Disconnect();
-            }
-            else
-            {
-                Connect();
-            }
-        }
+        //private void btnConnect_Click(object sender, EventArgs e)
+        //{
+        //    if (btnConnect.Text == "Disconnect")
+        //    {
+        //        mIsManualDisconnect = true;
+        //        Disconnect();
+        //    }
+        //    else
+        //    {
+        //        Connect();
+        //    }
+        //}
 
-        private void btnEnable_Click(object sender, EventArgs e)
-        {
-            bool bEnable = btnEnable.Text.Equals("Enable");
+        //private void btnEnable_Click(object sender, EventArgs e)
+        //{
+        //    bool bEnable = btnEnable.Text.Equals("Enable");
 
-            Thread thd = new Thread(() =>
-            {
-                string ret = bEnable ? mDashboard.EnableRobot() : mDashboard.DisableRobot();
-                bool bOk = ret.StartsWith("0");
+        //    Thread thd = new Thread(() =>
+        //    {
+        //        string ret = bEnable ? mDashboard.EnableRobot() : mDashboard.DisableRobot();
+        //        bool bOk = ret.StartsWith("0");
 
-                this.btnEnable.Invoke(new Action(() =>
-                {
-                    if (bOk)
-                    {
-                        btnEnable.Text = bEnable ? "Disable" : "Enable";
-                    }
-                }));
-            });
-            thd.Start();
-        }
+        //        this.btnEnable.Invoke(new Action(() =>
+        //        {
+        //            if (bOk)
+        //            {
+        //                btnEnable.Text = bEnable ? "Disable" : "Enable";
+        //            }
+        //        }));
+        //    });
+        //    thd.Start();
+        //}
 
-        private void btnEnableAgain_Click(object sender, EventArgs e)
-        {
-            Thread thd = new Thread(() =>
-            {
-                string ret = mDashboard.EnableRobot();
-                bool bOk = ret.StartsWith("0");
-            });
-            thd.Start();
-        }
+        //private void btnEnableAgain_Click(object sender, EventArgs e)
+        //{
+        //    Thread thd = new Thread(() =>
+        //    {
+        //        string ret = mDashboard.EnableRobot();
+        //        bool bOk = ret.StartsWith("0");
+        //    });
+        //    thd.Start();
+        //}
 
-        private void ResetArm_Click(object sender, EventArgs e)
-        {
-            Thread thd = new Thread(() =>
-            {
-                string ret = mDashboard.ResetRobot();
-            });
-            thd.Start();
-        }
+        //private void ResetArm_Click(object sender, EventArgs e)
+        //{
+        //    Thread thd = new Thread(() =>
+        //    {
+        //        string ret = mDashboard.ResetRobot();
+        //    });
+        //    thd.Start();
+        //}
 
-        private void Move_Click(object sender, EventArgs e)
-        {
-            DescartesPoint pt = new DescartesPoint();
-            pt.x = Parse2Double(textBoxX.Text);
-            pt.y = Parse2Double(textBoxY.Text);
-            pt.z = Parse2Double(textBoxZ.Text);
+        //private void Move_Click(object sender, EventArgs e)
+        //{
+        //    DescartesPoint pt = new DescartesPoint();
+        //    pt.x = Parse2Double(textBoxX.Text);
+        //    pt.y = Parse2Double(textBoxY.Text);
+        //    pt.z = Parse2Double(textBoxZ.Text);
 
-            Thread thd = new Thread(() =>
-            {
-                string ret = mDobotMove.MovJ(pt);
-            });
-            thd.Start();
-        }
+        //    Thread thd = new Thread(() =>
+        //    {
+        //        string ret = mDobotMove.MovJ(pt);
+        //    });
+        //    thd.Start();
+        //}
 
         // auto read functions, complete automatic
         private async void AutoRead_CheckedChanged(object sender, EventArgs e)
@@ -631,7 +631,7 @@ namespace WinFormsApp_Draft
             if (AutoRead.Checked)
             {
                 DisableCoater();
-                DisableDashboard();
+                //DisableDashboard();
 
                 cancellationTokenSource_pos = new CancellationTokenSource();
                 Task.Run(() => motorAsync.UpdatePositionAsync(Update, Position, master, cancellationTokenSource_pos.Token));
@@ -675,7 +675,7 @@ namespace WinFormsApp_Draft
             {
                 if (arm_connect_state)
                 {
-                    EnableDashboard();
+                    //EnableDashboard();
                 }
                 if (coater_connect_state)
                 {

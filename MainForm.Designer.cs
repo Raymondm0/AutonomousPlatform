@@ -37,34 +37,6 @@
             MotorConnection = new TextBox();
             Response = new TextBox();
             SpinTimer = new System.Windows.Forms.Timer(components);
-            btnConnect = new Button();
-            ArmIP = new TextBox();
-            MovePort = new TextBox();
-            DashboardPort = new TextBox();
-            FeedbackPort = new TextBox();
-            label5 = new Label();
-            label6 = new Label();
-            label7 = new Label();
-            label8 = new Label();
-            Dashboard = new GroupBox();
-            label16 = new Label();
-            label15 = new Label();
-            label14 = new Label();
-            label13 = new Label();
-            label12 = new Label();
-            label11 = new Label();
-            label10 = new Label();
-            label9 = new Label();
-            Move = new Button();
-            curX = new TextBox();
-            curY = new TextBox();
-            curZ = new TextBox();
-            textBoxX = new TextBox();
-            textBoxY = new TextBox();
-            textBoxZ = new TextBox();
-            btnEnable = new Button();
-            btnEnableAgain = new Button();
-            ResetArm = new Button();
             ResetMotor = new Button();
             label1 = new Label();
             Position = new TextBox();
@@ -88,7 +60,6 @@
             ControlPanel = new Panel();
             OpenArmForm = new Button();
             OpenCoaterForm = new Button();
-            Dashboard.SuspendLayout();
             SpinCoater.SuspendLayout();
             AutoRun.SuspendLayout();
             SuspendLayout();
@@ -163,261 +134,6 @@
             Response.ReadOnly = true;
             Response.Size = new Size(421, 23);
             Response.TabIndex = 17;
-            // 
-            // btnConnect
-            // 
-            btnConnect.Location = new Point(17, 350);
-            btnConnect.Name = "btnConnect";
-            btnConnect.Size = new Size(102, 23);
-            btnConnect.TabIndex = 33;
-            btnConnect.Text = "Connect Arm";
-            btnConnect.UseVisualStyleBackColor = true;
-            btnConnect.Click += btnConnect_Click;
-            // 
-            // ArmIP
-            // 
-            ArmIP.Location = new Point(17, 402);
-            ArmIP.Name = "ArmIP";
-            ArmIP.Size = new Size(100, 23);
-            ArmIP.TabIndex = 34;
-            // 
-            // MovePort
-            // 
-            MovePort.Location = new Point(245, 402);
-            MovePort.Name = "MovePort";
-            MovePort.Size = new Size(100, 23);
-            MovePort.TabIndex = 35;
-            // 
-            // DashboardPort
-            // 
-            DashboardPort.Location = new Point(128, 402);
-            DashboardPort.Name = "DashboardPort";
-            DashboardPort.Size = new Size(100, 23);
-            DashboardPort.TabIndex = 36;
-            // 
-            // FeedbackPort
-            // 
-            FeedbackPort.Location = new Point(362, 402);
-            FeedbackPort.Name = "FeedbackPort";
-            FeedbackPort.Size = new Size(100, 23);
-            FeedbackPort.TabIndex = 37;
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Location = new Point(34, 382);
-            label5.Name = "label5";
-            label5.Size = new Size(71, 17);
-            label5.TabIndex = 38;
-            label5.Text = "IP Address";
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Location = new Point(362, 382);
-            label6.Name = "label6";
-            label6.Size = new Size(92, 17);
-            label6.TabIndex = 39;
-            label6.Text = "Feedback Port";
-            // 
-            // label7
-            // 
-            label7.AutoSize = true;
-            label7.Location = new Point(260, 382);
-            label7.Name = "label7";
-            label7.Size = new Size(69, 17);
-            label7.TabIndex = 40;
-            label7.Text = "Move Port";
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Location = new Point(127, 382);
-            label8.Name = "label8";
-            label8.Size = new Size(101, 17);
-            label8.TabIndex = 41;
-            label8.Text = "Dashboard Port";
-            // 
-            // Dashboard
-            // 
-            Dashboard.Controls.Add(label16);
-            Dashboard.Controls.Add(label15);
-            Dashboard.Controls.Add(label14);
-            Dashboard.Controls.Add(label13);
-            Dashboard.Controls.Add(label12);
-            Dashboard.Controls.Add(label11);
-            Dashboard.Controls.Add(label10);
-            Dashboard.Controls.Add(label9);
-            Dashboard.Controls.Add(Move);
-            Dashboard.Controls.Add(curX);
-            Dashboard.Controls.Add(curY);
-            Dashboard.Controls.Add(curZ);
-            Dashboard.Controls.Add(textBoxX);
-            Dashboard.Controls.Add(textBoxY);
-            Dashboard.Controls.Add(textBoxZ);
-            Dashboard.Location = new Point(9, 431);
-            Dashboard.Name = "Dashboard";
-            Dashboard.Size = new Size(512, 133);
-            Dashboard.TabIndex = 42;
-            Dashboard.TabStop = false;
-            Dashboard.Text = "Dashboard";
-            // 
-            // label16
-            // 
-            label16.AutoSize = true;
-            label16.Location = new Point(145, 73);
-            label16.Name = "label16";
-            label16.Size = new Size(43, 17);
-            label16.TabIndex = 50;
-            label16.Text = "X Axis";
-            // 
-            // label15
-            // 
-            label15.AutoSize = true;
-            label15.Location = new Point(251, 74);
-            label15.Name = "label15";
-            label15.Size = new Size(42, 17);
-            label15.TabIndex = 49;
-            label15.Text = "Y Axis";
-            // 
-            // label14
-            // 
-            label14.AutoSize = true;
-            label14.Location = new Point(363, 74);
-            label14.Name = "label14";
-            label14.Size = new Size(42, 17);
-            label14.TabIndex = 48;
-            label14.Text = "Z Axis";
-            // 
-            // label13
-            // 
-            label13.AutoSize = true;
-            label13.Location = new Point(145, 15);
-            label13.Name = "label13";
-            label13.Size = new Size(43, 17);
-            label13.TabIndex = 47;
-            label13.Text = "X Axis";
-            // 
-            // label12
-            // 
-            label12.AutoSize = true;
-            label12.Location = new Point(251, 15);
-            label12.Name = "label12";
-            label12.Size = new Size(42, 17);
-            label12.TabIndex = 46;
-            label12.Text = "Y Axis";
-            // 
-            // label11
-            // 
-            label11.AutoSize = true;
-            label11.Location = new Point(363, 15);
-            label11.Name = "label11";
-            label11.Size = new Size(42, 17);
-            label11.TabIndex = 45;
-            label11.Text = "Z Axis";
-            // 
-            // label10
-            // 
-            label10.AutoSize = true;
-            label10.Location = new Point(46, 38);
-            label10.Name = "label10";
-            label10.Size = new Size(60, 17);
-            label10.TabIndex = 44;
-            label10.Text = "Move to:";
-            // 
-            // label9
-            // 
-            label9.AutoSize = true;
-            label9.Location = new Point(12, 96);
-            label9.Name = "label9";
-            label9.Size = new Size(101, 17);
-            label9.TabIndex = 43;
-            label9.Text = "Current Position";
-            // 
-            // Move
-            // 
-            Move.Location = new Point(432, 35);
-            Move.Name = "Move";
-            Move.Size = new Size(75, 23);
-            Move.TabIndex = 42;
-            Move.Text = "MovJ";
-            Move.UseVisualStyleBackColor = true;
-            Move.Click += Move_Click;
-            // 
-            // curX
-            // 
-            curX.Location = new Point(119, 93);
-            curX.Name = "curX";
-            curX.ReadOnly = true;
-            curX.Size = new Size(100, 23);
-            curX.TabIndex = 41;
-            // 
-            // curY
-            // 
-            curY.Location = new Point(224, 93);
-            curY.Name = "curY";
-            curY.ReadOnly = true;
-            curY.Size = new Size(100, 23);
-            curY.TabIndex = 40;
-            // 
-            // curZ
-            // 
-            curZ.Location = new Point(330, 93);
-            curZ.Name = "curZ";
-            curZ.ReadOnly = true;
-            curZ.Size = new Size(100, 23);
-            curZ.TabIndex = 39;
-            // 
-            // textBoxX
-            // 
-            textBoxX.Location = new Point(118, 35);
-            textBoxX.Name = "textBoxX";
-            textBoxX.Size = new Size(100, 23);
-            textBoxX.TabIndex = 37;
-            // 
-            // textBoxY
-            // 
-            textBoxY.Location = new Point(224, 35);
-            textBoxY.Name = "textBoxY";
-            textBoxY.Size = new Size(100, 23);
-            textBoxY.TabIndex = 36;
-            // 
-            // textBoxZ
-            // 
-            textBoxZ.Location = new Point(330, 35);
-            textBoxZ.Name = "textBoxZ";
-            textBoxZ.Size = new Size(100, 23);
-            textBoxZ.TabIndex = 35;
-            // 
-            // btnEnable
-            // 
-            btnEnable.Location = new Point(145, 350);
-            btnEnable.Name = "btnEnable";
-            btnEnable.Size = new Size(75, 23);
-            btnEnable.TabIndex = 43;
-            btnEnable.Text = "Enable";
-            btnEnable.UseVisualStyleBackColor = true;
-            btnEnable.Click += btnEnable_Click;
-            // 
-            // btnEnableAgain
-            // 
-            btnEnableAgain.Location = new Point(233, 350);
-            btnEnableAgain.Name = "btnEnableAgain";
-            btnEnableAgain.Size = new Size(91, 23);
-            btnEnableAgain.TabIndex = 44;
-            btnEnableAgain.Text = "EnableAgain";
-            btnEnableAgain.UseVisualStyleBackColor = true;
-            btnEnableAgain.Click += btnEnableAgain_Click;
-            // 
-            // ResetArm
-            // 
-            ResetArm.Location = new Point(339, 350);
-            ResetArm.Name = "ResetArm";
-            ResetArm.Size = new Size(91, 23);
-            ResetArm.TabIndex = 45;
-            ResetArm.Text = "ResetArm";
-            ResetArm.UseVisualStyleBackColor = true;
-            ResetArm.Click += ResetArm_Click;
             // 
             // ResetMotor
             // 
@@ -667,19 +383,6 @@
             Controls.Add(ControlPanel);
             Controls.Add(AutoRun);
             Controls.Add(SpinCoater);
-            Controls.Add(ResetArm);
-            Controls.Add(btnEnableAgain);
-            Controls.Add(btnEnable);
-            Controls.Add(Dashboard);
-            Controls.Add(label8);
-            Controls.Add(label7);
-            Controls.Add(label6);
-            Controls.Add(label5);
-            Controls.Add(FeedbackPort);
-            Controls.Add(DashboardPort);
-            Controls.Add(MovePort);
-            Controls.Add(ArmIP);
-            Controls.Add(btnConnect);
             Controls.Add(Response);
             Controls.Add(MotorConnection);
             Controls.Add(MotorSerialSwitch);
@@ -690,10 +393,8 @@
             Margin = new Padding(2, 3, 2, 3);
             Name = "MainForm";
             Text = "Form1";
-            FormClosed += MainForm_FormClosed;
+            //FormClosed += MainForm_FormClosed;
             Load += Form1_Load;
-            Dashboard.ResumeLayout(false);
-            Dashboard.PerformLayout();
             SpinCoater.ResumeLayout(false);
             SpinCoater.PerformLayout();
             AutoRun.ResumeLayout(false);
@@ -712,34 +413,6 @@
         private TextBox MotorConnection;
         private TextBox Response;
         private System.Windows.Forms.Timer SpinTimer;
-        private Button btnConnect;
-        private TextBox ArmIP;
-        private TextBox MovePort;
-        private TextBox DashboardPort;
-        private TextBox FeedbackPort;
-        private Label label5;
-        private Label label6;
-        private Label label7;
-        private Label label8;
-        private GroupBox Dashboard;
-        private Button Move;
-        private TextBox curX;
-        private TextBox curY;
-        private TextBox curZ;
-        private TextBox textBoxX;
-        private TextBox textBoxY;
-        private TextBox textBoxZ;
-        private Label label9;
-        private Label label13;
-        private Label label12;
-        private Label label11;
-        private Label label10;
-        private Label label16;
-        private Label label15;
-        private Label label14;
-        private Button btnEnable;
-        private Button btnEnableAgain;
-        private Button ResetArm;
         private Button ResetMotor;
         private Label label1;
         private TextBox Position;
