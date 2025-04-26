@@ -13,6 +13,9 @@ namespace WinFormsApp_Draft.Auto
 {
     class AutoFlow
     {
+        public static bool coater_running_state = false;
+        public static bool arm_running_state = false;
+
         private AutoMove AutoMove;
         private AutoSpin autoSpin = new AutoSpin();
         private ExcelReader ExcelReader;
@@ -30,9 +33,7 @@ namespace WinFormsApp_Draft.Auto
             int duration = Convert.ToInt32(round_params[1]);
             int acc_speed = Convert.ToInt32(round_params[2]);
 
-            await autoSpin.SendAccAsync(acc_speed, master);
-            await autoSpin.SendSpeedAsync(speed, master);
-            await autoSpin.SendDurResAsync(duration, spin_timer, speed, master);
+            await autoSpin.SendParamsAsync(duration, speed, acc_speed, spin_timer, master);
         }
 
         private async Task EnableArm()

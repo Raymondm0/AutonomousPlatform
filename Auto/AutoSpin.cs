@@ -12,13 +12,7 @@ namespace WinFormsApp_Draft.Auto
 {
     class AutoSpin
     {
-        /// <summary>
-        /// auto send request to change parameters to driver; check whether parameter available before calling
-        /// </summary>
-        /// <param name="spin_speed"></param>
-        /// <param name="master"></param>
-        /// <returns></returns>
-        public async Task SendSpeedAsync(int spin_speed, IModbusMaster master)
+        private async Task SendSpeedAsync(int spin_speed, IModbusMaster master)
         {
             byte slaveID = 0x01;
             ushort modeAddress = 0x1771;
@@ -32,7 +26,7 @@ namespace WinFormsApp_Draft.Auto
             master.WriteSingleRegister(slaveID, modeAddress, 0x0001);
         }
 
-        public async Task SendAccAsync(int acc_speed, IModbusMaster master)
+        private async Task SendAccAsync(int acc_speed, IModbusMaster master)
         {
             byte slaveID = 0x01;
             ushort modeAddress = 0x1771;
@@ -47,7 +41,7 @@ namespace WinFormsApp_Draft.Auto
             master.WriteSingleRegister(slaveID, modeAddress, 0x0001);
         }
 
-        public async Task SendDurResAsync(int spin_duration, System.Timers.Timer timer,int spin_speed ,IModbusMaster master)
+        public async Task SendParamsAsync(int spin_duration,int spin_speed, int acc_speed, System.Timers.Timer timer,IModbusMaster master)
         {
             var task_start = new TaskCompletionSource<bool>();
             timer.Elapsed += async (sender, e) => 
@@ -77,14 +71,17 @@ namespace WinFormsApp_Draft.Auto
                 master.WriteSingleRegister(slaveID, modeAddress, 0x0003);
 
                 task_start.SetResult(true);
-                Form1.coater_running_state = false;
+                AutoFlow.coater_running_state = false;
                 timer.Stop();
                 timer.Dispose();
             };
             timer.Interval = spin_duration * 1000;
             timer.AutoReset = false;
+
+            await SendAccAsync(acc_speed, master);
+            await SendSpeedAsync(spin_speed, master);
             timer.Start();
-            Form1.coater_running_state = true;
+            AutoFlow.coater_running_state = true;
         }
 
         public async Task<bool> CoaterRunningState(IModbusMaster master)

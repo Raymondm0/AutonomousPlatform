@@ -18,14 +18,14 @@ namespace WinFormsApp_Draft.Auto
         {
             try
             {
-                Row row = Form1.mWorksheet.Descendants<Row>().ElementAt(i);
+                Row row = MainForm.mWorksheet.Descendants<Row>().ElementAt(i);
                 Cell cell = row.Descendants<Cell>().ElementAt(j);
                 if (cell.DataType != null && cell.DataType.Value == CellValues.SharedString)
                 {
-                    if (Form1.mWorkbookPart.SharedStringTablePart != null)
+                    if (MainForm.mWorkbookPart.SharedStringTablePart != null)
                     {
                         int index = int.Parse(cell.InnerText);
-                        return Form1.mSharedStringTable.ElementAt(index).InnerText;
+                        return MainForm.mSharedStringTable.ElementAt(index).InnerText;
                     }
                 }
                 return cell.InnerText;
@@ -40,9 +40,9 @@ namespace WinFormsApp_Draft.Auto
         {
             try
             {
-                int rounds = Form1.mWorksheet.Descendants<Row>().Count() - 1;
-                int param_num = Form1.mWorksheet.Descendants<Row>().ElementAt(0).Count();
-                Form1.properties = new Form1.sheet_properties { parameters = param_num, rounds = rounds };
+                int rounds = MainForm.mWorksheet.Descendants<Row>().Count() - 1;
+                int param_num = MainForm.mWorksheet.Descendants<Row>().ElementAt(0).Count();
+                MainForm.properties = new MainForm.sheet_properties { parameters = param_num, rounds = rounds };
             }
             catch { }
         }
@@ -50,7 +50,7 @@ namespace WinFormsApp_Draft.Auto
         public List<string> GetRowData(int round_num) 
         {
             List<string> round_list = new List<string>();
-            Row row = Form1.mWorksheet.Descendants<Row>().ElementAt(round_num);
+            Row row = MainForm.mWorksheet.Descendants<Row>().ElementAt(round_num);
             foreach (Cell cell in row.Elements<Cell>())
             {
                 round_list.Add(cell.InnerText);
@@ -60,12 +60,12 @@ namespace WinFormsApp_Draft.Auto
 
         public void init_ParamNames()
         {
-            Form1.param_names = new List<string>();
-            Row row = Form1.mWorksheet.Descendants<Row>().ElementAt(0);
+            MainForm.param_names = new List<string>();
+            Row row = MainForm.mWorksheet.Descendants<Row>().ElementAt(0);
             foreach (Cell cell in row.Elements<Cell>())
             {
                 int index = int.Parse(cell.InnerText);
-                Form1.param_names.Add(Form1.mSharedStringTable.ElementAt(index).InnerText);
+                MainForm.param_names.Add(MainForm.mSharedStringTable.ElementAt(index).InnerText);
             }
         }
 
@@ -73,9 +73,9 @@ namespace WinFormsApp_Draft.Auto
         {
             try
             {
-                if (Form1.param_list != null)
+                if (MainForm.param_list != null)
                 {
-                    List<List<string>> para = Form1.param_list;
+                    List<List<string>> para = MainForm.param_list;
                     for (int i = 0; i < para.Count; i++)
                     {
                         for (int j = 0; j < para[0].Count; j++)

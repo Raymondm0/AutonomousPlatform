@@ -14,11 +14,10 @@ using WinFormsApp_Draft.Auto;
 
 namespace WinFormsApp_Draft
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         //general declarations
         private SerialPort motor_port = new SerialPort();
-        private SerialPort servo_port = new SerialPort();
         private IModbusMaster master;
 
         //coater declarations
@@ -28,17 +27,10 @@ namespace WinFormsApp_Draft
         private CancellationTokenSource cancellationTokenSource_pos;
         private CancellationTokenSource cancellationTokenSource_beat;
         public static bool coater_connect_state = false;
-        //public static bool coater_running_state = false;
-
-        //servo declarations
-        private ServoAsync servoAsync = new ServoAsync();
-        private const string move_away = "1";
-        private const string move_back = "2";
 
         //arm declarations
         private System.Timers.Timer mTimerReader = new System.Timers.Timer(300);
         private static bool arm_connect_state = false;
-        //public static bool arm_running_state = false;
         private DobotMove mDobotMove = new DobotMove();
         private Feedback mFeedback = new Feedback();
         private Dashboard mDashboard = new Dashboard();
@@ -62,7 +54,7 @@ namespace WinFormsApp_Draft
         }
 
 
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
             DisableCoater();
@@ -81,22 +73,14 @@ namespace WinFormsApp_Draft
             foreach (string port in ports)
             {
                 MotorPorts.Items.Add(port);
-                ServoPorts.Items.Add(port);
             }
             MotorPorts.SelectedIndex = 0;
-            ServoPorts.SelectedIndex = 0;
 
             MotorBaudRate.Items.Add("9600");
             MotorBaudRate.Items.Add("19200");
             MotorBaudRate.Items.Add("38400");
             MotorBaudRate.Items.Add("115200");
             MotorBaudRate.SelectedIndex = 0;
-
-            ServoBaudRate.Items.Add("9600");
-            ServoBaudRate.Items.Add("19200");
-            ServoBaudRate.Items.Add("38400");
-            ServoBaudRate.Items.Add("115200");
-            ServoBaudRate.SelectedIndex = 0;
 
             ArmIP.Text = "192.168.1.6";
             DashboardPort.Text = "29999";
@@ -130,16 +114,6 @@ namespace WinFormsApp_Draft
         private void MotorBaudRate_SelectedIndexChanged(object sender, EventArgs e)
         {
             SelectedMotorBR.Text = MotorBaudRate.SelectedItem.ToString();
-        }
-
-        private void ServoPorts_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SelectedServoPort.Text = ServoPorts.SelectedItem.ToString();
-        }
-
-        private void ServoBaudRate_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SelectedServoBR.Text = ServoBaudRate.SelectedItem.ToString();
         }
 
         private void EnableCoater()
@@ -381,53 +355,6 @@ namespace WinFormsApp_Draft
             await Task.Run(() => motorAsync.ResetMotorAsync(ResetMotor, master, spin_speed));
             spin_speed = 0;
         }
-
-        // Servo Functions
-        private void ServoSerialSwitch_Click(object sender, EventArgs e)
-        {
-            if (SelectedServoBR.Text != "" && SelectedServoPort.Text != "" && servo_port.IsOpen == false)
-            {
-                servo_port.PortName = SelectedServoPort.Text;
-                servo_port.BaudRate = Convert.ToInt32(ServoBaudRate.Text);
-                servo_port.StopBits = StopBits.Two;
-                servo_port.Parity = Parity.None;
-
-                try
-                {
-                    servo_port.Open();
-
-                    servo_port.Write(move_back);
-                    ServoConnection.Text = "opened";
-                    ServoSerialSwitch.Text = "Disconnect Servo";
-                }
-                catch (Exception ex)
-                {
-                    Response.Text = ex.Message;
-                    servo_port.Close();
-                    ServoSerialSwitch.Text = "Open Serial";
-                    ServoConnection.Text = "closed";
-                }
-            }
-            else
-            {
-                try
-                {
-                    servo_port.Close();
-                    ServoSerialSwitch.Text = "Open Serial";
-                    ServoConnection.Text = "closed";
-                }
-                catch (Exception ex)
-                {
-                    Response.Text = ex.Message;
-                }
-            }
-        }
-
-        private async void MoveAway_CheckedChanged(object sender, EventArgs e)
-        {
-            await Task.Run(() => servoAsync.MoveAwayAsync(MoveAway, servo_port));
-        }
-
 
         // Robot Arm Functions
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)

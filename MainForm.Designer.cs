@@ -1,6 +1,6 @@
 ﻿namespace WinFormsApp_Draft
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            ServoConnection = new TextBox();
             MotorPorts = new ListBox();
             SelectedMotorPort = new TextBox();
             MotorBaudRate = new ListBox();
@@ -39,12 +38,6 @@
             MotorConnection = new TextBox();
             Response = new TextBox();
             SpinTimer = new System.Windows.Forms.Timer(components);
-            ServoSerialSwitch = new Button();
-            ServoPorts = new ListBox();
-            ServoBaudRate = new ListBox();
-            SelectedServoPort = new TextBox();
-            SelectedServoBR = new TextBox();
-            MoveAway = new CheckBox();
             btnConnect = new Button();
             ArmIP = new TextBox();
             MovePort = new TextBox();
@@ -97,16 +90,6 @@
             SpinCoater.SuspendLayout();
             AutoRun.SuspendLayout();
             SuspendLayout();
-            // 
-            // ServoConnection
-            // 
-            ServoConnection.Location = new Point(123, 201);
-            ServoConnection.Margin = new Padding(2, 3, 2, 3);
-            ServoConnection.Name = "ServoConnection";
-            ServoConnection.ReadOnly = true;
-            ServoConnection.Size = new Size(74, 23);
-            ServoConnection.TabIndex = 27;
-            ServoConnection.Text = "closed";
             // 
             // MotorPorts
             // 
@@ -189,69 +172,6 @@
             Response.ReadOnly = true;
             Response.Size = new Size(421, 23);
             Response.TabIndex = 17;
-            // 
-            // ServoSerialSwitch
-            // 
-            ServoSerialSwitch.Location = new Point(9, 200);
-            ServoSerialSwitch.Margin = new Padding(2, 3, 2, 3);
-            ServoSerialSwitch.Name = "ServoSerialSwitch";
-            ServoSerialSwitch.Size = new Size(110, 25);
-            ServoSerialSwitch.TabIndex = 26;
-            ServoSerialSwitch.Text = "Connect Servo";
-            ServoSerialSwitch.UseVisualStyleBackColor = true;
-            ServoSerialSwitch.Click += ServoSerialSwitch_Click;
-            // 
-            // ServoPorts
-            // 
-            ServoPorts.FormattingEnabled = true;
-            ServoPorts.ItemHeight = 17;
-            ServoPorts.Location = new Point(9, 258);
-            ServoPorts.Margin = new Padding(2, 3, 2, 3);
-            ServoPorts.Name = "ServoPorts";
-            ServoPorts.Size = new Size(96, 55);
-            ServoPorts.TabIndex = 28;
-            ServoPorts.SelectedIndexChanged += ServoPorts_SelectedIndexChanged;
-            // 
-            // ServoBaudRate
-            // 
-            ServoBaudRate.FormattingEnabled = true;
-            ServoBaudRate.ItemHeight = 17;
-            ServoBaudRate.Location = new Point(123, 258);
-            ServoBaudRate.Margin = new Padding(2, 3, 2, 3);
-            ServoBaudRate.Name = "ServoBaudRate";
-            ServoBaudRate.Size = new Size(98, 55);
-            ServoBaudRate.TabIndex = 29;
-            ServoBaudRate.SelectedIndexChanged += ServoBaudRate_SelectedIndexChanged;
-            // 
-            // SelectedServoPort
-            // 
-            SelectedServoPort.Location = new Point(9, 229);
-            SelectedServoPort.Margin = new Padding(2, 3, 2, 3);
-            SelectedServoPort.Name = "SelectedServoPort";
-            SelectedServoPort.ReadOnly = true;
-            SelectedServoPort.Size = new Size(98, 23);
-            SelectedServoPort.TabIndex = 30;
-            // 
-            // SelectedServoBR
-            // 
-            SelectedServoBR.Location = new Point(123, 229);
-            SelectedServoBR.Margin = new Padding(2, 3, 2, 3);
-            SelectedServoBR.Name = "SelectedServoBR";
-            SelectedServoBR.ReadOnly = true;
-            SelectedServoBR.Size = new Size(98, 23);
-            SelectedServoBR.TabIndex = 31;
-            // 
-            // MoveAway
-            // 
-            MoveAway.AutoSize = true;
-            MoveAway.Location = new Point(201, 204);
-            MoveAway.Margin = new Padding(2, 3, 2, 3);
-            MoveAway.Name = "MoveAway";
-            MoveAway.Size = new Size(92, 21);
-            MoveAway.TabIndex = 32;
-            MoveAway.Text = "move away";
-            MoveAway.UseVisualStyleBackColor = true;
-            MoveAway.CheckedChanged += MoveAway_CheckedChanged;
             // 
             // btnConnect
             // 
@@ -738,13 +658,6 @@
             Controls.Add(MovePort);
             Controls.Add(ArmIP);
             Controls.Add(btnConnect);
-            Controls.Add(MoveAway);
-            Controls.Add(SelectedServoBR);
-            Controls.Add(SelectedServoPort);
-            Controls.Add(ServoBaudRate);
-            Controls.Add(ServoPorts);
-            Controls.Add(ServoConnection);
-            Controls.Add(ServoSerialSwitch);
             Controls.Add(Response);
             Controls.Add(MotorConnection);
             Controls.Add(MotorSerialSwitch);
@@ -779,13 +692,6 @@
         private TextBox MotorConnection;
         private TextBox Response;
         private System.Windows.Forms.Timer SpinTimer;
-        private Button ServoSerialSwitch;
-        private TextBox ServoConnection;
-        private ListBox ServoPorts;
-        private ListBox ServoBaudRate;
-        private TextBox SelectedServoPort;
-        private TextBox SelectedServoBR;
-        private CheckBox MoveAway;
         private Button btnConnect;
         private TextBox ArmIP;
         private TextBox MovePort;
