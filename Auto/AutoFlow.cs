@@ -20,8 +20,6 @@ namespace WinFormsApp_Draft.Auto
         private AutoSpin autoSpin = new AutoSpin();
         private ExcelReader ExcelReader;
         private System.Timers.Timer flow_timer = new System.Timers.Timer();
-        //sheet_properties properties;
-        //Form1.mWorksheet
 
         private async Task EnableCoater(int round_num, IModbusMaster master)
         {

@@ -10,6 +10,7 @@ using CSharpTcpDemo.com.dobot.api;
 using CSharthiscpDemo.com.dobot.api;
 using WinFormsApp_Draft.Async;
 using WinFormsApp_Draft.Auto;
+using CSharpTcpDemo;
 
 
 namespace WinFormsApp_Draft
@@ -36,16 +37,20 @@ namespace WinFormsApp_Draft
         private Dashboard mDashboard = new Dashboard();
         private bool mIsManualDisconnect = false;
 
+        //subforms
+        private ArmForm armForm = new ArmForm();
+        private CoaterForm coaterForm = new CoaterForm();
+
         //auto declarations
         private ExcelReader mExcelReader = new ExcelReader();
         public static Workbook mWorkbook;
-        public static SharedStringTable mSharedStringTable; 
+        public static SharedStringTable mSharedStringTable;
         public static WorkbookPart mWorkbookPart;
         private static Sheet mSheet;
         public static Worksheet mWorksheet;
         public static List<string>? param_names;
         public static List<List<string>>? param_list;
-        
+
         public static sheet_properties properties;
         public struct sheet_properties
         {
@@ -59,15 +64,7 @@ namespace WinFormsApp_Draft
             InitializeComponent();
             DisableCoater();
             DisableDashboard();
-            DisableAuto();
-        }
-
-        private void Form1_Load(object sender, EventArgs e) { }
-
-        private void init_Click(object sender, EventArgs e)
-        {
-            Controls.Clear();
-            InitializeComponent();
+            //DisableAuto();
 
             string[] ports = SerialPort.GetPortNames();
             foreach (string port in ports)
@@ -101,10 +98,11 @@ namespace WinFormsApp_Draft
             FilePath.Text = "C:\\Users\\DELL\\Desktop\\test.xlsx";
             SheetName.Text = "Sheet1";
 
-            DisableCoater();
-            DisableDashboard();
-            //DisableAuto();
+            armForm.TopLevel = false;
+            coaterForm.TopLevel = false;
         }
+
+        private void Form1_Load(object sender, EventArgs e) { }
 
         private void MotorPorts_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -668,12 +666,12 @@ namespace WinFormsApp_Draft
                         }
                     }
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     Response.Text = ex.Message;
                 }
             }
-            else 
+            else
             {
                 if (arm_connect_state)
                 {
@@ -682,10 +680,70 @@ namespace WinFormsApp_Draft
                 if (coater_connect_state)
                 {
                     EnableCoater();
-                } 
+                }
                 Response.Clear();
                 ShowData.Clear();
             }
+        }
+
+        //Robot Arm Window Functions
+        private void OpenArmForm_Click(object sender, EventArgs e)
+        {
+            if (ControlPanel.Controls.Contains(armForm))
+            {
+                armForm.BringToFront();
+            }
+            else
+            {
+                armForm.FormBorderStyle = FormBorderStyle.None;
+                SetWindowSize(armForm);
+                ControlPanel.Controls.Add(armForm);
+                armForm.Show();
+                armForm.BringToFront();
+            }
+        }
+
+        private void OpenCoaterForm_Click(object sender, EventArgs e)
+        {
+            if (ControlPanel.Controls.Contains(coaterForm))
+            {
+                coaterForm.BringToFront();
+            }
+            else
+            {
+                coaterForm.FormBorderStyle = FormBorderStyle.None;
+                SetWindowSize(coaterForm);  
+                ControlPanel.Controls.Add(coaterForm);
+                coaterForm.Show();
+                coaterForm.BringToFront();
+            }
+        }
+
+        private void SetWindowSize(Form form)
+        {
+            double x = this.ControlPanel.Width / Convert.ToSingle(form.Width);
+            double y = this.ControlPanel.Height / Convert.ToSingle(form.Height);
+            if(form.Controls.Count > 0) {
+                foreach (System.Windows.Forms.Control control in form.Controls)
+                {
+                    if (control.Controls.Count > 0)
+                    {
+                        foreach (System.Windows.Forms.Control c in control.Controls)
+                        {
+                            c.Width = Convert.ToInt32(c.Width * x);
+                            c.Height = Convert.ToInt32(c.Height * y);
+                            c.Left = Convert.ToInt32(c.Left * x);
+                            c.Top = Convert.ToInt32(c.Top * y);
+                        }
+                    }
+                    control.Width = Convert.ToInt32(control.Width * x);
+                    control.Height = Convert.ToInt32(control.Height * y);
+                    control.Left = Convert.ToInt32(control.Left * x);
+                    control.Top = Convert.ToInt32(control.Top * y);
+                }
+            }
+            form.Width = Convert.ToInt32(form.Width * x);
+            form.Height = Convert.ToInt32(form.Height * y);
         }
     }
 }

@@ -33,7 +33,6 @@
             SelectedMotorPort = new TextBox();
             MotorBaudRate = new ListBox();
             SelectedMotorBR = new TextBox();
-            init = new Button();
             MotorSerialSwitch = new Button();
             MotorConnection = new TextBox();
             Response = new TextBox();
@@ -87,6 +86,8 @@
             SheetName = new TextBox();
             ShowData = new RichTextBox();
             ControlPanel = new Panel();
+            OpenArmForm = new Button();
+            OpenCoaterForm = new Button();
             Dashboard.SuspendLayout();
             SpinCoater.SuspendLayout();
             AutoRun.SuspendLayout();
@@ -132,20 +133,9 @@
             SelectedMotorBR.Size = new Size(98, 23);
             SelectedMotorBR.TabIndex = 3;
             // 
-            // init
-            // 
-            init.Location = new Point(9, 10);
-            init.Margin = new Padding(2, 3, 2, 3);
-            init.Name = "init";
-            init.Size = new Size(73, 25);
-            init.TabIndex = 5;
-            init.Text = "init";
-            init.UseVisualStyleBackColor = true;
-            init.Click += init_Click;
-            // 
             // MotorSerialSwitch
             // 
-            MotorSerialSwitch.Location = new Point(87, 10);
+            MotorSerialSwitch.Location = new Point(9, 10);
             MotorSerialSwitch.Margin = new Padding(2, 3, 2, 3);
             MotorSerialSwitch.Name = "MotorSerialSwitch";
             MotorSerialSwitch.Size = new Size(110, 25);
@@ -157,7 +147,7 @@
             // MotorConnection
             // 
             MotorConnection.AccessibleRole = AccessibleRole.WhiteSpace;
-            MotorConnection.Location = new Point(201, 11);
+            MotorConnection.Location = new Point(128, 11);
             MotorConnection.Margin = new Padding(2, 3, 2, 3);
             MotorConnection.Name = "MotorConnection";
             MotorConnection.ReadOnly = true;
@@ -642,16 +632,38 @@
             // ControlPanel
             // 
             ControlPanel.BackColor = SystemColors.AppWorkspace;
-            ControlPanel.Location = new Point(977, 45);
+            ControlPanel.Location = new Point(870, 45);
             ControlPanel.Name = "ControlPanel";
-            ControlPanel.Size = new Size(468, 505);
+            ControlPanel.Size = new Size(575, 689);
             ControlPanel.TabIndex = 50;
+            // 
+            // OpenArmForm
+            // 
+            OpenArmForm.Location = new Point(977, 10);
+            OpenArmForm.Name = "OpenArmForm";
+            OpenArmForm.Size = new Size(75, 23);
+            OpenArmForm.TabIndex = 51;
+            OpenArmForm.Text = "arm";
+            OpenArmForm.UseVisualStyleBackColor = true;
+            OpenArmForm.Click += OpenArmForm_Click;
+            // 
+            // OpenCoaterForm
+            // 
+            OpenCoaterForm.Location = new Point(1058, 10);
+            OpenCoaterForm.Name = "OpenCoaterForm";
+            OpenCoaterForm.Size = new Size(75, 23);
+            OpenCoaterForm.TabIndex = 52;
+            OpenCoaterForm.Text = "coater";
+            OpenCoaterForm.UseVisualStyleBackColor = true;
+            OpenCoaterForm.Click += OpenCoaterForm_Click;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1476, 584);
+            ClientSize = new Size(1476, 758);
+            Controls.Add(OpenCoaterForm);
+            Controls.Add(OpenArmForm);
             Controls.Add(ControlPanel);
             Controls.Add(AutoRun);
             Controls.Add(SpinCoater);
@@ -671,7 +683,6 @@
             Controls.Add(Response);
             Controls.Add(MotorConnection);
             Controls.Add(MotorSerialSwitch);
-            Controls.Add(init);
             Controls.Add(SelectedMotorBR);
             Controls.Add(MotorBaudRate);
             Controls.Add(SelectedMotorPort);
@@ -697,7 +708,6 @@
         private TextBox SelectedMotorPort;
         private ListBox MotorBaudRate;
         private TextBox SelectedMotorBR;
-        private Button init;
         private Button MotorSerialSwitch;
         private TextBox MotorConnection;
         private TextBox Response;
@@ -751,5 +761,7 @@
         private RichTextBox ShowData;
         private TextBox SheetName;
         private Panel ControlPanel;
+        private Button OpenArmForm;
+        private Button OpenCoaterForm;
     }
 }

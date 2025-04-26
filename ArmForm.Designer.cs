@@ -45,8 +45,8 @@
             btnDOInput = new Button();
             btnSpeedConfirm = new Button();
             btnClearError = new Button();
-            btnResetRobot = new Button();
             btnEnableAgain = new Button();
+            btnResetRobot = new Button();
             btnEnable = new Button();
             label5 = new Label();
             label19 = new Label();
@@ -108,48 +108,48 @@
             // 
             // textBoxIP
             // 
-            textBoxIP.Location = new Point(101, 17);
+            textBoxIP.Location = new Point(125, 17);
             textBoxIP.Margin = new Padding(4);
             textBoxIP.Name = "textBoxIP";
-            textBoxIP.Size = new Size(152, 23);
+            textBoxIP.Size = new Size(124, 23);
             textBoxIP.TabIndex = 1;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(286, 23);
+            label2.Location = new Point(249, 20);
             label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
-            label2.Size = new Size(104, 17);
+            label2.Size = new Size(76, 17);
             label2.TabIndex = 2;
-            label2.Text = "Dashboard Port:";
+            label2.Text = "Dashboard:";
             label2.TextAlign = ContentAlignment.MiddleRight;
             // 
             // textBoxDashboardPort
             // 
-            textBoxDashboardPort.Location = new Point(398, 20);
+            textBoxDashboardPort.Location = new Point(342, 17);
             textBoxDashboardPort.Margin = new Padding(4);
             textBoxDashboardPort.Name = "textBoxDashboardPort";
-            textBoxDashboardPort.Size = new Size(63, 23);
+            textBoxDashboardPort.Size = new Size(75, 23);
             textBoxDashboardPort.TabIndex = 3;
             // 
             // textBoxMovePort
             // 
-            textBoxMovePort.Location = new Point(586, 23);
+            textBoxMovePort.Location = new Point(233, 56);
             textBoxMovePort.Margin = new Padding(4);
             textBoxMovePort.Name = "textBoxMovePort";
-            textBoxMovePort.Size = new Size(63, 23);
+            textBoxMovePort.Size = new Size(74, 23);
             textBoxMovePort.TabIndex = 5;
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(506, 26);
+            label3.Location = new Point(172, 59);
             label3.Margin = new Padding(4, 0, 4, 0);
             label3.Name = "label3";
-            label3.Size = new Size(72, 17);
+            label3.Size = new Size(44, 17);
             label3.TabIndex = 4;
-            label3.Text = "Move Port:";
+            label3.Text = "Move:";
             label3.TextAlign = ContentAlignment.MiddleRight;
             // 
             // label4
@@ -158,22 +158,22 @@
             label4.Location = new Point(14, 59);
             label4.Margin = new Padding(4, 0, 4, 0);
             label4.Name = "label4";
-            label4.Size = new Size(95, 17);
+            label4.Size = new Size(67, 17);
             label4.TabIndex = 4;
-            label4.Text = "Feedback Port:";
+            label4.Text = "Feedback:";
             label4.TextAlign = ContentAlignment.MiddleRight;
             // 
             // textBoxFeedbackPort
             // 
-            textBoxFeedbackPort.Location = new Point(117, 59);
+            textBoxFeedbackPort.Location = new Point(100, 56);
             textBoxFeedbackPort.Margin = new Padding(4);
             textBoxFeedbackPort.Name = "textBoxFeedbackPort";
-            textBoxFeedbackPort.Size = new Size(74, 23);
+            textBoxFeedbackPort.Size = new Size(71, 23);
             textBoxFeedbackPort.TabIndex = 5;
             // 
             // btnConnect
             // 
-            btnConnect.Location = new Point(276, 54);
+            btnConnect.Location = new Point(342, 51);
             btnConnect.Margin = new Padding(4);
             btnConnect.Name = "btnConnect";
             btnConnect.Size = new Size(139, 33);
@@ -188,19 +188,19 @@
             groupBoxConnect.Controls.Add(btnConnect);
             groupBoxConnect.Controls.Add(textBoxIP);
             groupBoxConnect.Controls.Add(textBoxFeedbackPort);
-            groupBoxConnect.Controls.Add(label2);
             groupBoxConnect.Controls.Add(label4);
             groupBoxConnect.Controls.Add(textBoxMovePort);
             groupBoxConnect.Controls.Add(textBoxDashboardPort);
+            groupBoxConnect.Controls.Add(label2);
             groupBoxConnect.Controls.Add(label3);
             groupBoxConnect.Location = new Point(14, 13);
             groupBoxConnect.Margin = new Padding(4);
             groupBoxConnect.Name = "groupBoxConnect";
             groupBoxConnect.Padding = new Padding(4);
-            groupBoxConnect.Size = new Size(760, 101);
+            groupBoxConnect.Size = new Size(549, 101);
             groupBoxConnect.TabIndex = 7;
             groupBoxConnect.TabStop = false;
-            groupBoxConnect.Text = "Robot Connect";
+            groupBoxConnect.Text = "Robot Connect Ports";
             // 
             // groupBox2
             // 
@@ -210,8 +210,8 @@
             groupBox2.Controls.Add(btnDOInput);
             groupBox2.Controls.Add(btnSpeedConfirm);
             groupBox2.Controls.Add(btnClearError);
-            groupBox2.Controls.Add(btnResetRobot);
             groupBox2.Controls.Add(btnEnableAgain);
+            groupBox2.Controls.Add(btnResetRobot);
             groupBox2.Controls.Add(btnEnable);
             groupBox2.Controls.Add(label5);
             groupBox2.Controls.Add(label19);
@@ -222,7 +222,7 @@
             groupBox2.Margin = new Padding(4);
             groupBox2.Name = "groupBox2";
             groupBox2.Padding = new Padding(4);
-            groupBox2.Size = new Size(760, 156);
+            groupBox2.Size = new Size(680, 156);
             groupBox2.TabIndex = 8;
             groupBox2.TabStop = false;
             groupBox2.Text = "Dashboard Function";
@@ -232,7 +232,7 @@
             cboStatus.DropDownStyle = ComboBoxStyle.DropDownList;
             cboStatus.FormattingEnabled = true;
             cboStatus.Items.AddRange(new object[] { "On", "Off" });
-            cboStatus.Location = new Point(348, 96);
+            cboStatus.Location = new Point(179, 105);
             cboStatus.Margin = new Padding(4);
             cboStatus.Name = "cboStatus";
             cboStatus.Size = new Size(67, 25);
@@ -240,16 +240,16 @@
             // 
             // textBoxSpeedRatio
             // 
-            textBoxSpeedRatio.Location = new Point(564, 42);
+            textBoxSpeedRatio.Location = new Point(436, 46);
             textBoxSpeedRatio.Margin = new Padding(4);
             textBoxSpeedRatio.Name = "textBoxSpeedRatio";
-            textBoxSpeedRatio.Size = new Size(66, 23);
+            textBoxSpeedRatio.Size = new Size(48, 23);
             textBoxSpeedRatio.TabIndex = 6;
             // 
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(637, 48);
+            label6.Location = new Point(492, 51);
             label6.Margin = new Padding(4, 0, 4, 0);
             label6.Name = "label6";
             label6.Size = new Size(19, 17);
@@ -258,7 +258,7 @@
             // 
             // btnDOInput
             // 
-            btnDOInput.Location = new Point(422, 95);
+            btnDOInput.Location = new Point(257, 102);
             btnDOInput.Margin = new Padding(4);
             btnDOInput.Name = "btnDOInput";
             btnDOInput.Size = new Size(88, 33);
@@ -269,7 +269,7 @@
             // 
             // btnSpeedConfirm
             // 
-            btnSpeedConfirm.Location = new Point(657, 40);
+            btnSpeedConfirm.Location = new Point(519, 43);
             btnSpeedConfirm.Margin = new Padding(4);
             btnSpeedConfirm.Name = "btnSpeedConfirm";
             btnSpeedConfirm.Size = new Size(88, 33);
@@ -280,7 +280,7 @@
             // 
             // btnClearError
             // 
-            btnClearError.Location = new Point(316, 41);
+            btnClearError.Location = new Point(277, 41);
             btnClearError.Margin = new Padding(4);
             btnClearError.Name = "btnClearError";
             btnClearError.Size = new Size(126, 33);
@@ -289,20 +289,9 @@
             btnClearError.UseVisualStyleBackColor = true;
             btnClearError.Click += btnClearError_Click;
             // 
-            // btnResetRobot
-            // 
-            btnResetRobot.Location = new Point(168, 41);
-            btnResetRobot.Margin = new Padding(4);
-            btnResetRobot.Name = "btnResetRobot";
-            btnResetRobot.Size = new Size(122, 33);
-            btnResetRobot.TabIndex = 0;
-            btnResetRobot.Text = "Reset Robot";
-            btnResetRobot.UseVisualStyleBackColor = true;
-            btnResetRobot.Click += btnResetRobot_Click;
-            // 
             // btnEnableAgain
             // 
-            btnEnableAgain.Location = new Point(564, 94);
+            btnEnableAgain.Location = new Point(353, 102);
             btnEnableAgain.Margin = new Padding(4);
             btnEnableAgain.Name = "btnEnableAgain";
             btnEnableAgain.Size = new Size(122, 33);
@@ -310,6 +299,17 @@
             btnEnableAgain.Text = "Enable-Again";
             btnEnableAgain.UseVisualStyleBackColor = true;
             btnEnableAgain.Click += btnEnableAgain_Click;
+            // 
+            // btnResetRobot
+            // 
+            btnResetRobot.Location = new Point(147, 41);
+            btnResetRobot.Margin = new Padding(4);
+            btnResetRobot.Name = "btnResetRobot";
+            btnResetRobot.Size = new Size(122, 33);
+            btnResetRobot.TabIndex = 0;
+            btnResetRobot.Text = "Reset Robot";
+            btnResetRobot.UseVisualStyleBackColor = true;
+            btnResetRobot.Click += btnResetRobot_Click;
             // 
             // btnEnable
             // 
@@ -325,7 +325,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(467, 48);
+            label5.Location = new Point(419, 20);
             label5.Margin = new Padding(4, 0, 4, 0);
             label5.Name = "label5";
             label5.Size = new Size(82, 17);
@@ -336,7 +336,7 @@
             // label19
             // 
             label19.AutoSize = true;
-            label19.Location = new Point(26, 102);
+            label19.Location = new Point(8, 78);
             label19.Margin = new Padding(4, 0, 4, 0);
             label19.Name = "label19";
             label19.Size = new Size(98, 17);
@@ -347,7 +347,7 @@
             // label20
             // 
             label20.AutoSize = true;
-            label20.Location = new Point(159, 102);
+            label20.Location = new Point(14, 110);
             label20.Margin = new Padding(4, 0, 4, 0);
             label20.Name = "label20";
             label20.Size = new Size(43, 17);
@@ -358,7 +358,7 @@
             // label21
             // 
             label21.AutoSize = true;
-            label21.Location = new Point(286, 102);
+            label21.Location = new Point(125, 110);
             label21.Margin = new Padding(4, 0, 4, 0);
             label21.Name = "label21";
             label21.Size = new Size(46, 17);
@@ -368,7 +368,7 @@
             // 
             // textBoxIdx
             // 
-            textBoxIdx.Location = new Point(214, 96);
+            textBoxIdx.Location = new Point(65, 105);
             textBoxIdx.Margin = new Padding(4);
             textBoxIdx.Name = "textBoxIdx";
             textBoxIdx.Size = new Size(59, 23);
@@ -399,14 +399,14 @@
             groupBox4.Margin = new Padding(4);
             groupBox4.Name = "groupBox4";
             groupBox4.Padding = new Padding(4);
-            groupBox4.Size = new Size(760, 129);
+            groupBox4.Size = new Size(714, 129);
             groupBox4.TabIndex = 8;
             groupBox4.TabStop = false;
             groupBox4.Text = "Move Function";
             // 
             // btnJointMovJ
             // 
-            btnJointMovJ.Location = new Point(566, 85);
+            btnJointMovJ.Location = new Point(501, 85);
             btnJointMovJ.Margin = new Padding(4);
             btnJointMovJ.Name = "btnJointMovJ";
             btnJointMovJ.Size = new Size(88, 33);
@@ -417,7 +417,7 @@
             // 
             // btnMovL
             // 
-            btnMovL.Location = new Point(660, 35);
+            btnMovL.Location = new Point(602, 35);
             btnMovL.Margin = new Padding(4);
             btnMovL.Name = "btnMovL";
             btnMovL.Size = new Size(88, 33);
@@ -428,7 +428,7 @@
             // 
             // btnMovJ
             // 
-            btnMovJ.Location = new Point(566, 35);
+            btnMovJ.Location = new Point(501, 35);
             btnMovJ.Margin = new Padding(4);
             btnMovJ.Name = "btnMovJ";
             btnMovJ.Size = new Size(88, 33);
@@ -439,7 +439,7 @@
             // 
             // textBoxJ4
             // 
-            textBoxJ4.Location = new Point(456, 88);
+            textBoxJ4.Location = new Point(398, 90);
             textBoxJ4.Margin = new Padding(4);
             textBoxJ4.Name = "textBoxJ4";
             textBoxJ4.Size = new Size(83, 23);
@@ -447,7 +447,7 @@
             // 
             // textBoxRx
             // 
-            textBoxRx.Location = new Point(456, 35);
+            textBoxRx.Location = new Point(398, 38);
             textBoxRx.Margin = new Padding(4);
             textBoxRx.Name = "textBoxRx";
             textBoxRx.Size = new Size(83, 23);
@@ -455,7 +455,7 @@
             // 
             // textBoxJ3
             // 
-            textBoxJ3.Location = new Point(322, 88);
+            textBoxJ3.Location = new Point(277, 91);
             textBoxJ3.Margin = new Padding(4);
             textBoxJ3.Name = "textBoxJ3";
             textBoxJ3.Size = new Size(83, 23);
@@ -463,7 +463,7 @@
             // 
             // textBoxZ
             // 
-            textBoxZ.Location = new Point(322, 35);
+            textBoxZ.Location = new Point(277, 38);
             textBoxZ.Margin = new Padding(4);
             textBoxZ.Name = "textBoxZ";
             textBoxZ.Size = new Size(83, 23);
@@ -471,7 +471,7 @@
             // 
             // textBoxJ2
             // 
-            textBoxJ2.Location = new Point(174, 88);
+            textBoxJ2.Location = new Point(159, 90);
             textBoxJ2.Margin = new Padding(4);
             textBoxJ2.Name = "textBoxJ2";
             textBoxJ2.Size = new Size(83, 23);
@@ -479,7 +479,7 @@
             // 
             // textBoxY
             // 
-            textBoxY.Location = new Point(174, 35);
+            textBoxY.Location = new Point(158, 38);
             textBoxY.Margin = new Padding(4);
             textBoxY.Name = "textBoxY";
             textBoxY.Size = new Size(83, 23);
@@ -487,7 +487,7 @@
             // 
             // textBoxJ1
             // 
-            textBoxJ1.Location = new Point(41, 88);
+            textBoxJ1.Location = new Point(41, 90);
             textBoxJ1.Margin = new Padding(4);
             textBoxJ1.Name = "textBoxJ1";
             textBoxJ1.Size = new Size(83, 23);
@@ -495,7 +495,7 @@
             // 
             // textBoxX
             // 
-            textBoxX.Location = new Point(41, 35);
+            textBoxX.Location = new Point(41, 38);
             textBoxX.Margin = new Padding(4);
             textBoxX.Name = "textBoxX";
             textBoxX.Size = new Size(83, 23);
@@ -504,7 +504,7 @@
             // label16
             // 
             label16.AutoSize = true;
-            label16.Location = new Point(429, 94);
+            label16.Location = new Point(373, 94);
             label16.Margin = new Padding(4, 0, 4, 0);
             label16.Name = "label16";
             label16.Size = new Size(23, 17);
@@ -515,7 +515,7 @@
             // label10
             // 
             label10.AutoSize = true;
-            label10.Location = new Point(429, 41);
+            label10.Location = new Point(373, 41);
             label10.Margin = new Padding(4, 0, 4, 0);
             label10.Name = "label10";
             label10.Size = new Size(19, 17);
@@ -526,7 +526,7 @@
             // label15
             // 
             label15.AutoSize = true;
-            label15.Location = new Point(295, 94);
+            label15.Location = new Point(249, 94);
             label15.Margin = new Padding(4, 0, 4, 0);
             label15.Name = "label15";
             label15.Size = new Size(23, 17);
@@ -537,7 +537,7 @@
             // label9
             // 
             label9.AutoSize = true;
-            label9.Location = new Point(295, 41);
+            label9.Location = new Point(254, 41);
             label9.Margin = new Padding(4, 0, 4, 0);
             label9.Name = "label9";
             label9.Size = new Size(18, 17);
@@ -548,7 +548,7 @@
             // label14
             // 
             label14.AutoSize = true;
-            label14.Location = new Point(147, 94);
+            label14.Location = new Point(132, 94);
             label14.Margin = new Padding(4, 0, 4, 0);
             label14.Name = "label14";
             label14.Size = new Size(23, 17);
@@ -570,7 +570,7 @@
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new Point(147, 41);
+            label8.Location = new Point(132, 41);
             label8.Margin = new Padding(4, 0, 4, 0);
             label8.Name = "label8";
             label8.Size = new Size(18, 17);
@@ -756,7 +756,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(815, 866);
+            ClientSize = new Size(741, 866);
             Controls.Add(groupBoxLog);
             Controls.Add(groupBox4);
             Controls.Add(groupBox2);
@@ -781,7 +781,6 @@
             groupBox1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
-
         }
 
         #endregion
