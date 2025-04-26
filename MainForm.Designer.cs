@@ -86,6 +86,7 @@
             AutoRun = new GroupBox();
             SheetName = new TextBox();
             ShowData = new RichTextBox();
+            ControlPanel = new Panel();
             Dashboard.SuspendLayout();
             SpinCoater.SuspendLayout();
             AutoRun.SuspendLayout();
@@ -638,11 +639,20 @@
             ShowData.TabIndex = 49;
             ShowData.Text = "";
             // 
-            // Form1
+            // ControlPanel
+            // 
+            ControlPanel.BackColor = SystemColors.AppWorkspace;
+            ControlPanel.Location = new Point(977, 45);
+            ControlPanel.Name = "ControlPanel";
+            ControlPanel.Size = new Size(468, 505);
+            ControlPanel.TabIndex = 50;
+            // 
+            // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(877, 584);
+            ClientSize = new Size(1476, 584);
+            Controls.Add(ControlPanel);
             Controls.Add(AutoRun);
             Controls.Add(SpinCoater);
             Controls.Add(ResetArm);
@@ -667,7 +677,7 @@
             Controls.Add(SelectedMotorPort);
             Controls.Add(MotorPorts);
             Margin = new Padding(2, 3, 2, 3);
-            Name = "Form1";
+            Name = "MainForm";
             Text = "Form1";
             FormClosed += MainForm_FormClosed;
             Load += Form1_Load;
@@ -740,5 +750,6 @@
         private GroupBox AutoRun;
         private RichTextBox ShowData;
         private TextBox SheetName;
+        private Panel ControlPanel;
     }
 }

@@ -767,8 +767,8 @@
             Margin = new Padding(4);
             MaximizeBox = false;
             Name = "ArmForm";
-            Text = "MainForm";
-            FormClosed += MainForm_FormClosed;
+            Text = "ArmForm";
+            FormClosed += ArmForm_FormClosed;
             Load += ArmForm_Load;
             groupBoxConnect.ResumeLayout(false);
             groupBoxConnect.PerformLayout();

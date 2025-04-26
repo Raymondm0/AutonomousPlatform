@@ -48,7 +48,7 @@ namespace CSharpTcpDemo
 
         private void ArmForm_Load(object sender, EventArgs e) { }
 
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void ArmForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             mTimerReader.Close();
             if (this.mFeedback != null)
