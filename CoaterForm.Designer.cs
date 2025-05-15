@@ -49,6 +49,7 @@
             MotorBaudRate = new ListBox();
             SelectedMotorPort = new TextBox();
             MotorPorts = new ListBox();
+            Response = new TextBox();
             SpinCoater.SuspendLayout();
             SuspendLayout();
             // 
@@ -102,6 +103,7 @@
             SendRequest.TabIndex = 9;
             SendRequest.Text = "send";
             SendRequest.UseVisualStyleBackColor = true;
+            SendRequest.Click += SendRequest_Click;
             // 
             // ForceStop
             // 
@@ -112,6 +114,7 @@
             ForceStop.TabIndex = 11;
             ForceStop.Text = "force stop";
             ForceStop.UseVisualStyleBackColor = true;
+            ForceStop.Click += ForceStop_Click;
             // 
             // FreeStop
             // 
@@ -122,6 +125,7 @@
             FreeStop.TabIndex = 12;
             FreeStop.Text = "free stop";
             FreeStop.UseVisualStyleBackColor = true;
+            FreeStop.Click += FreeStop_Click;
             // 
             // AccSpeed
             // 
@@ -169,6 +173,7 @@
             ClearPos.Text = "clear";
             ClearPos.TextImageRelation = TextImageRelation.ImageAboveText;
             ClearPos.UseVisualStyleBackColor = true;
+            ClearPos.Click += ClearPos_Click;
             // 
             // Update
             // 
@@ -180,6 +185,7 @@
             Update.TabIndex = 16;
             Update.Text = "update";
             Update.UseVisualStyleBackColor = true;
+            Update.CheckedChanged += Update_CheckedChanged;
             // 
             // Position
             // 
@@ -209,6 +215,7 @@
             ResetMotor.TabIndex = 18;
             ResetMotor.Text = "reset motor";
             ResetMotor.UseVisualStyleBackColor = true;
+            ResetMotor.Click += ResetMotor_Click;
             // 
             // MotorConnection
             // 
@@ -230,6 +237,7 @@
             MotorSerialSwitch.TabIndex = 51;
             MotorSerialSwitch.Text = "Connect Motor";
             MotorSerialSwitch.UseVisualStyleBackColor = true;
+            MotorSerialSwitch.Click += MotorSerialSwitch_Click;
             // 
             // SelectedMotorBR
             // 
@@ -249,6 +257,7 @@
             MotorBaudRate.Name = "MotorBaudRate";
             MotorBaudRate.Size = new Size(98, 55);
             MotorBaudRate.TabIndex = 49;
+            MotorBaudRate.SelectedIndexChanged += MotorBaudRate_SelectedIndexChanged;
             // 
             // SelectedMotorPort
             // 
@@ -268,12 +277,22 @@
             MotorPorts.Name = "MotorPorts";
             MotorPorts.Size = new Size(96, 55);
             MotorPorts.TabIndex = 47;
+            MotorPorts.SelectedIndexChanged += MotorPorts_SelectedIndexChanged;
+            // 
+            // Response
+            // 
+            Response.Location = new Point(66, 404);
+            Response.Name = "Response";
+            Response.ReadOnly = true;
+            Response.Size = new Size(350, 23);
+            Response.TabIndex = 54;
             // 
             // CoaterForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(521, 452);
+            Controls.Add(Response);
             Controls.Add(SpinCoater);
             Controls.Add(MotorConnection);
             Controls.Add(MotorSerialSwitch);
@@ -313,5 +332,6 @@
         private ListBox MotorBaudRate;
         private TextBox SelectedMotorPort;
         private ListBox MotorPorts;
+        private TextBox Response;
     }
 }

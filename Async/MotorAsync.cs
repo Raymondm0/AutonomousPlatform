@@ -142,8 +142,8 @@ namespace WinFormsApp_Draft.Async
                         ushort[] pos = master.ReadInputRegisters(slaveID, posAddress, 2);
                         int high = pos[0];
                         int low = pos[1];
-                        double pos_save = ((high << 16) + low) / 100 + 1;
-                        textBox.Text = Convert.ToString(pos_save);
+                        int cur_pos = ((high << 16) + low) / 100 + 1;
+                        textBox.Text = Convert.ToString(cur_pos);
                     });
                     await Task.Delay(10);    
                 }

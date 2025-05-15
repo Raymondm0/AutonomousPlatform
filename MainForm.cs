@@ -27,19 +27,11 @@ namespace WinFormsApp_Draft
         private System.Timers.Timer spin_timer = new System.Timers.Timer();
         private CancellationTokenSource cancellationTokenSource_pos;
         private CancellationTokenSource cancellationTokenSource_beat;
-        public static bool coater_connect_state = false;
-
-        //arm declarations
-        private System.Timers.Timer mTimerReader = new System.Timers.Timer(300);
-        private static bool arm_connect_state = false;
-        private DobotMove mDobotMove = new DobotMove();
-        private Feedback mFeedback = new Feedback();
-        private Dashboard mDashboard = new Dashboard();
-        private bool mIsManualDisconnect = false;
 
         //subforms
         private ArmForm armForm = new ArmForm();
         private CoaterForm coaterForm = new CoaterForm();
+        private DispenserForm dispenserForm = new DispenserForm();
 
         //auto declarations
         private ExcelReader mExcelReader = new ExcelReader();
@@ -58,38 +50,11 @@ namespace WinFormsApp_Draft
             public int rounds { get; set; }
         }
 
-
         public MainForm()
         {
             InitializeComponent();
-            DisableCoater();
-            //DisableDashboard();
-            //DisableAuto();
-
-            string[] ports = SerialPort.GetPortNames();
-            foreach (string port in ports)
-            {
-                MotorPorts.Items.Add(port);
-            }
-            MotorPorts.SelectedIndex = 0;
-
-            MotorBaudRate.Items.Add("9600");
-            MotorBaudRate.Items.Add("19200");
-            MotorBaudRate.Items.Add("38400");
-            MotorBaudRate.Items.Add("115200");
-            MotorBaudRate.SelectedIndex = 0;
-
-            //ArmIP.Text = "192.168.1.6";
-            //DashboardPort.Text = "29999";
-            //MovePort.Text = "30003";
-            //FeedbackPort.Text = "30004";
-
-            //mFeedback.NetworkErrorEvent += new DobotClient.OnNetworkError(this.OnNetworkErrorEvent_Feedback);
-            //mDobotMove.NetworkErrorEvent += new DobotClient.OnNetworkError(this.OnNetworkErrorEvent_DobotMove);
-            //mDashboard.NetworkErrorEvent += new DobotClient.OnNetworkError(this.OnNetworkErrorEvent_Dashboard);
-
-            //mTimerReader.Elapsed += new System.Timers.ElapsedEventHandler(TimeoutEvent);
-            //mTimerReader.AutoReset = true;
+            coaterForm.DisableCoater();
+            DisableAuto();
 
             string strPath = System.Windows.Forms.Application.StartupPath + "\\";
             ErrorInfoHelper.ParseControllerJsonFile(strPath + "alarm_controller.json");
@@ -100,43 +65,12 @@ namespace WinFormsApp_Draft
 
             armForm.TopLevel = false;
             coaterForm.TopLevel = false;
+            dispenserForm.TopLevel = false; 
         }
 
         private void Form1_Load(object sender, EventArgs e) { }
 
-        private void MotorPorts_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SelectedMotorPort.Text = MotorPorts.SelectedItem.ToString();
-        }
-
-        private void MotorBaudRate_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SelectedMotorBR.Text = MotorBaudRate.SelectedItem.ToString();
-        }
-
-        private void EnableCoater()
-        {
-            foreach (System.Windows.Forms.Control ctr in Controls)
-            {
-                if (ctr == SpinCoater)
-                {
-                    ctr.Enabled = true;
-                }
-            }
-        }
-
-        //private void EnableDashboard()
-        //{
-        //    foreach (System.Windows.Forms.Control ctr in Controls)
-        //    {
-        //        if (ctr == Dashboard)
-        //        {
-        //            ctr.Enabled = true;
-        //        }
-        //    }
-        //}
-
-        private void EnableAuto()
+        public void EnableAuto()
         {
             foreach (System.Windows.Forms.Control ctr in Controls)
             {
@@ -147,29 +81,7 @@ namespace WinFormsApp_Draft
             }
         }
 
-        private void DisableCoater()
-        {
-            foreach (System.Windows.Forms.Control ctr in Controls)
-            {
-                if (ctr == SpinCoater)
-                {
-                    ctr.Enabled = false;
-                }
-            }
-        }
-
-        //private void DisableDashboard()
-        //{
-        //    foreach (System.Windows.Forms.Control ctr in Controls)
-        //    {
-        //        if (ctr == Dashboard)
-        //        {
-        //            ctr.Enabled = false;
-        //        }
-        //    }
-        //}
-
-        private void DisableAuto()
+        public void DisableAuto()
         {
             foreach (System.Windows.Forms.Control ctr in Controls)
             {
@@ -179,463 +91,12 @@ namespace WinFormsApp_Draft
                 }
             }
         }
-
-        // Motor Functions
-        private async void MotorSerialSwitch_Click(object sender, EventArgs e)
-        {
-            if (SelectedMotorBR.Text != "" && SelectedMotorPort.Text != "" && motor_port.IsOpen == false)
-            {
-                motor_port.PortName = SelectedMotorPort.Text;
-                motor_port.BaudRate = Convert.ToInt32(SelectedMotorBR.Text);
-                motor_port.DataBits = 8;
-                motor_port.StopBits = StopBits.Two;
-                motor_port.Parity = Parity.None;
-                motor_port.WriteTimeout = 500;
-                motor_port.ReadTimeout = 500;
-
-                try
-                {
-                    Response.Clear();
-                    motor_port.Open();
-                    master = ModbusSerialMaster.CreateRtu(motor_port);
-                    MotorConnection.Text = "connecting..";
-
-
-                    cancellationTokenSource_beat = new CancellationTokenSource();
-                    await Task.Run(() => motorAsync.StartBeatAsync(master, cancellationTokenSource_beat.Token));
-
-                    if (motor_port.IsOpen)
-                    {
-                        EnableCoater();
-                        MotorSerialSwitch.Text = "Disconnect Motor";
-                        MotorConnection.Text = "opened";
-                        coater_connect_state = true;
-                        if (arm_connect_state)
-                        {
-                            EnableAuto();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Response.Text = ex.Message;
-                    motor_port.Close();
-                    MotorSerialSwitch.Text = "Open Serial";
-                    MotorConnection.Text = "closed";
-                    DisableAuto();
-                }
-            }
-            else
-            {
-                try
-                {
-                    Response.Clear();
-                    motor_port.Close();
-                    MotorSerialSwitch.Text = "Open Serial";
-                    MotorConnection.Text = "closed";
-                    if (cancellationTokenSource_beat != null)
-                    {
-                        cancellationTokenSource_beat?.Cancel();
-                    }
-                    DisableCoater();
-                    DisableAuto();
-                }
-                catch (Exception ex)
-                {
-                    Response.Text = ex.Message;
-                }
-            }
-        }
-
-        //如果AutoSpin的前3个方法能动的话，可写到MotorAsyc中
-        private async Task SendRequestAsync()
-        {
-            if (motor_port.IsOpen == true)
-            {
-                try
-                {
-                    byte slaveID = 0x01;
-                    ushort modeAddress = 0x1771;
-
-                    if (SpinSpeed.Text != "")
-                    {
-                        ushort speedAddress = 0x1773;
-                        int speed = Convert.ToInt32(SpinSpeed.Text);
-                        spin_speed = speed * 7;
-                        ushort high = (ushort)(spin_speed >> 16);
-                        ushort low = (ushort)spin_speed;
-                        ushort[] speed_erpm = { high, low };
-
-                        master.WriteMultipleRegisters(slaveID, speedAddress, speed_erpm);
-                    }
-
-                    if (SpinDuration.Text != "")
-                    {
-                        spin_timer.Elapsed += new ElapsedEventHandler(FreeStop_timer);
-                        spin_timer.Interval = Convert.ToInt32(SpinDuration.Text) * 1000;
-                        spin_timer.AutoReset = false;
-                        spin_timer.Start();
-                    }
-
-                    if (AccSpeed.Text != "")
-                    {
-                        ushort accAddress = 0x1780;
-                        int acc = Convert.ToInt32(AccSpeed.Text);
-                        acc = acc * 7;
-                        ushort high = (ushort)(acc >> 16);
-                        ushort low = (ushort)acc;
-                        ushort[] acc_erpm = { high, low };
-
-                        master.WriteMultipleRegisters(slaveID, accAddress, acc_erpm);
-                    }
-
-                    master.WriteSingleRegister(slaveID, modeAddress, 0x0001);
-                }
-
-                catch (Exception ex)
-                {
-                    Response.Text = ex.Message;
-                }
-            }
-        }
-
-        private async void SendRequest_Click(object sender, EventArgs e)
-        {
-            await Task.Run(() => SendRequestAsync());
-        }
-
-        private void FreeStop_timer(object sender, ElapsedEventArgs e)
-        {
-            byte slaveID = 0x01;
-            ushort stopAddress = 0x177E;
-            ushort modeAddress = 0x1771;
-            master.WriteSingleRegister(slaveID, stopAddress, 0x0000);
-            master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
-            spin_timer.Stop();
-
-            spin_speed = 0;
-        }
-
-        private async void FreeStop_Click(object sender, EventArgs e)
-        {
-            await Task.Run(() => motorAsync.FreeStopAsync(FreeStop, master));
-            spin_speed = 0;
-        }
-
-        private async void ForceStop_Click(object sender, EventArgs e)
-        {
-            await Task.Run(() => motorAsync.ForceStopAsync(ForceStop, master));
-            spin_speed = 0;
-        }
-
-        private async void UpdatePosition_CheckedChanged(object sender, EventArgs e)
-        {
-            if (Update.Checked)
-            {
-                cancellationTokenSource_pos = new CancellationTokenSource();
-                await Task.Run(() => motorAsync.UpdatePositionAsync(Update, Position, master, cancellationTokenSource_pos.Token));
-            }
-            else
-            {
-                cancellationTokenSource_pos?.Cancel();
-                Position.Clear();
-            }
-        }
-
-        private async void ClearPos_Click(object sender, EventArgs e)
-        {
-            Position.Clear();
-            await Task.Run(() => motorAsync.ClearPosAsync(ClearPos, master));
-        }
-
-        private async void ResetMotor_Click(object sender, EventArgs e)
-        {
-            await Task.Run(() => motorAsync.ResetMotorAsync(ResetMotor, master, spin_speed));
-            spin_speed = 0;
-        }
-
-        // Robot Arm Functions
-        //private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
-        //{
-        //    mTimerReader.Close();
-        //    if (mFeedback != null)
-        //    {
-        //        mFeedback.Disconnect();
-        //    }
-        //    if (mDobotMove != null)
-        //    {
-        //        mDobotMove.Disconnect();
-        //    }
-        //    if (mDashboard != null)
-        //    {
-        //        mDashboard.Disconnect();
-        //    }
-        //}
-
-        //private void TimeoutEvent(object sender, System.Timers.ElapsedEventArgs e)
-        //{
-        //    if (!mFeedback.DataHasRead)
-        //    {
-        //        return;
-        //    }
-        //    mFeedback.DataHasRead = false;
-        //    this.textBoxX.Invoke(new Action(() =>
-        //    {
-        //        ShowDataResult();
-        //    }));
-        //}
-
-        //private void DoNetworkErrorEvent(DobotClient sender, string strIp, int iPort)
-        //{
-        //    DisableDashboard();
-        //    Thread thd = new Thread(() =>
-        //    {
-        //        sender.Disconnect();
-
-        //        mTimerReader.Stop();
-
-        //        if (!sender.Connect(strIp, iPort))
-        //        {
-        //            Thread.Sleep(500);
-        //            DoNetworkErrorEvent(sender, strIp, iPort);
-        //            return;
-        //        }
-
-        //        mTimerReader.Start();
-
-        //        this.Invoke(new Action(() =>
-        //        {
-        //            EnableDashboard();
-        //            if (coater_connect_state)
-        //            {
-        //                EnableAuto();
-        //            }
-        //        }));
-        //    });
-        //    thd.Start();
-        //    arm_connect_state = true;
-        //}
-
-        //private void OnNetworkErrorEvent_Feedback(DobotClient sender, SocketError iErrCode)
-        //{
-        //    if (mIsManualDisconnect) return;
-        //    this.BeginInvoke(new Action(() =>
-        //    {
-        //        string strIp = ArmIP.Text;
-        //        int iPort = Parse2Int(this.FeedbackPort.Text);
-        //        DoNetworkErrorEvent(mFeedback, strIp, iPort);
-        //    }));
-        //}
-        //private void OnNetworkErrorEvent_DobotMove(DobotClient sender, SocketError iErrCode)
-        //{
-        //    if (mIsManualDisconnect) return;
-        //    this.BeginInvoke(new Action(() =>
-        //    {
-        //        string strIp = ArmIP.Text;
-        //        int iPort = Parse2Int(this.MovePort.Text);
-        //        DoNetworkErrorEvent(mDobotMove, strIp, iPort);
-        //    }));
-        //}
-        //private void OnNetworkErrorEvent_Dashboard(DobotClient sender, SocketError iErrCode)
-        //{
-        //    if (mIsManualDisconnect) return;
-        //    this.BeginInvoke(new Action(() =>
-        //    {
-        //        string strIp = ArmIP.Text;
-        //        int iPort = Parse2Int(this.DashboardPort.Text);
-        //        DoNetworkErrorEvent(mDashboard, strIp, iPort);
-        //    }));
-        //}
-
-        //private double Parse2Double(string str)
-        //{
-        //    double value = 0.0;
-        //    try
-        //    {
-        //        value = Double.Parse(str);
-        //    }
-        //    catch { }
-        //    return value;
-        //}
-        //private int Parse2Int(string str)
-        //{
-        //    int iValue = 0;
-        //    try
-        //    {
-        //        iValue = int.Parse(str);
-        //    }
-        //    catch
-        //    {
-        //    }
-        //    return iValue;
-        //}
-
-        //private bool IsValidIP(string strIp)
-        //{
-        //    try
-        //    {
-        //        System.Net.IPAddress.Parse(strIp);
-        //    }
-        //    catch
-        //    {
-        //        return false;
-        //    }
-        //    return true;
-        //}
-        //private void Connect()
-        //{
-        //    string strIp = ArmIP.Text;
-        //    if (!IsValidIP(strIp))
-        //    {
-        //        MessageBox.Show("IP Address Invalid");
-        //        return;
-        //    }
-        //    int iPortFeedback = Parse2Int(FeedbackPort.Text);
-        //    int iPortMove = Parse2Int(MovePort.Text);
-        //    int iPortDashboard = Parse2Int(DashboardPort.Text);
-
-        //    Thread thd = new Thread(() =>
-        //    {
-        //        if (!mDashboard.Connect(strIp, iPortDashboard))
-        //        {
-        //            Response.Text = string.Format("Connect {0}:{1} Fail!!", strIp, iPortDashboard);
-        //            return;
-        //        }
-        //        if (!mDobotMove.Connect(strIp, iPortMove))
-        //        {
-        //            Response.Text = string.Format("Connect {0}:{1} Fail!!", strIp, iPortMove);
-        //            return;
-        //        }
-        //        if (!mFeedback.Connect(strIp, iPortFeedback))
-        //        {
-        //            Response.Text = string.Format("Connect {0}:{1} Fail!!", strIp, iPortFeedback);
-        //            return;
-        //        }
-
-        //        mIsManualDisconnect = false;
-        //        mTimerReader.Start();
-
-        //        Invoke(new Action(() =>
-        //        {
-        //            EnableDashboard();
-        //            btnConnect.Text = "Disconnect";
-        //        }));
-        //    });
-        //    thd.Start();
-        //}
-        //private void Disconnect()
-        //{
-        //    Thread thd = new Thread(() =>
-        //    {
-        //        mFeedback.Disconnect();
-        //        mDobotMove.Disconnect();
-        //        mDashboard.Disconnect();
-        //        arm_connect_state = false;
-        //        DisableAuto();
-
-        //        mTimerReader.Stop();
-
-        //        Invoke(new Action(() =>
-        //        {
-        //            btnConnect.Text = "Connect";
-        //        }));
-        //    });
-        //    thd.Start();
-        //}
-
-        //private void ShowDataResult()
-        //{
-        //    if (null != mFeedback.feedbackData.ToolVectorActual && mFeedback.feedbackData.ToolVectorActual.Length >= 4)
-        //    {
-        //        curX.Text = string.Format("X:{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
-        //        curY.Text = string.Format("Y:{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
-        //        curZ.Text = string.Format("Z:{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
-        //        if (textBoxX.Text.Length == 0)
-        //        {
-        //            textBoxX.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
-        //            textBoxY.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
-        //            textBoxZ.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
-        //        }
-        //    }
-        //}
-
-        //private void btnConnect_Click(object sender, EventArgs e)
-        //{
-        //    if (btnConnect.Text == "Disconnect")
-        //    {
-        //        mIsManualDisconnect = true;
-        //        Disconnect();
-        //    }
-        //    else
-        //    {
-        //        Connect();
-        //    }
-        //}
-
-        //private void btnEnable_Click(object sender, EventArgs e)
-        //{
-        //    bool bEnable = btnEnable.Text.Equals("Enable");
-
-        //    Thread thd = new Thread(() =>
-        //    {
-        //        string ret = bEnable ? mDashboard.EnableRobot() : mDashboard.DisableRobot();
-        //        bool bOk = ret.StartsWith("0");
-
-        //        this.btnEnable.Invoke(new Action(() =>
-        //        {
-        //            if (bOk)
-        //            {
-        //                btnEnable.Text = bEnable ? "Disable" : "Enable";
-        //            }
-        //        }));
-        //    });
-        //    thd.Start();
-        //}
-
-        //private void btnEnableAgain_Click(object sender, EventArgs e)
-        //{
-        //    Thread thd = new Thread(() =>
-        //    {
-        //        string ret = mDashboard.EnableRobot();
-        //        bool bOk = ret.StartsWith("0");
-        //    });
-        //    thd.Start();
-        //}
-
-        //private void ResetArm_Click(object sender, EventArgs e)
-        //{
-        //    Thread thd = new Thread(() =>
-        //    {
-        //        string ret = mDashboard.ResetRobot();
-        //    });
-        //    thd.Start();
-        //}
-
-        //private void Move_Click(object sender, EventArgs e)
-        //{
-        //    DescartesPoint pt = new DescartesPoint();
-        //    pt.x = Parse2Double(textBoxX.Text);
-        //    pt.y = Parse2Double(textBoxY.Text);
-        //    pt.z = Parse2Double(textBoxZ.Text);
-
-        //    Thread thd = new Thread(() =>
-        //    {
-        //        string ret = mDobotMove.MovJ(pt);
-        //    });
-        //    thd.Start();
-        //}
 
         // auto read functions, complete automatic
         private async void AutoRead_CheckedChanged(object sender, EventArgs e)
         {
             if (AutoRead.Checked)
             {
-                DisableCoater();
-                //DisableDashboard();
-
-                cancellationTokenSource_pos = new CancellationTokenSource();
-                Task.Run(() => motorAsync.UpdatePositionAsync(Update, Position, master, cancellationTokenSource_pos.Token));
-
                 try
                 {
                     using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(FilePath.Text, false))
@@ -661,8 +122,6 @@ namespace WinFormsApp_Draft
                                 param_list.Add(mExcelReader.GetRowData(i));
                             }
                             //mExcelReader.printData(ShowData);
-
-
                         }
                     }
                 }
@@ -673,49 +132,46 @@ namespace WinFormsApp_Draft
             }
             else
             {
-                if (arm_connect_state)
+                if (ArmForm.arm_connect_state)
                 {
-                    //EnableDashboard();
+                    armForm.EnableWindow();
                 }
-                if (coater_connect_state)
+                if (CoaterForm.coater_connect_state)
                 {
-                    EnableCoater();
+                    coaterForm.EnableCoater();
                 }
                 Response.Clear();
                 ShowData.Clear();
             }
         }
 
-        //Robot Arm Window Functions
         private void OpenArmForm_Click(object sender, EventArgs e)
         {
-            if (ControlPanel.Controls.Contains(armForm))
-            {
-                armForm.BringToFront();
-            }
-            else
-            {
-                armForm.FormBorderStyle = FormBorderStyle.None;
-                SetWindowSize(armForm);
-                ControlPanel.Controls.Add(armForm);
-                armForm.Show();
-                armForm.BringToFront();
-            }
+            Open_Form(armForm);
         }
 
         private void OpenCoaterForm_Click(object sender, EventArgs e)
         {
-            if (ControlPanel.Controls.Contains(coaterForm))
+            Open_Form(coaterForm);
+        }
+        private void OpenDispenserForm_Click(object sender, EventArgs e)
+        {
+            Open_Form(dispenserForm);   
+        }
+
+        private void Open_Form(Form form)
+        {
+            if (ControlPanel.Controls.Contains(form))
             {
-                coaterForm.BringToFront();
+                form.BringToFront();
             }
             else
             {
-                coaterForm.FormBorderStyle = FormBorderStyle.None;
-                SetWindowSize(coaterForm);  
-                ControlPanel.Controls.Add(coaterForm);
-                coaterForm.Show();
-                coaterForm.BringToFront();
+                form.FormBorderStyle = FormBorderStyle.None;
+                SetWindowSize(form);
+                ControlPanel.Controls.Add(form);
+                form.Show();
+                form.BringToFront();
             }
         }
 
@@ -723,7 +179,8 @@ namespace WinFormsApp_Draft
         {
             double x = this.ControlPanel.Width / Convert.ToSingle(form.Width);
             double y = this.ControlPanel.Height / Convert.ToSingle(form.Height);
-            if(form.Controls.Count > 0) {
+            if (form.Controls.Count > 0)
+            {
                 foreach (System.Windows.Forms.Control control in form.Controls)
                 {
                     if (control.Controls.Count > 0)
@@ -744,6 +201,11 @@ namespace WinFormsApp_Draft
             }
             form.Width = Convert.ToInt32(form.Width * x);
             form.Height = Convert.ToInt32(form.Height * y);
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

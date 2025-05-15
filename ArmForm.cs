@@ -15,6 +15,7 @@ namespace CSharpTcpDemo
         private Feedback mFeedback = new Feedback();
         private DobotMove mDobotMove = new DobotMove();
         private Dashboard mDashboard = new Dashboard();
+        public static bool arm_connect_state = false;
 
         //定时获取数据并显示到UI
         private System.Timers.Timer mTimerReader = new System.Timers.Timer(300);
@@ -45,14 +46,14 @@ namespace CSharpTcpDemo
             ErrorInfoHelper.ParseServoJsonFile(strPath + "alarm_servo.json");
         }
 
+        private void ArmForm_Load(object sender, EventArgs e) { }
+
         private void BindBtn_MoveEvent(Button btn, string strTag)
         {
             btn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OnMoveJogEvent);
             btn.MouseUp += new System.Windows.Forms.MouseEventHandler(this.OnStopMoveJogEvent);
             btn.Tag = strTag;
         }
-
-        private void ArmForm_Load(object sender, EventArgs e) { }
 
         private void ArmForm_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -69,6 +70,7 @@ namespace CSharpTcpDemo
             {
                 this.mDobotMove.Disconnect();
             }
+            arm_connect_state = false;
         }
         private void InsertLogToRichBox(RichTextBox box, string str)
         {
@@ -139,7 +141,8 @@ namespace CSharpTcpDemo
                 }
             }
         }
-        private void EnableWindow()
+
+        public void EnableWindow()
         {
             foreach (Control ctr in this.Controls)
             {
@@ -225,10 +228,12 @@ namespace CSharpTcpDemo
             if (this.btnConnect.Text.Equals("Disconnect"))
             {
                 mIsManualDisconnect = true;
+                arm_connect_state = false;
                 Disconnect();
                 return;
             }
             Connect();
+            arm_connect_state = true;
         }
 
         private bool mIsManualDisconnect = false;
