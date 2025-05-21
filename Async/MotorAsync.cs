@@ -14,6 +14,7 @@ namespace WinFormsApp_Draft.Async
 {
     internal class MotorAsync
     {
+        //start driver heart beat 
         public async Task StartBeatAsync(IModbusMaster master ,CancellationToken cancellationToken)
         {
             byte slaveID = 0x01;
@@ -35,6 +36,7 @@ namespace WinFormsApp_Draft.Async
             }
         }
 
+        //freely stop the motor
         public async Task FreeStopAsync(Button freestop, IModbusMaster master)
         {
             var task_start = new TaskCompletionSource<bool>();
@@ -54,6 +56,7 @@ namespace WinFormsApp_Draft.Async
             freestop.Click -= handler;
         }
 
+        //stop the motor with brutal force
         public async Task ForceStopAsync(Button forcestop, IModbusMaster master)
         {
             var task_start = new TaskCompletionSource<bool>();
@@ -73,6 +76,7 @@ namespace WinFormsApp_Draft.Async
             forcestop.Click -= handler;   
         }
 
+        //set motor's zero point
         public async Task ClearPosAsync(Button clearpos, IModbusMaster master)
         {
             var task_start = new TaskCompletionSource<bool>();
@@ -91,6 +95,7 @@ namespace WinFormsApp_Draft.Async
             clearpos.Click -= handler;
         }
  
+        //reset motor to original position
         public async Task ResetMotorAsync(Button reset, IModbusMaster master, int spin_speed = 14000)
         {
             var task_start = new TaskCompletionSource<bool>();
@@ -129,6 +134,7 @@ namespace WinFormsApp_Draft.Async
             reset.Click -= handler;
         }
 
+        //show motor position at live
         public async Task UpdatePositionAsync(CheckBox checkBox, TextBox textBox, IModbusMaster master, CancellationToken cancellationToken)
         {
             while (checkBox.Checked)

@@ -98,7 +98,7 @@ namespace WinFormsApp_Draft
                     Response.Clear();
                     motor_port.Open();
                     master = ModbusSerialMaster.CreateRtu(motor_port);
-                    MotorConnection.Text = "connecting..";
+                    MotorConnectionState.Text = "connecting..";
 
 
                     cancellationTokenSource_beat = new CancellationTokenSource();
@@ -108,7 +108,7 @@ namespace WinFormsApp_Draft
                     {
                         EnableCoater();
                         MotorSerialSwitch.Text = "Disconnect Motor";
-                        MotorConnection.Text = "opened";
+                        MotorConnectionState.Text = "opened";
                         coater_connect_state = true;
                     }
                 }
@@ -117,7 +117,7 @@ namespace WinFormsApp_Draft
                     Response.Text = ex.Message;
                     motor_port.Close();
                     MotorSerialSwitch.Text = "Open Serial";
-                    MotorConnection.Text = "closed";
+                    MotorConnectionState.Text = "closed";
                 }
             }
             else
@@ -127,7 +127,7 @@ namespace WinFormsApp_Draft
                     Response.Clear();
                     motor_port.Close();
                     MotorSerialSwitch.Text = "Open Serial";
-                    MotorConnection.Text = "closed";
+                    MotorConnectionState.Text = "closed";
                     if (cancellationTokenSource_beat != null)
                     {
                         cancellationTokenSource_beat?.Cancel();

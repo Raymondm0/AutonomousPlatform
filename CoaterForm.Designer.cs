@@ -43,7 +43,7 @@
             Position = new TextBox();
             label1 = new Label();
             ResetMotor = new Button();
-            MotorConnection = new TextBox();
+            MotorConnectionState = new TextBox();
             MotorSerialSwitch = new Button();
             SelectedMotorBR = new TextBox();
             MotorBaudRate = new ListBox();
@@ -217,16 +217,16 @@
             ResetMotor.UseVisualStyleBackColor = true;
             ResetMotor.Click += ResetMotor_Click;
             // 
-            // MotorConnection
+            // MotorConnectionState
             // 
-            MotorConnection.AccessibleRole = AccessibleRole.WhiteSpace;
-            MotorConnection.Location = new Point(274, 33);
-            MotorConnection.Margin = new Padding(2, 3, 2, 3);
-            MotorConnection.Name = "MotorConnection";
-            MotorConnection.ReadOnly = true;
-            MotorConnection.Size = new Size(82, 23);
-            MotorConnection.TabIndex = 52;
-            MotorConnection.Text = "closed";
+            MotorConnectionState.AccessibleRole = AccessibleRole.WhiteSpace;
+            MotorConnectionState.Location = new Point(274, 33);
+            MotorConnectionState.Margin = new Padding(2, 3, 2, 3);
+            MotorConnectionState.Name = "MotorConnectionState";
+            MotorConnectionState.ReadOnly = true;
+            MotorConnectionState.Size = new Size(82, 23);
+            MotorConnectionState.TabIndex = 52;
+            MotorConnectionState.Text = "closed";
             // 
             // MotorSerialSwitch
             // 
@@ -294,7 +294,7 @@
             ClientSize = new Size(521, 452);
             Controls.Add(Response);
             Controls.Add(SpinCoater);
-            Controls.Add(MotorConnection);
+            Controls.Add(MotorConnectionState);
             Controls.Add(MotorSerialSwitch);
             Controls.Add(SelectedMotorBR);
             Controls.Add(MotorBaudRate);
@@ -326,7 +326,7 @@
         private TextBox Position;
         private Label label1;
         private Button ResetMotor;
-        private TextBox MotorConnection;
+        private TextBox MotorConnectionState;
         private Button MotorSerialSwitch;
         private TextBox SelectedMotorBR;
         private ListBox MotorBaudRate;
