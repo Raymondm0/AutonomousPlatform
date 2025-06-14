@@ -36,7 +36,7 @@ namespace WinFormsApp_Draft.Async
             }
         }
 
-        //freely stop the motor
+        //freely stop the motor if button pressed
         public async Task FreeStopAsync(Button freestop, IModbusMaster master)
         {
             var task_start = new TaskCompletionSource<bool>();
@@ -56,7 +56,7 @@ namespace WinFormsApp_Draft.Async
             freestop.Click -= handler;
         }
 
-        //stop the motor with brutal force
+        //stop the motor with brutal force if button pressed 
         public async Task ForceStopAsync(Button forcestop, IModbusMaster master)
         {
             var task_start = new TaskCompletionSource<bool>();
@@ -76,7 +76,7 @@ namespace WinFormsApp_Draft.Async
             forcestop.Click -= handler;   
         }
 
-        //set motor's zero point
+        //set motor's zero point if button pressed
         public async Task ClearPosAsync(Button clearpos, IModbusMaster master)
         {
             var task_start = new TaskCompletionSource<bool>();
@@ -95,7 +95,7 @@ namespace WinFormsApp_Draft.Async
             clearpos.Click -= handler;
         }
  
-        //reset motor to original position
+        //reset motor to original position if button pressed
         public async Task ResetMotorAsync(Button reset, IModbusMaster master, int spin_speed = 14000)
         {
             var task_start = new TaskCompletionSource<bool>();
@@ -134,7 +134,7 @@ namespace WinFormsApp_Draft.Async
             reset.Click -= handler;
         }
 
-        //show motor position at live
+        //show motor position at live if checkbox checked
         public async Task UpdatePositionAsync(CheckBox checkBox, TextBox textBox, IModbusMaster master, CancellationToken cancellationToken)
         {
             while (checkBox.Checked)
@@ -154,6 +154,25 @@ namespace WinFormsApp_Draft.Async
                     await Task.Delay(10);    
                 }
                 catch { }
+            }
+        }
+
+        //return motor immediate position, invoke in mainform
+        public async Task<int> UpdatePositionAsync(IModbusMaster master, CancellationToken cancellationToken)
+        {
+            try
+            {
+                byte slaveID = 0x01;
+                ushort posAddress = 0x1392;
+                ushort[] pos = master.ReadInputRegisters(slaveID, posAddress, 2);
+                int high = pos[0];
+                int low = pos[1];
+                int cur_pos = ((high << 16) + low) / 100 + 1;
+                return cur_pos;
+            }
+            catch
+            {
+                return 0
             }
         }
     }
