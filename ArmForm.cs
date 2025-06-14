@@ -13,9 +13,15 @@ namespace CSharpTcpDemo
     public partial class ArmForm : Form
     {
         private Feedback mFeedback = new Feedback();
-        private DobotMove mDobotMove = new DobotMove();
+        public DobotMove mDobotMove = new DobotMove();
         private Dashboard mDashboard = new Dashboard();
-        public static bool arm_connect_state = false;
+        public bool arm_enable_state = false;
+        public bool auto = false;
+
+        public TextBox x => textBoxX;
+        public TextBox y => textBoxY;
+        public TextBox z => textBoxZ;
+        public TextBox r => textBoxRx;
 
         //定时获取数据并显示到UI
         private System.Timers.Timer mTimerReader = new System.Timers.Timer(300);
@@ -48,13 +54,6 @@ namespace CSharpTcpDemo
 
         private void ArmForm_Load(object sender, EventArgs e) { }
 
-        private void BindBtn_MoveEvent(Button btn, string strTag)
-        {
-            btn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OnMoveJogEvent);
-            btn.MouseUp += new System.Windows.Forms.MouseEventHandler(this.OnStopMoveJogEvent);
-            btn.Tag = strTag;
-        }
-
         private void ArmForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             mTimerReader.Close();
@@ -70,7 +69,7 @@ namespace CSharpTcpDemo
             {
                 this.mDobotMove.Disconnect();
             }
-            arm_connect_state = false;
+            arm_enable_state = false;
         }
         private void InsertLogToRichBox(RichTextBox box, string str)
         {
@@ -150,45 +149,6 @@ namespace CSharpTcpDemo
             }
         }
 
-        private void OnMoveJogEvent(object sender, MouseEventArgs e)
-        {
-            if (sender is Button)
-            {
-                Button btn = (Button)sender;
-                string str = btn.Tag.ToString();
-                DoMoveJog(str);
-            }
-        }
-        private void OnStopMoveJogEvent(object sender, MouseEventArgs e)
-        {
-            if (sender is Button)
-            {
-                Button btn = (Button)sender;
-                DoStopMoveJog();
-            }
-        }
-
-        private void DoMoveJog(string str)
-        {
-            PrintLog(string.Format("send to {0}:{1}: MoveJog({2})", mDobotMove.IP, mDobotMove.Port, str));
-            Thread thd = new Thread(() =>
-            {
-                string ret = mDobotMove.MoveJog(str);
-                PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
-            });
-            thd.Start();
-        }
-
-        private void DoStopMoveJog()
-        {
-            PrintLog(string.Format("send to {0}:{1}: MoveJog()", mDobotMove.IP, mDobotMove.Port));
-            Thread thd = new Thread(() =>
-            {
-                string ret = mDobotMove.StopMoveJog();
-                PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
-            });
-            thd.Start();
-        }
         private void TimeoutEvent(object sender, System.Timers.ElapsedEventArgs e)
         {
             if (!mFeedback.DataHasRead)
@@ -228,12 +188,11 @@ namespace CSharpTcpDemo
             if (this.btnConnect.Text.Equals("Disconnect"))
             {
                 mIsManualDisconnect = true;
-                arm_connect_state = false;
+                arm_enable_state = false;
                 Disconnect();
                 return;
             }
             Connect();
-            arm_connect_state = true;
         }
 
         private bool mIsManualDisconnect = false;
@@ -279,6 +238,7 @@ namespace CSharpTcpDemo
                 string strIp = textBoxIP.Text;
                 int iPort = Parse2Int(this.textBoxFeedbackPort.Text);
                 DoNetworkErrorEvent(mFeedback, strIp, iPort);
+                arm_enable_state = false;
             }));
         }
         private void OnNetworkErrorEvent_DobotMove(DobotClient sender, SocketError iErrCode)
@@ -341,6 +301,21 @@ namespace CSharpTcpDemo
                 {
                     EnableWindow();
                     this.btnConnect.Text = "Disconnect";
+
+                    if (textBoxJ1.Text.Length == 0)
+                    {//第一次填充数据，免得用的时候一个一个输入
+                        this.textBoxJ1.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[0]);
+                        this.textBoxJ2.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[1]);
+                        this.textBoxJ3.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[2]);
+                        this.textBoxJ4.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[3]);
+                    }
+                    if (textBoxX.Text.Length == 0)
+                    {//第一次填充数据，免得用的时候一个一个输入
+                        this.textBoxX.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
+                        this.textBoxY.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
+                        this.textBoxZ.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
+                        this.textBoxRx.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[3]);
+                    }
                 }));
             });
             thd.Start();
@@ -362,6 +337,7 @@ namespace CSharpTcpDemo
                 {
                     DisableWindow();
                     this.btnConnect.Text = "Connect";
+                    arm_enable_state = false;
                 }));
             });
             thd.Start();
@@ -382,6 +358,7 @@ namespace CSharpTcpDemo
                     if (bOk)
                     {
                         this.btnEnable.Text = bEnable ? "Disable" : "Enable";
+                        arm_enable_state = bEnable ? true : false;
                     }
                 }));
 
@@ -395,9 +372,12 @@ namespace CSharpTcpDemo
             PrintLog(string.Format("send to {0}:{1}: {2}()", mDashboard.IP, mDashboard.Port, "EnableRobot"));
             Thread thd = new Thread(() =>
             {
-                string ret = mDashboard.EnableRobot();
-                bool bOk = ret.StartsWith("0");
-                PrintLog(string.Format("Receive From {0}:{1}: {2}", mDashboard.IP, mDashboard.Port, ret));
+                string ret0 = mDashboard.EnableRobot();
+                bool bOk = ret0.StartsWith("0");
+                PrintLog(string.Format("Receive From {0}:{1}: {2}", mDashboard.IP, mDashboard.Port, ret0));
+                string ret1 = mDashboard.ResetRobot();
+                PrintLog(string.Format("Receive From {0}:{1}: {2}", mDashboard.IP, mDashboard.Port, ret1));
+                arm_enable_state = true;
             });
             thd.Start();
         }
@@ -448,53 +428,62 @@ namespace CSharpTcpDemo
         }
         private void btnMovJ_Click(object sender, EventArgs e)
         {
-            DescartesPoint pt = new DescartesPoint();
-            pt.x = Parse2Double(this.textBoxX.Text);
-            pt.y = Parse2Double(this.textBoxY.Text);
-            pt.z = Parse2Double(this.textBoxZ.Text);
-            pt.r = Parse2Double(this.textBoxRx.Text);
-
-            PrintLog(string.Format("send to {0}:{1}: MovJ({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
-            Thread thd = new Thread(() =>
+            if (arm_enable_state)
             {
-                string ret = mDobotMove.MovJ(pt);
-                PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
-            });
-            thd.Start();
+                DescartesPoint pt = new DescartesPoint();
+                pt.x = Parse2Double(this.textBoxX.Text);
+                pt.y = Parse2Double(this.textBoxY.Text);
+                pt.z = Parse2Double(this.textBoxZ.Text);
+                pt.r = Parse2Double(this.textBoxRx.Text);
+
+                PrintLog(string.Format("send to {0}:{1}: MovJ({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
+                Thread thd = new Thread(() =>
+                {
+                    string ret = mDobotMove.MovJ(pt);
+                    PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
+                });
+                thd.Start();
+            }
         }
 
-        private void btnMovL_Click(object sender, EventArgs e)
+        public void btnMovL_Click(object sender, EventArgs e)
         {
-            DescartesPoint pt = new DescartesPoint();
-            pt.x = Parse2Double(this.textBoxX.Text);
-            pt.y = Parse2Double(this.textBoxY.Text);
-            pt.z = Parse2Double(this.textBoxZ.Text);
-            pt.r = Parse2Double(this.textBoxRx.Text);
-
-            PrintLog(string.Format("send to {0}:{1}: MovL({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
-            Thread thd = new Thread(() =>
+            if (arm_enable_state)
             {
-                string ret = mDobotMove.MovL(pt);
-                PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
-            });
-            thd.Start();
+                DescartesPoint pt = new DescartesPoint();
+                pt.x = Parse2Double(this.textBoxX.Text);
+                pt.y = Parse2Double(this.textBoxY.Text);
+                pt.z = Parse2Double(this.textBoxZ.Text);
+                pt.r = Parse2Double(this.textBoxRx.Text);
+
+                PrintLog(string.Format("send to {0}:{1}: MovL({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
+                Thread thd = new Thread(() =>
+                {
+                    string ret = mDobotMove.MovL(pt);
+                    PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
+                });
+                thd.Start();
+            }
         }
 
         private void btnJointMovJ_Click(object sender, EventArgs e)
         {
-            JointPoint pt = new JointPoint();
-            pt.j1 = Parse2Double(this.textBoxJ1.Text);
-            pt.j2 = Parse2Double(this.textBoxJ2.Text);
-            pt.j3 = Parse2Double(this.textBoxJ3.Text);
-            pt.j4 = Parse2Double(this.textBoxJ4.Text);
+            if (arm_enable_state)
+            { 
+                JointPoint pt = new JointPoint();
+                pt.j1 = Parse2Double(this.textBoxJ1.Text);
+                pt.j2 = Parse2Double(this.textBoxJ2.Text);
+                pt.j3 = Parse2Double(this.textBoxJ3.Text);
+                pt.j4 = Parse2Double(this.textBoxJ4.Text);
 
-            PrintLog(string.Format("send to {0}:{1}: JointMovJ({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
-            Thread thd = new Thread(() =>
-            {
-                string ret = mDobotMove.JointMovJ(pt);
-                PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
-            });
-            thd.Start();
+                PrintLog(string.Format("send to {0}:{1}: JointMovJ({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
+                Thread thd = new Thread(() =>
+                {
+                    string ret = mDobotMove.JointMovJ(pt);
+                    PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
+                });
+                thd.Start();
+            }
         }
 
         private void btnDOInput_Click(object sender, EventArgs e)
@@ -531,14 +520,6 @@ namespace CSharpTcpDemo
                 this.labJ2.Text = string.Format("J2:{0:F3}", mFeedback.feedbackData.QActual[1]);
                 this.labJ3.Text = string.Format("J3:{0:F3}", mFeedback.feedbackData.QActual[2]);
                 this.labJ4.Text = string.Format("J4:{0:F3}", mFeedback.feedbackData.QActual[3]);
-
-                if (textBoxJ1.Text.Length == 0)
-                {//第一次填充数据，免得用的时候一个一个输入
-                    this.textBoxJ1.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[0]);
-                    this.textBoxJ2.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[1]);
-                    this.textBoxJ3.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[2]);
-                    this.textBoxJ4.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[3]);
-                }
             }
 
             if (null != mFeedback.feedbackData.ToolVectorActual && mFeedback.feedbackData.ToolVectorActual.Length >= 4)
@@ -547,14 +528,6 @@ namespace CSharpTcpDemo
                 this.labY.Text = string.Format("Y:{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
                 this.labZ.Text = string.Format("Z:{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
                 this.labRx.Text = string.Format("R:{0:F3}", mFeedback.feedbackData.ToolVectorActual[3]);
-
-                if (textBoxX.Text.Length == 0)
-                {//第一次填充数据，免得用的时候一个一个输入
-                    this.textBoxX.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
-                    this.textBoxY.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
-                    this.textBoxZ.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
-                    this.textBoxRx.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[3]);
-                }
             }
             ParseWarn();
         }

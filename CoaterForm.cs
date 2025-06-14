@@ -26,7 +26,7 @@ namespace WinFormsApp_Draft
         private System.Timers.Timer spin_timer = new System.Timers.Timer();
         private CancellationTokenSource cancellationTokenSource_pos;
         private CancellationTokenSource cancellationTokenSource_beat;
-        public static bool coater_connect_state = false;
+        public bool coater_connect_state = false;
 
         public CoaterForm()
         {

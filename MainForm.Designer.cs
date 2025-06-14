@@ -40,6 +40,7 @@
             OpenArmForm = new Button();
             OpenCoaterForm = new Button();
             OpenDispenserForm = new Button();
+            MoveTest = new Button();
             AutoRun.SuspendLayout();
             SuspendLayout();
             // 
@@ -136,11 +137,22 @@
             OpenDispenserForm.UseVisualStyleBackColor = true;
             OpenDispenserForm.Click += OpenDispenserForm_Click;
             // 
+            // MoveTest
+            // 
+            MoveTest.Location = new Point(232, 137);
+            MoveTest.Name = "MoveTest";
+            MoveTest.Size = new Size(94, 23);
+            MoveTest.TabIndex = 54;
+            MoveTest.Text = "Start Test";
+            MoveTest.UseVisualStyleBackColor = true;
+            MoveTest.Click += MoveTest_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1162, 758);
+            Controls.Add(MoveTest);
             Controls.Add(OpenDispenserForm);
             Controls.Add(OpenCoaterForm);
             Controls.Add(OpenArmForm);
@@ -169,5 +181,6 @@
         private Button OpenArmForm;
         private Button OpenCoaterForm;
         private Button OpenDispenserForm;
+        private Button MoveTest;
     }
 }

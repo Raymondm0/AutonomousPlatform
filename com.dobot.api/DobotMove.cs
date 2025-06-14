@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace CSharpTcpDemo.com.dobot.api
 {
-    class DobotMove : DobotClient
+    public class DobotMove : DobotClient
     {
         protected override void OnConnected(Socket sock)
         {

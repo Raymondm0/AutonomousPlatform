@@ -2,7 +2,7 @@
 
 namespace CSharthiscpDemo.com.dobot.api
 {
-    class DescartesPoint
+    public class DescartesPoint
     {
         /// <summary>
         /// X 轴位置，单位：毫米
@@ -24,9 +24,13 @@ namespace CSharthiscpDemo.com.dobot.api
         /// </summary>
         public double r { get; set; }
 
-        public DescartesPoint()
+        public DescartesPoint(){ }
+        public DescartesPoint(double x, double y, double z, double r)
         {
-            x = y = z = r = 0.0;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.r = r;
         }
 
         override public string ToString()

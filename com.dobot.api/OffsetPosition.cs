@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CSharpTcpDemo.com.dobot.api
 {
-    class OffsetPosition
+    public class OffsetPosition
     {
         /// <summary>
         /// X轴方向偏移，单位：mm

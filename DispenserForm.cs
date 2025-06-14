@@ -18,7 +18,7 @@ namespace WinFormsApp_Draft
         private SerialPort port = new SerialPort();
         private Axes axes_movement = new Axes();
         private Pipette pip_action = new Pipette();
-        private static bool port_opened = false;
+        public bool port_opened = false;
 
         private static byte index;
         private const uint baudrate = 115200;

@@ -9,5 +9,6 @@ namespace WinFormsApp_Draft.Auto
     class AutoMove
     {
 
+
     }
 }

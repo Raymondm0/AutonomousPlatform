@@ -65,10 +65,12 @@ namespace WinFormsApp_Draft
 
             armForm.TopLevel = false;
             coaterForm.TopLevel = false;
-            dispenserForm.TopLevel = false; 
+            dispenserForm.TopLevel = false;
         }
 
-        private void Form1_Load(object sender, EventArgs e) { }
+        private void Form1_Load(object sender, EventArgs e)
+        {
+        }
 
         public void EnableAuto()
         {
@@ -132,11 +134,11 @@ namespace WinFormsApp_Draft
             }
             else
             {
-                if (ArmForm.arm_connect_state)
+                if (armForm.arm_enable_state)
                 {
                     armForm.EnableWindow();
                 }
-                if (CoaterForm.coater_connect_state)
+                if (coaterForm.coater_connect_state)
                 {
                     coaterForm.EnableCoater();
                 }
@@ -156,7 +158,7 @@ namespace WinFormsApp_Draft
         }
         private void OpenDispenserForm_Click(object sender, EventArgs e)
         {
-            Open_Form(dispenserForm);   
+            Open_Form(dispenserForm);
         }
 
         private void Open_Form(Form form)
@@ -203,8 +205,25 @@ namespace WinFormsApp_Draft
             form.Height = Convert.ToInt32(form.Height * y);
         }
 
-        private void label2_Click(object sender, EventArgs e)
+        //test arm and dispenser, do group move round
+        private class PointsConfig
         {
+            public Dictionary<string, DescartesPoint> Points { get; set; } = new Dictionary<string, DescartesPoint>();
+        }
+
+        private async void MoveTest_Click(object sender, EventArgs e)
+        {
+            string filePath = "ArmPoints.json";
+            string json_data = File.ReadAllText(filePath);
+            PointsConfig? pt_conf = JsonConvert.DeserializeObject<PointsConfig>(json_data);
+
+            DescartesPoint pt = new DescartesPoint();
+            pt_conf.Points.TryGetValue("Zero", out pt);
+            armForm.mDobotMove.MovL(pt);
+            pt_conf.Points.TryGetValue("P1", out pt);
+            armForm.mDobotMove.MovL(pt);
+            pt_conf.Points.TryGetValue("P2", out pt);
+            armForm.mDobotMove.MovL(pt);
 
         }
     }
