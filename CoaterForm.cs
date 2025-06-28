@@ -31,6 +31,12 @@ namespace WinFormsApp_Draft
         public CoaterForm()
         {
             InitializeComponent();
+        }
+
+        public void CoaterForm_Load(object sender, EventArgs e) 
+        {
+            MotorBaudRate.Items.Clear();
+            MotorPorts.Items.Clear();
             DisableCoater();
 
             string[] ports = SerialPort.GetPortNames();
@@ -44,7 +50,7 @@ namespace WinFormsApp_Draft
             MotorBaudRate.Items.Add("19200");
             MotorBaudRate.Items.Add("38400");
             MotorBaudRate.Items.Add("115200");
-            MotorBaudRate.SelectedIndex = 0;
+            MotorBaudRate.SelectedIndex = 0; 
         }
 
         public void EnableCoater()
@@ -68,8 +74,6 @@ namespace WinFormsApp_Draft
                 }
             }
         }
-
-        private void CoaterForm_Load(object sender, EventArgs e) { }
 
         private void MotorPorts_SelectedIndexChanged(object sender, EventArgs e)
         {

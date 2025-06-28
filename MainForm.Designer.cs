@@ -41,6 +41,7 @@
             OpenCoaterForm = new Button();
             OpenDispenserForm = new Button();
             MoveTest = new Button();
+            Refresh = new Button();
             AutoRun.SuspendLayout();
             SuspendLayout();
             // 
@@ -147,11 +148,22 @@
             MoveTest.UseVisualStyleBackColor = true;
             MoveTest.Click += MoveTest_Click;
             // 
+            // Refresh
+            // 
+            Refresh.Location = new Point(12, 12);
+            Refresh.Name = "Refresh";
+            Refresh.Size = new Size(84, 42);
+            Refresh.TabIndex = 55;
+            Refresh.Text = "Refresh Form";
+            Refresh.UseVisualStyleBackColor = true;
+            Refresh.Click += Refresh_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1162, 758);
+            Controls.Add(Refresh);
             Controls.Add(MoveTest);
             Controls.Add(OpenDispenserForm);
             Controls.Add(OpenCoaterForm);
@@ -182,5 +194,6 @@
         private Button OpenCoaterForm;
         private Button OpenDispenserForm;
         private Button MoveTest;
+        private Button Refresh;
     }
 }

@@ -12,24 +12,23 @@ namespace CSharpTcpDemo
 {
     public partial class ArmForm : Form
     {
-        private Feedback mFeedback = new Feedback();
+        public Feedback mFeedback = new Feedback();
         public DobotMove mDobotMove = new DobotMove();
         private Dashboard mDashboard = new Dashboard();
         public bool arm_enable_state = false;
-        public bool auto = false;
-
-        public TextBox x => textBoxX;
-        public TextBox y => textBoxY;
-        public TextBox z => textBoxZ;
-        public TextBox r => textBoxRx;
+        public static byte running = 0;
+        private DescartesPoint mov_pt = new DescartesPoint();
 
         //定时获取数据并显示到UI
-        private System.Timers.Timer mTimerReader = new System.Timers.Timer(300);
-
+        private System.Timers.Timer mTimerReader = new System.Timers.Timer(200);
+        
         public ArmForm()
         {
             InitializeComponent();
+        }
 
+        public void ArmForm_Load(object sender, EventArgs e) 
+        {
             this.textBoxIP.Text = "192.168.1.6";
             this.textBoxDashboardPort.Text = "29999";
             this.textBoxMovePort.Text = "30003";
@@ -51,8 +50,6 @@ namespace CSharpTcpDemo
             ErrorInfoHelper.ParseControllerJsonFile(strPath + "alarm_controller.json");
             ErrorInfoHelper.ParseServoJsonFile(strPath + "alarm_servo.json");
         }
-
-        private void ArmForm_Load(object sender, EventArgs e) { }
 
         private void ArmForm_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -304,17 +301,17 @@ namespace CSharpTcpDemo
 
                     if (textBoxJ1.Text.Length == 0)
                     {//第一次填充数据，免得用的时候一个一个输入
-                        this.textBoxJ1.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[0]);
-                        this.textBoxJ2.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[1]);
-                        this.textBoxJ3.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[2]);
-                        this.textBoxJ4.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[3]);
+                        this.textBoxJ1.Text = string.Format("{0:F3}",mFeedback.feedbackData.QActual[0]);
+                        this.textBoxJ2.Text = string.Format("{0:F3}",mFeedback.feedbackData.QActual[1]);
+                        this.textBoxJ3.Text = string.Format("{0:F3}",mFeedback.feedbackData.QActual[2]);
+                        this.textBoxJ4.Text = string.Format("{0:F3}",mFeedback.feedbackData.QActual[3]);
                     }
                     if (textBoxX.Text.Length == 0)
                     {//第一次填充数据，免得用的时候一个一个输入
-                        this.textBoxX.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
-                        this.textBoxY.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
-                        this.textBoxZ.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
-                        this.textBoxRx.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[3]);
+                        this.textBoxX.Text = string.Format("{0:F3}",mFeedback.feedbackData.ToolVectorActual[0]);
+                        this.textBoxY.Text = string.Format("{0:F3}",mFeedback.feedbackData.ToolVectorActual[1]);
+                        this.textBoxZ.Text = string.Format("{0:F3}",mFeedback.feedbackData.ToolVectorActual[2]);
+                        this.textBoxRx.Text = string.Format("{0:F3}",mFeedback.feedbackData.ToolVectorActual[3]);
                     }
                 }));
             });
@@ -430,16 +427,15 @@ namespace CSharpTcpDemo
         {
             if (arm_enable_state)
             {
-                DescartesPoint pt = new DescartesPoint();
-                pt.x = Parse2Double(this.textBoxX.Text);
-                pt.y = Parse2Double(this.textBoxY.Text);
-                pt.z = Parse2Double(this.textBoxZ.Text);
-                pt.r = Parse2Double(this.textBoxRx.Text);
+                mov_pt.x = Parse2Double(this.textBoxX.Text);
+                mov_pt.y = Parse2Double(this.textBoxY.Text);
+                mov_pt.z = Parse2Double(this.textBoxZ.Text);
+                mov_pt.r = Parse2Double(this.textBoxRx.Text);
 
-                PrintLog(string.Format("send to {0}:{1}: MovJ({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
+                PrintLog(string.Format("send to {0}:{1}: MovJ({2})", mDobotMove.IP, mDobotMove.Port, mov_pt.ToString()));
                 Thread thd = new Thread(() =>
                 {
-                    string ret = mDobotMove.MovJ(pt);
+                    string ret = mDobotMove.MovJ(mov_pt);
                     PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
                 });
                 thd.Start();
@@ -450,16 +446,15 @@ namespace CSharpTcpDemo
         {
             if (arm_enable_state)
             {
-                DescartesPoint pt = new DescartesPoint();
-                pt.x = Parse2Double(this.textBoxX.Text);
-                pt.y = Parse2Double(this.textBoxY.Text);
-                pt.z = Parse2Double(this.textBoxZ.Text);
-                pt.r = Parse2Double(this.textBoxRx.Text);
+                mov_pt.x = Parse2Double(this.textBoxX.Text);
+                mov_pt.y = Parse2Double(this.textBoxY.Text);
+                mov_pt.z = Parse2Double(this.textBoxZ.Text);
+                mov_pt.r = Parse2Double(this.textBoxRx.Text);
 
-                PrintLog(string.Format("send to {0}:{1}: MovL({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
+                PrintLog(string.Format("send to {0}:{1}: MovL({2})", mDobotMove.IP, mDobotMove.Port, mov_pt.ToString()));
                 Thread thd = new Thread(() =>
                 {
-                    string ret = mDobotMove.MovL(pt);
+                    string ret = mDobotMove.MovL(mov_pt);
                     PrintLog(string.Format("Receive From {0}:{1}: {2}", mDobotMove.IP, mDobotMove.Port, ret));
                 });
                 thd.Start();
@@ -516,19 +511,23 @@ namespace CSharpTcpDemo
 
             if (null != mFeedback.feedbackData.QActual && mFeedback.feedbackData.QActual.Length >= 4)
             {
-                this.labJ1.Text = string.Format("J1:{0:F3}", mFeedback.feedbackData.QActual[0]);
-                this.labJ2.Text = string.Format("J2:{0:F3}", mFeedback.feedbackData.QActual[1]);
-                this.labJ3.Text = string.Format("J3:{0:F3}", mFeedback.feedbackData.QActual[2]);
-                this.labJ4.Text = string.Format("J4:{0:F3}", mFeedback.feedbackData.QActual[3]);
+                this.labJ1.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[0]);
+                this.labJ2.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[1]);
+                this.labJ3.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[2]);
+                this.labJ4.Text = string.Format("{0:F3}", mFeedback.feedbackData.QActual[3]);
             }
 
             if (null != mFeedback.feedbackData.ToolVectorActual && mFeedback.feedbackData.ToolVectorActual.Length >= 4)
             {
-                this.labX.Text = string.Format("X:{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
-                this.labY.Text = string.Format("Y:{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
-                this.labZ.Text = string.Format("Z:{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
-                this.labRx.Text = string.Format("R:{0:F3}", mFeedback.feedbackData.ToolVectorActual[3]);
+                this.labX.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[0]);
+                this.labY.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[1]);
+                this.labZ.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[2]);
+                this.labRx.Text = string.Format("{0:F3}", mFeedback.feedbackData.ToolVectorActual[3]);
             }
+            
+            running = mFeedback.feedbackData.RunningStatus;
+            this.labRun.Text = running.ToString();
+
             ParseWarn();
         }
 

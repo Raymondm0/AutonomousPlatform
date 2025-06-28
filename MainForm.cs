@@ -6,12 +6,13 @@ using Modbus.Device;
 using Newtonsoft.Json;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using CSharpTcpDemo;
 using CSharpTcpDemo.com.dobot.api;
 using CSharthiscpDemo.com.dobot.api;
 using WinFormsApp_Draft.Async;
 using WinFormsApp_Draft.Auto;
-using CSharpTcpDemo;
-
+using WinFormsApp_Draft.DK;
+using WinFormsApp_Draft.Auto;
 
 namespace WinFormsApp_Draft
 {
@@ -32,6 +33,7 @@ namespace WinFormsApp_Draft
         private ArmForm armForm = new ArmForm();
         private CoaterForm coaterForm = new CoaterForm();
         private DispenserForm dispenserForm = new DispenserForm();
+        private AutoMove autoMove = new AutoMove();
 
         //auto declarations
         private ExcelReader mExcelReader = new ExcelReader();
@@ -53,6 +55,13 @@ namespace WinFormsApp_Draft
         public MainForm()
         {
             InitializeComponent();
+            Refresh.Click += armForm.ArmForm_Load;
+            Refresh.Click += dispenserForm.DispenserForm_Load;
+            Refresh.Click += coaterForm.CoaterForm_Load;
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
             coaterForm.DisableCoater();
             DisableAuto();
 
@@ -68,8 +77,9 @@ namespace WinFormsApp_Draft
             dispenserForm.TopLevel = false;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void Refresh_Click(object sender, EventArgs e)
         {
+
         }
 
         public void EnableAuto()
@@ -206,25 +216,41 @@ namespace WinFormsApp_Draft
         }
 
         //test arm and dispenser, do group move round
-        private class PointsConfig
+        private class ArmConfig
         {
             public Dictionary<string, DescartesPoint> Points { get; set; } = new Dictionary<string, DescartesPoint>();
+        }
+        private class DispenserConfig
+        {
+            public Dictionary<string, DKPoint> Points { get; set; } = new Dictionary<string, DKPoint>();
         }
 
         private async void MoveTest_Click(object sender, EventArgs e)
         {
-            string filePath = "ArmPoints.json";
-            string json_data = File.ReadAllText(filePath);
-            PointsConfig? pt_conf = JsonConvert.DeserializeObject<PointsConfig>(json_data);
+            //string armPath = "ArmPoints.json";
+            //string arm_json = File.ReadAllText(armPath);
+            //ArmConfig? arm_conf = JsonConvert.DeserializeObject<ArmConfig>(arm_json);
 
-            DescartesPoint pt = new DescartesPoint();
-            pt_conf.Points.TryGetValue("Zero", out pt);
-            armForm.mDobotMove.MovL(pt);
-            pt_conf.Points.TryGetValue("P1", out pt);
-            armForm.mDobotMove.MovL(pt);
-            pt_conf.Points.TryGetValue("P2", out pt);
-            armForm.mDobotMove.MovL(pt);
+            //DescartesPoint pt = new DescartesPoint();
+            //arm_conf.Points.TryGetValue("Zero", out pt);
+            //armForm.mDobotMove.MovL(pt);
+            //arm_conf.Points.TryGetValue("P1", out pt);
+            //armForm.mDobotMove.MovL(pt);
+            //arm_conf.Points.TryGetValue("P2", out pt);
+            //armForm.mDobotMove.MovL(pt);
+            //arm_conf.Points.TryGetValue("Zero", out pt);
+            //armForm.mDobotMove.MovL(pt);
 
+            string dispenserPath = "DispenserPoints.json";
+            string dispenser_json = File.ReadAllText(dispenserPath);
+            DispenserConfig? dispenser_conf = JsonConvert.DeserializeObject<DispenserConfig>(dispenser_json);
+
+            DKPoint pt = new DKPoint();
+
+            dispenser_conf.Points.TryGetValue("P1", out pt);
+            await dispenserForm.MovL(pt);
+            dispenser_conf.Points.TryGetValue("Zero", out pt);
+            await dispenserForm.Reverse_MovL(pt);
         }
     }
 }

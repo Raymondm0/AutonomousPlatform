@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CSharpTcpDemo.com.dobot.api
 {
-    class Feedback : DobotClient
+    public class Feedback : DobotClient
     {
         private Thread mThread;
 

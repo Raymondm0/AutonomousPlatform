@@ -22,10 +22,16 @@ namespace WinFormsApp_Draft.DK
         public static extern int Zero_c(byte index, byte id);
 
         [DllImport("DK.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Zero_p(byte index, byte id);
+
+        [DllImport("DK.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int Find_zero_c(byte index, byte id, ref byte zero_status);
 
         [DllImport("DK.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int Find_status_c(byte index, byte id, ref byte zero_status);
+
+        [DllImport("DK.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Find_status_p(byte index, byte id, ref byte zero_status);
 
         [DllImport("DK.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int Enable_motor_c(byte index, byte id, byte select_value);

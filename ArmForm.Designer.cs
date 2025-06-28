@@ -87,6 +87,16 @@
             richTextBoxLog = new RichTextBox();
             groupBoxLog = new GroupBox();
             groupBox1 = new GroupBox();
+            labRun = new Label();
+            label28 = new Label();
+            label27 = new Label();
+            label25 = new Label();
+            label24 = new Label();
+            label23 = new Label();
+            label22 = new Label();
+            label18 = new Label();
+            label17 = new Label();
+            label12 = new Label();
             label11 = new Label();
             groupBoxConnect.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -591,7 +601,7 @@
             // 
             // btnClearErrorInfo
             // 
-            btnClearErrorInfo.Location = new Point(14, 252);
+            btnClearErrorInfo.Location = new Point(24, 253);
             btnClearErrorInfo.Margin = new Padding(4);
             btnClearErrorInfo.Name = "btnClearErrorInfo";
             btnClearErrorInfo.Size = new Size(69, 33);
@@ -602,10 +612,10 @@
             // 
             // richTextBoxErrInfo
             // 
-            richTextBoxErrInfo.Location = new Point(91, 89);
+            richTextBoxErrInfo.Location = new Point(159, 159);
             richTextBoxErrInfo.Margin = new Padding(4);
             richTextBoxErrInfo.Name = "richTextBoxErrInfo";
-            richTextBoxErrInfo.Size = new Size(234, 285);
+            richTextBoxErrInfo.Size = new Size(183, 215);
             richTextBoxErrInfo.TabIndex = 2;
             richTextBoxErrInfo.Text = "";
             // 
@@ -621,82 +631,82 @@
             // 
             // labJ4
             // 
-            labJ4.Location = new Point(254, 21);
+            labJ4.Location = new Point(80, 115);
             labJ4.Margin = new Padding(4, 0, 4, 0);
             labJ4.Name = "labJ4";
             labJ4.Size = new Size(91, 20);
             labJ4.TabIndex = 0;
-            labJ4.Text = "J4: XXX";
+            labJ4.Text = "0.000";
             labJ4.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // labRx
             // 
-            labRx.Location = new Point(252, 68);
+            labRx.Location = new Point(246, 118);
             labRx.Margin = new Padding(4, 0, 4, 0);
             labRx.Name = "labRx";
             labRx.Size = new Size(93, 17);
             labRx.TabIndex = 0;
-            labRx.Text = "R: XXX";
+            labRx.Text = "0.000";
             labRx.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // labJ3
             // 
-            labJ3.Location = new Point(170, 24);
+            labJ3.Location = new Point(80, 92);
             labJ3.Margin = new Padding(4, 0, 4, 0);
             labJ3.Name = "labJ3";
             labJ3.Size = new Size(92, 17);
             labJ3.TabIndex = 0;
-            labJ3.Text = "J3: XXX";
+            labJ3.Text = "0.000";
             labJ3.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // labZ
             // 
-            labZ.Location = new Point(162, 64);
+            labZ.Location = new Point(244, 90);
             labZ.Margin = new Padding(4, 0, 4, 0);
             labZ.Name = "labZ";
-            labZ.Size = new Size(100, 17);
+            labZ.Size = new Size(100, 22);
             labZ.TabIndex = 0;
-            labZ.Text = "Z: XXX";
+            labZ.Text = "0.000";
             labZ.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // labJ2
             // 
-            labJ2.Location = new Point(84, 24);
+            labJ2.Location = new Point(80, 66);
             labJ2.Margin = new Padding(4, 0, 4, 0);
             labJ2.Name = "labJ2";
-            labJ2.Size = new Size(80, 17);
+            labJ2.Size = new Size(91, 22);
             labJ2.TabIndex = 0;
-            labJ2.Text = "J2: XXX";
+            labJ2.Text = "0.000";
             labJ2.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // labY
             // 
-            labY.Location = new Point(71, 64);
+            labY.Location = new Point(245, 67);
             labY.Margin = new Padding(4, 0, 4, 0);
             labY.Name = "labY";
             labY.Size = new Size(100, 21);
             labY.TabIndex = 0;
-            labY.Text = "Y: XXX";
+            labY.Text = "0.000";
             labY.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // labJ1
             // 
-            labJ1.Location = new Point(7, 24);
+            labJ1.Location = new Point(91, 46);
             labJ1.Margin = new Padding(4, 0, 4, 0);
             labJ1.Name = "labJ1";
             labJ1.Size = new Size(69, 17);
             labJ1.TabIndex = 0;
-            labJ1.Text = "J1: XXX";
+            labJ1.Text = "0.000";
             labJ1.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // labX
             // 
-            labX.Location = new Point(7, 61);
+            labX.Location = new Point(254, 42);
             labX.Margin = new Padding(4, 0, 4, 0);
             labX.Name = "labX";
-            labX.Size = new Size(69, 24);
+            labX.Size = new Size(85, 24);
             labX.TabIndex = 0;
-            labX.Text = "X: XXX";
+            labX.Text = "0.000";
             labX.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // richTextBoxLog
@@ -722,6 +732,16 @@
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(labRun);
+            groupBox1.Controls.Add(label28);
+            groupBox1.Controls.Add(label27);
+            groupBox1.Controls.Add(label25);
+            groupBox1.Controls.Add(label24);
+            groupBox1.Controls.Add(label23);
+            groupBox1.Controls.Add(label22);
+            groupBox1.Controls.Add(label18);
+            groupBox1.Controls.Add(label17);
+            groupBox1.Controls.Add(label12);
             groupBox1.Controls.Add(btnClearErrorInfo);
             groupBox1.Controls.Add(label11);
             groupBox1.Controls.Add(labJ1);
@@ -742,10 +762,100 @@
             groupBox1.TabStop = false;
             groupBox1.Text = "Position";
             // 
+            // labRun
+            // 
+            labRun.AutoSize = true;
+            labRun.Location = new Point(91, 159);
+            labRun.Name = "labRun";
+            labRun.Size = new Size(15, 17);
+            labRun.TabIndex = 12;
+            labRun.Text = "0";
+            // 
+            // label28
+            // 
+            label28.AutoSize = true;
+            label28.Location = new Point(14, 159);
+            label28.Name = "label28";
+            label28.Size = new Size(58, 17);
+            label28.TabIndex = 21;
+            label28.Text = "Running:";
+            // 
+            // label27
+            // 
+            label27.AutoSize = true;
+            label27.Location = new Point(233, 118);
+            label27.Name = "label27";
+            label27.Size = new Size(19, 17);
+            label27.TabIndex = 20;
+            label27.Text = "R:";
+            // 
+            // label25
+            // 
+            label25.AutoSize = true;
+            label25.Location = new Point(233, 70);
+            label25.Name = "label25";
+            label25.Size = new Size(18, 17);
+            label25.TabIndex = 19;
+            label25.Text = "Y:";
+            // 
+            // label24
+            // 
+            label24.AutoSize = true;
+            label24.Location = new Point(233, 92);
+            label24.Name = "label24";
+            label24.Size = new Size(18, 17);
+            label24.TabIndex = 18;
+            label24.Text = "Z:";
+            // 
+            // label23
+            // 
+            label23.AutoSize = true;
+            label23.Location = new Point(60, 69);
+            label23.Name = "label23";
+            label23.Size = new Size(23, 17);
+            label23.TabIndex = 17;
+            label23.Text = "J2:";
+            // 
+            // label22
+            // 
+            label22.AutoSize = true;
+            label22.Location = new Point(58, 92);
+            label22.Name = "label22";
+            label22.Size = new Size(23, 17);
+            label22.TabIndex = 16;
+            label22.Text = "J3:";
+            // 
+            // label18
+            // 
+            label18.AutoSize = true;
+            label18.Location = new Point(58, 118);
+            label18.Name = "label18";
+            label18.Size = new Size(23, 17);
+            label18.TabIndex = 15;
+            label18.Text = "J4:";
+            // 
+            // label17
+            // 
+            label17.AutoSize = true;
+            label17.Location = new Point(233, 46);
+            label17.Name = "label17";
+            label17.Size = new Size(19, 17);
+            label17.TabIndex = 14;
+            label17.Text = "X:";
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Location = new Point(61, 46);
+            label12.Name = "label12";
+            label12.Size = new Size(23, 17);
+            label12.TabIndex = 13;
+            label12.Text = "J1:";
+            // 
             // label11
             // 
             label11.AutoSize = true;
-            label11.Location = new Point(21, 159);
+            label11.Location = new Point(37, 232);
             label11.Margin = new Padding(4, 0, 4, 0);
             label11.Name = "label11";
             label11.Size = new Size(44, 17);
@@ -845,5 +955,15 @@
         private System.Windows.Forms.Button btnEnableAgain;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label11;
+        private Label label27;
+        private Label label25;
+        private Label label24;
+        private Label label23;
+        private Label label22;
+        private Label label18;
+        private Label label17;
+        private Label label12;
+        private Label labRun;
+        private Label label28;
     }
 }

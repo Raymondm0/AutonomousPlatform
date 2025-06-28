@@ -141,7 +141,7 @@ namespace WinFormsApp_Draft.Async
             {
                 try
                 {
-                    textBox.Invoke((MethodInvoker)delegate
+                    textBox.Invoke(new Action(() => 
                     {
                         byte slaveID = 0x01;
                         ushort posAddress = 0x1392;
@@ -150,7 +150,7 @@ namespace WinFormsApp_Draft.Async
                         int low = pos[1];
                         int cur_pos = ((high << 16) + low) / 100 + 1;
                         textBox.Text = Convert.ToString(cur_pos);
-                    });
+                    }));
                     await Task.Delay(10);    
                 }
                 catch { }
@@ -172,7 +172,7 @@ namespace WinFormsApp_Draft.Async
             }
             catch
             {
-                return 0
+                return 0;
             }
         }
     }

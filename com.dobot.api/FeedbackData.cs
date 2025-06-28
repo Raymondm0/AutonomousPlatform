@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CSharpTcpDemo.com.dobot.api
 {
-    class FeedbackData
+    public class FeedbackData
     {
         #region 机器人模式
         public const int NO_CONTROLLER = -1;
