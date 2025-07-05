@@ -227,30 +227,29 @@ namespace WinFormsApp_Draft
 
         private async void MoveTest_Click(object sender, EventArgs e)
         {
-            //string armPath = "ArmPoints.json";
-            //string arm_json = File.ReadAllText(armPath);
-            //ArmConfig? arm_conf = JsonConvert.DeserializeObject<ArmConfig>(arm_json);
-
-            //DescartesPoint pt = new DescartesPoint();
-            //arm_conf.Points.TryGetValue("Zero", out pt);
-            //armForm.mDobotMove.MovL(pt);
-            //arm_conf.Points.TryGetValue("P1", out pt);
-            //armForm.mDobotMove.MovL(pt);
-            //arm_conf.Points.TryGetValue("P2", out pt);
-            //armForm.mDobotMove.MovL(pt);
-            //arm_conf.Points.TryGetValue("Zero", out pt);
-            //armForm.mDobotMove.MovL(pt);
+            string armPath = "ArmPoints.json";
+            string arm_json = File.ReadAllText(armPath);
+            ArmConfig? arm_conf = JsonConvert.DeserializeObject<ArmConfig>(arm_json);
 
             string dispenserPath = "DispenserPoints.json";
             string dispenser_json = File.ReadAllText(dispenserPath);
             DispenserConfig? dispenser_conf = JsonConvert.DeserializeObject<DispenserConfig>(dispenser_json);
 
-            DKPoint pt = new DKPoint();
+            DescartesPoint arm_pt = new DescartesPoint();
+            DKPoint dispenser_pt = new DKPoint();
 
-            dispenser_conf.Points.TryGetValue("P1", out pt);
-            await dispenserForm.MovL(pt);
-            dispenser_conf.Points.TryGetValue("Zero", out pt);
-            await dispenserForm.Reverse_MovL(pt);
+            arm_conf.Points.TryGetValue("Zero", out arm_pt);
+            await armForm.MovL(arm_pt);
+            arm_conf.Points.TryGetValue("P3", out arm_pt);
+            await armForm.MovL(arm_pt);
+            arm_conf.Points.TryGetValue("Zero", out arm_pt);
+            await armForm.MovL(arm_pt);
+
+            dispenser_conf.Points.TryGetValue("P1", out dispenser_pt);
+            await dispenserForm.MovL(dispenser_pt);
+            await Task.Delay(1000);
+            dispenser_conf.Points.TryGetValue("Zero", out dispenser_pt);
+            await dispenserForm.Reverse_MovL(dispenser_pt);
         }
     }
 }

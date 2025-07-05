@@ -461,6 +461,15 @@ namespace CSharpTcpDemo
             }
         }
 
+        public async Task MovL(DescartesPoint pt)
+        {
+            mDobotMove.MovL(pt);
+            do
+            {
+                await Task.Delay(500);
+            } while (running == 1);
+        }
+
         private void btnJointMovJ_Click(object sender, EventArgs e)
         {
             if (arm_enable_state)

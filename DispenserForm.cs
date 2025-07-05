@@ -77,6 +77,10 @@ namespace WinFormsApp_Draft
             {
                 await Task.Run(new Action(() =>
                 {
+                    DispenserConnectionState.Invoke(new Action(() =>
+                    {
+                        DispenserConnectionState.Text = "disconnecting...";
+                    }));
                     cancellationToken_state?.Cancel();
                     Axes.Enable_motor_c(index, x_id, 0);
                     Axes.Enable_motor_c(index, y_id, 0);
