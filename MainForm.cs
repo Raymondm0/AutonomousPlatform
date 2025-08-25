@@ -62,8 +62,7 @@ namespace WinFormsApp_Draft
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            coaterForm.DisableCoater();
-            DisableAuto();
+            new TipLayout().init_btns(8, 12, TipLayoutPanel, Response);
 
             string strPath = System.Windows.Forms.Application.StartupPath + "\\";
             ErrorInfoHelper.ParseControllerJsonFile(strPath + "alarm_controller.json");
@@ -77,32 +76,7 @@ namespace WinFormsApp_Draft
             dispenserForm.TopLevel = false;
         }
 
-        private void Refresh_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        public void EnableAuto()
-        {
-            foreach (System.Windows.Forms.Control ctr in Controls)
-            {
-                if (ctr == AutoRun)
-                {
-                    ctr.Enabled = true;
-                }
-            }
-        }
-
-        public void DisableAuto()
-        {
-            foreach (System.Windows.Forms.Control ctr in Controls)
-            {
-                if (ctr == AutoRun)
-                {
-                    ctr.Enabled = false;
-                }
-            }
-        }
+        private void Refresh_Click(object sender, EventArgs e){ }
 
         // auto read functions, complete automatic
         private async void AutoRead_CheckedChanged(object sender, EventArgs e)
@@ -244,6 +218,8 @@ namespace WinFormsApp_Draft
             await armForm.MovL(arm_pt);
             arm_conf.Points.TryGetValue("Zero", out arm_pt);
             await armForm.MovL(arm_pt);
+
+            await coaterForm.Spin_coat(1000, 10);
 
             dispenser_conf.Points.TryGetValue("P1", out dispenser_pt);
             await dispenserForm.MovL(dispenser_pt);

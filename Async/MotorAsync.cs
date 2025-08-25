@@ -100,7 +100,7 @@ namespace WinFormsApp_Draft.Async
         {
             var task_start = new TaskCompletionSource<bool>();
             EventHandler handler = null;
-            handler = (sender, e) =>
+            handler = async (sender, e) =>
             {
                 byte slaveID = 0x01;
                 ushort modeAddress = 0x1771;
@@ -110,14 +110,14 @@ namespace WinFormsApp_Draft.Async
 
                 master.WriteSingleRegister(slaveID, stopAddress, 0x0000);
                 master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
-                Task.Delay(spin_speed / 7);
+                await Task.Delay(spin_speed / 7);
 
                 ushort[] pos = master.ReadInputRegisters(slaveID, cur_posAddress, 2);
                 int high = pos[0];
                 int low = pos[1];
-                int cur_pos = ((high << 16) + low) / 100 + 1; ;
+                int cur_pos = ((high << 16) + low) / 100 + 1; 
 
-                int reset_pos = 100 * (cur_pos - (cur_pos % 360));
+                int reset_pos = 100 * (cur_pos + (cur_pos % 360));
                 ushort high_convert = (ushort)(reset_pos >> 16);
                 ushort low_convert = (ushort)reset_pos;
                 ushort[] reset_to = { high_convert, low_convert };

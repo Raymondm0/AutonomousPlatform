@@ -32,17 +32,18 @@
             Response = new TextBox();
             SpinTimer = new System.Windows.Forms.Timer(components);
             AutoRead = new CheckBox();
-            FilePath = new TextBox();
-            AutoRun = new GroupBox();
-            SheetName = new TextBox();
-            ShowData = new RichTextBox();
             ControlPanel = new Panel();
             OpenArmForm = new Button();
             OpenCoaterForm = new Button();
             OpenDispenserForm = new Button();
             MoveTest = new Button();
             Refresh = new Button();
-            AutoRun.SuspendLayout();
+            FilePath = new TextBox();
+            ShowData = new RichTextBox();
+            SheetName = new TextBox();
+            label1 = new Label();
+            label2 = new Label();
+            TipLayoutPanel = new TableLayoutPanel();
             SuspendLayout();
             // 
             // Response
@@ -57,48 +58,13 @@
             // AutoRead
             // 
             AutoRead.AutoSize = true;
-            AutoRead.Location = new Point(109, 22);
+            AutoRead.Location = new Point(160, 190);
             AutoRead.Name = "AutoRead";
             AutoRead.Size = new Size(84, 21);
             AutoRead.TabIndex = 47;
             AutoRead.Text = "auto read";
             AutoRead.UseVisualStyleBackColor = true;
             AutoRead.CheckedChanged += AutoRead_CheckedChanged;
-            // 
-            // FilePath
-            // 
-            FilePath.Location = new Point(66, 49);
-            FilePath.Name = "FilePath";
-            FilePath.Size = new Size(174, 23);
-            FilePath.TabIndex = 48;
-            // 
-            // AutoRun
-            // 
-            AutoRun.Controls.Add(SheetName);
-            AutoRun.Controls.Add(ShowData);
-            AutoRun.Controls.Add(FilePath);
-            AutoRun.Controls.Add(AutoRead);
-            AutoRun.Location = new Point(104, 204);
-            AutoRun.Name = "AutoRun";
-            AutoRun.Size = new Size(322, 274);
-            AutoRun.TabIndex = 49;
-            AutoRun.TabStop = false;
-            AutoRun.Text = "Auto";
-            // 
-            // SheetName
-            // 
-            SheetName.Location = new Point(66, 86);
-            SheetName.Name = "SheetName";
-            SheetName.Size = new Size(174, 23);
-            SheetName.TabIndex = 50;
-            // 
-            // ShowData
-            // 
-            ShowData.Location = new Point(59, 141);
-            ShowData.Name = "ShowData";
-            ShowData.Size = new Size(200, 104);
-            ShowData.TabIndex = 49;
-            ShowData.Text = "";
             // 
             // ControlPanel
             // 
@@ -158,25 +124,88 @@
             Refresh.UseVisualStyleBackColor = true;
             Refresh.Click += Refresh_Click;
             // 
+            // FilePath
+            // 
+            FilePath.Location = new Point(134, 217);
+            FilePath.Name = "FilePath";
+            FilePath.Size = new Size(174, 23);
+            FilePath.TabIndex = 48;
+            // 
+            // ShowData
+            // 
+            ShowData.Location = new Point(325, 175);
+            ShowData.Name = "ShowData";
+            ShowData.Size = new Size(200, 104);
+            ShowData.TabIndex = 49;
+            ShowData.Text = "";
+            // 
+            // SheetName
+            // 
+            SheetName.Location = new Point(134, 249);
+            SheetName.Name = "SheetName";
+            SheetName.Size = new Size(174, 23);
+            SheetName.TabIndex = 50;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(70, 220);
+            label1.Name = "label1";
+            label1.Size = new Size(58, 17);
+            label1.TabIndex = 56;
+            label1.Text = "file path:";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(50, 249);
+            label2.Name = "label2";
+            label2.Size = new Size(78, 17);
+            label2.TabIndex = 57;
+            label2.Text = "sheet name:";
+            // 
+            // TipLayoutPanel
+            // 
+            TipLayoutPanel.ColumnCount = 2;
+            TipLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TipLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TipLayoutPanel.Location = new Point(54, 304);
+            TipLayoutPanel.Name = "TipLayoutPanel";
+            TipLayoutPanel.RowCount = 2;
+            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TipLayoutPanel.Size = new Size(471, 299);
+            TipLayoutPanel.TabIndex = 58;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1162, 758);
+            Controls.Add(TipLayoutPanel);
+            Controls.Add(label2);
+            Controls.Add(label1);
+            Controls.Add(ShowData);
+            Controls.Add(SheetName);
             Controls.Add(Refresh);
             Controls.Add(MoveTest);
+            Controls.Add(FilePath);
             Controls.Add(OpenDispenserForm);
+            Controls.Add(AutoRead);
             Controls.Add(OpenCoaterForm);
             Controls.Add(OpenArmForm);
             Controls.Add(ControlPanel);
-            Controls.Add(AutoRun);
             Controls.Add(Response);
             Margin = new Padding(2, 3, 2, 3);
             Name = "MainForm";
             Text = "Form1";
             Load += Form1_Load;
-            AutoRun.ResumeLayout(false);
-            AutoRun.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -185,15 +214,17 @@
         private TextBox Response;
         private System.Windows.Forms.Timer SpinTimer;
         private CheckBox AutoRead;
-        private TextBox FilePath;
-        private GroupBox AutoRun;
-        private RichTextBox ShowData;
-        private TextBox SheetName;
         private Panel ControlPanel;
         private Button OpenArmForm;
         private Button OpenCoaterForm;
         private Button OpenDispenserForm;
         private Button MoveTest;
         private Button Refresh;
+        private TextBox FilePath;
+        private RichTextBox ShowData;
+        private TextBox SheetName;
+        private Label label1;
+        private Label label2;
+        private TableLayoutPanel TipLayoutPanel;
     }
 }

@@ -114,6 +114,9 @@ namespace WinFormsApp_Draft
                         MotorSerialSwitch.Text = "Disconnect Motor";
                         MotorConnectionState.Text = "opened";
                         coater_connect_state = true;
+                        SpinSpeed.Text = "0";
+                        SpinDuration.Text = "0";
+                        AccSpeed.Text = "0";
                     }
                 }
                 catch (Exception ex)
@@ -146,7 +149,7 @@ namespace WinFormsApp_Draft
             }
         }
 
-        private async Task SendRequestAsync()
+        public async Task Spin_coat(int spin_speed, int spin_dur = 0, int acc_speed = 0)
         {
             if (motor_port.IsOpen == true)
             {
@@ -155,11 +158,10 @@ namespace WinFormsApp_Draft
                     byte slaveID = 0x01;
                     ushort modeAddress = 0x1771;
 
-                    if (SpinSpeed.Text != "")
+                    if (spin_speed != 0)
                     {
                         ushort speedAddress = 0x1773;
-                        int speed = Convert.ToInt32(SpinSpeed.Text);
-                        spin_speed = speed * 7;
+                        spin_speed = spin_speed * 7;
                         ushort high = (ushort)(spin_speed >> 16);
                         ushort low = (ushort)spin_speed;
                         ushort[] speed_erpm = { high, low };
@@ -167,7 +169,7 @@ namespace WinFormsApp_Draft
                         master.WriteMultipleRegisters(slaveID, speedAddress, speed_erpm);
                     }
 
-                    if (SpinDuration.Text != "")
+                    if (spin_dur != 0)
                     {
                         spin_timer.Elapsed += new ElapsedEventHandler(FreeStop_timer);
                         spin_timer.Interval = Convert.ToInt32(SpinDuration.Text) * 1000;
@@ -175,13 +177,12 @@ namespace WinFormsApp_Draft
                         spin_timer.Start();
                     }
 
-                    if (AccSpeed.Text != "")
+                    if (acc_speed != 0)
                     {
                         ushort accAddress = 0x1780;
-                        int acc = Convert.ToInt32(AccSpeed.Text);
-                        acc = acc * 7;
-                        ushort high = (ushort)(acc >> 16);
-                        ushort low = (ushort)acc;
+                        acc_speed = acc_speed * 7;
+                        ushort high = (ushort)(acc_speed >> 16);
+                        ushort low = (ushort)acc_speed;
                         ushort[] acc_erpm = { high, low };
 
                         master.WriteMultipleRegisters(slaveID, accAddress, acc_erpm);
@@ -199,7 +200,10 @@ namespace WinFormsApp_Draft
 
         private async void SendRequest_Click(object sender, EventArgs e)
         {
-            await Task.Run(() => SendRequestAsync());
+            spin_speed = Convert.ToInt32(SpinSpeed.Text);
+            int acc_speed = Convert.ToInt32(AccSpeed.Text);
+            int spin_dur = Convert.ToInt32(SpinDuration.Text);
+            await Task.Run(() => Spin_coat(spin_speed, acc_speed, spin_dur));
         }
 
         private void FreeStop_timer(object sender, ElapsedEventArgs e)
