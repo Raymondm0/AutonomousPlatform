@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using WinFormsApp_Draft.DK;
 using System.IO.Ports;
+using System.Reflection.Metadata.Ecma335;
 
 namespace WinFormsApp_Draft
 {
@@ -32,6 +33,7 @@ namespace WinFormsApp_Draft
         public static byte left_tip_status = 1, right_tip_status = 1;//1为达到预定位置
         public static byte left_z_status = 1, right_z_status = 1;
         public static byte x_status = 1, y_status = 1;
+        public static byte pump_status = 1;
 
         private byte left_tip_check = 2, right_tip_check = 2;
 
@@ -129,10 +131,10 @@ namespace WinFormsApp_Draft
                         Pipette.Cpump_zero_p(index, right_tip);
                     }));
 
+                    check_pipette();
+                    await reset_dispenser();
                     DispenserSerialSwitch.Text = "disconnect";
                     DispenserConnectionState.Text = "dispenser connected";
-                    check_pipette();
-                    reset_dispenser();
                 }
                 else
                 {
@@ -144,12 +146,12 @@ namespace WinFormsApp_Draft
         private async void ResetDispensor_Click(object sender, EventArgs e)
         {
             check_pipette();
-            reset_dispenser();
+            await reset_dispenser();
             Response.Text = "reset done";
         }
 
         //reset the dispenser, moving it back to zero point and dropping the tips, but not spitting liquid even if residual
-        public async void reset_dispenser()
+        public async Task reset_dispenser()
         {
             Pipette.Back_tip_p(index, left_tip);
             Pipette.Back_tip_p(index, right_tip);
@@ -164,27 +166,31 @@ namespace WinFormsApp_Draft
             await Task.Delay(3000);
             Axes.Zero_c(index, x_id);
             Axes.Zero_c(index, y_id);
-
-            if (this.Response.InvokeRequired)
+            do
             {
-                this.Response.Invoke(new Action(() => { Response.Text = "reset done"; }));
-            }
-            else
-            {
-                Response.Text = "reset done";
-            }
+                Axes.Find_status_c(index, y_id, ref x_status);
+                Axes.Find_status_c(index, x_id, ref y_status);
+                await Task.Delay(200);
+            } while (x_status != 1 & y_status != 1);
         }
 
-        private void AxesManeuver_Click(object sender, EventArgs e)
+        private async void AxesManeuver_Click(object sender, EventArgs e)
         {
             point.x = Convert.ToInt32(X.Text);
             point.y = Convert.ToInt32(Y.Text);
             point.lz = Convert.ToInt32(LeftZ.Text);
             point.rz = Convert.ToInt32(RightZ.Text);
-            MovL(point);
+            await Task.Run(() => MovL(point));
             check_pipette();
         }
 
+        //entrance for auto moving in back and forth 
+        /// <summary>
+        /// write the point name down and the dispenser will move to the correlated point, going horizontally first
+        /// points are defined in DispenserPoints.json
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
         public async Task MovL(DKPoint point)
         {
             if (point == null) return;
@@ -209,6 +215,12 @@ namespace WinFormsApp_Draft
                 } while (left_z_status != 1 & right_z_status != 1);
             }
         }
+        /// <summary>
+        /// write the point name down and the dispenser will move to the correlated point, going vertically first
+        /// points are defined in DispenserPoints.json
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
         public async Task Reverse_MovL(DKPoint point)
         {
             if (point == null) return;
@@ -240,7 +252,11 @@ namespace WinFormsApp_Draft
         }
 
         //check if tip is on specific pipette
-        private void check_pipette()
+        /// <summary>
+        /// 0: no tip available; 1: left available; 2: right available; 3: both available 
+        /// </summary>
+        /// <returns></returns>
+        private int check_pipette()
         {
             Pipette.Find_tip_p(index, left_tip, ref left_tip_check);
             Pipette.Find_tip_p(index, right_tip, ref right_tip_check);
@@ -251,28 +267,71 @@ namespace WinFormsApp_Draft
             {
                 LeftTipEnable.Enabled = true;
                 response += "Left pipette available.";
+                flag += 1;
             }
             else
             {
                 LeftTipEnable.Enabled = false;
-                flag++;
             }
 
             if (right_tip_check != 2)
             {
                 RightTipEnable.Enabled = true;
                 response += "Right pipette available.";
+                flag += 2;
             }
             else
             {
                 RightTipEnable.Enabled = false;
-                flag++;
             }
-            if (flag == 2)
+
+            if (flag == 0)
             {
                 response = "No pipettes available";
             }
             Response.Text = response;
+            return flag;
+        }
+
+        //entrance for auto spit and suck
+        /// <summary>
+        /// the unit of volume is ul; 1 for left tip and 2 for right;
+        /// max of volume is 32767, otherwise higher bits will be cut off
+        /// </summary>
+        /// <param name="volume"></param>
+        /// <param name="tip"></param>
+        /// <returns></returns>
+        public async Task Tip_Suck(int volume, byte tip = left_tip)
+        {
+            byte return_value = 0;
+            int flag = check_pipette();
+            if (flag == tip || flag == 3)
+            {
+                pump_status = 0;
+                Int16 vol_int16 = Convert.ToInt16(volume);
+                Pipette.Suck_p(index, tip, vol_int16, ref return_value);
+                do
+                {
+                    Pipette.Find_status_p(index, tip, ref pump_status);
+                    await Task.Delay(500);
+                } while (pump_status != 1);
+            }
+        }
+        public async Task Tip_Spit(int volume, byte tip = left_tip)
+        {
+            byte return_value = 0;
+            int flag = check_pipette();
+            if (flag == tip || flag == 3)
+            {
+                pump_status = 0;
+                Int16 vol_int16 = Convert.ToInt16(volume);
+                Pipette.Spit_p(index, tip, vol_int16, ref return_value);
+                do
+                {
+                    Pipette.Find_status_p(index, tip, ref pump_status);
+                    await Task.Delay(500);
+                } while (pump_status != 1);
+            }
         }
 
         private void LeftTipSuck_Click(object sender, EventArgs e)

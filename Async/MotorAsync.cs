@@ -15,26 +15,23 @@ namespace WinFormsApp_Draft.Async
     internal class MotorAsync
     {
         //start driver heart beat 
-        public async Task StartBeatAsync(IModbusMaster master ,CancellationToken cancellationToken)
-        {
-            byte slaveID = 0x01;
-            ushort stopAddress = 0x177E;
-            ushort modeAddress = 0x1771;
-            ushort beatAddress = 0x1770;
-            master.WriteSingleRegister(slaveID, stopAddress, 0x0000);
-            master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
+        //public async Task StartBeatAsync(IModbusMaster master ,CancellationToken cancellationToken)
+        //{
+        //    byte slaveID = 0x01;
+        //    //ushort stopAddress = 0x177E;
+        //    //ushort modeAddress = 0x1771;
+        //    ushort beatAddress = 0x1770;
+        //    //master.WriteSingleRegister(slaveID, stopAddress, 0x0000);
+        //    //master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
 
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                try
-                {
-                    master.WriteSingleRegister(slaveID, beatAddress, 0x0001);
-                    master.WriteSingleRegister(slaveID, beatAddress, 0x0002);
-                    await Task.Delay(10);
-                }
-                catch { }
-            }
-        }
+        //    while (!cancellationToken.IsCancellationRequested)
+        //    {
+        //        master.WriteSingleRegister(slaveID, beatAddress, 0x0001);
+        //        await Task.Delay(10);
+        //        master.WriteSingleRegister(slaveID, beatAddress, 0x0002);
+        //        await Task.Delay(10);
+        //    }
+        //}
 
         //freely stop the motor if button pressed
         public async Task FreeStopAsync(Button freestop, IModbusMaster master)
@@ -158,22 +155,22 @@ namespace WinFormsApp_Draft.Async
         }
 
         //return motor immediate position, invoke in mainform
-        public async Task<int> UpdatePositionAsync(IModbusMaster master, CancellationToken cancellationToken)
-        {
-            try
-            {
-                byte slaveID = 0x01;
-                ushort posAddress = 0x1392;
-                ushort[] pos = master.ReadInputRegisters(slaveID, posAddress, 2);
-                int high = pos[0];
-                int low = pos[1];
-                int cur_pos = ((high << 16) + low) / 100 + 1;
-                return cur_pos;
-            }
-            catch
-            {
-                return 0;
-            }
-        }
+        //public async Task<int> UpdatePositionAsync(IModbusMaster master, CancellationToken cancellationToken)
+        //{
+        //    try
+        //    {
+        //        byte slaveID = 0x01;
+        //        ushort posAddress = 0x1392;
+        //        ushort[] pos = master.ReadInputRegisters(slaveID, posAddress, 2);
+        //        int high = pos[0];
+        //        int low = pos[1];
+        //        int cur_pos = ((high << 16) + low) / 100 + 1;
+        //        return cur_pos;
+        //    }
+        //    catch
+        //    {
+        //        return 0;
+        //    }
+        //}
     }
 }

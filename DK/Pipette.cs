@@ -22,6 +22,9 @@ namespace WinFormsApp_Draft.DK
         public static extern int Find_tip_p(int index, byte id, ref byte return_value);
 
         [DllImport("DK.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Find_status_p(int index, byte id, ref byte return_value);
+
+        [DllImport("DK.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int Suck_p(byte index, byte id, Int16 suck_ul, ref byte return_value);
 
         [DllImport("DK.dll", CallingConvention = CallingConvention.Cdecl)]
