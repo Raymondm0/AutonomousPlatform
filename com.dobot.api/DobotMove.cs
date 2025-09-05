@@ -9,6 +9,20 @@ namespace CSharpTcpDemo.com.dobot.api
 {
     public class DobotMove : DobotClient
     {
+        //start gripping
+        public void Grip(int index)
+        {
+            string grip = String.Format("DO({0},{1})", index, 1);
+            SendData(grip);
+        }
+
+        //end gripping and release the gripper
+        public void Release(int index)
+        {
+            string release = String.Format("DO({0},{1})", index, 0);
+            SendData(release);
+        }
+
         protected override void OnConnected(Socket sock)
         {
             sock.SendTimeout = 5000;

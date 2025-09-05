@@ -197,7 +197,7 @@ namespace CSharpTcpDemo
         {
             DisableWindow();
             PrintLog("retry connecting...");
-            Thread thd = new Thread(() =>
+            Thread thd = new Thread(async () =>
             {
                 sender.Disconnect();
 
@@ -222,6 +222,7 @@ namespace CSharpTcpDemo
             });
             thd.Start();
         }
+
         /// <summary>
         /// 当发生网络错误时，触发该事件
         /// </summary>
@@ -360,6 +361,18 @@ namespace CSharpTcpDemo
                 }));
 
                 PrintLog(string.Format("Receive From {0}:{1}: {2}", mDashboard.IP, mDashboard.Port, ret));
+
+                OffsetPosition pt = new OffsetPosition();
+                
+                pt.x = pt.y = pt.z = pt.r = 10;
+                pt.user = 0;
+                PrintLog(string.Format("send to {0}:{1}: RelMovLUser({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
+                mDobotMove.RelMovLUser(pt);
+                
+                pt.x = pt.y = pt.z = pt.r = -10;
+                pt.user = 0;
+                PrintLog(string.Format("send to {0}:{1}: RelMovLUser({2})", mDobotMove.IP, mDobotMove.Port, pt.ToString()));
+                mDobotMove.RelMovLUser(pt);
             });
             thd.Start();
         }
@@ -468,6 +481,25 @@ namespace CSharpTcpDemo
             {
                 await Task.Delay(500);
             } while (running == 1);
+        }
+
+        public async Task Grip(int index)
+        {
+            Thread thd = new Thread(() =>
+            {
+                mDobotMove.Grip(index);
+            });
+            thd.Start();
+            await Task.Delay(1000);
+        }
+
+        public async Task Release(int index)
+        {
+            Thread thd = new Thread(() =>
+            {
+                mDobotMove.Release(index);
+            });
+            thd.Start();
         }
 
         private void btnJointMovJ_Click(object sender, EventArgs e)
