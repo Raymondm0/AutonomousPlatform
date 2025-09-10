@@ -210,32 +210,32 @@ namespace WinFormsApp_Draft
             DescartesPoint arm_pt = new DescartesPoint();
             DKPoint dispenser_pt = new DKPoint();
 
-            arm_conf.Points.TryGetValue("Zero", out arm_pt);
-            await armForm.MovL(arm_pt);
-            arm_conf.Points.TryGetValue("P3", out arm_pt);
-            await armForm.MovL(arm_pt);
-            arm_conf.Points.TryGetValue("Zero", out arm_pt);
-            await armForm.MovL(arm_pt);
-            Response.Text += "Moving done. ";
+            //await armForm.Grip(13);
+            //Response.Text = "Gripping start.";
 
-            await armForm.Grip(13);
-            await armForm.Release(13);
-            Response.Text += "Gripping done. ";
+            //arm_conf.Points.TryGetValue("Zero", out arm_pt);
+            //await armForm.MovL(arm_pt);
+            //arm_conf.Points.TryGetValue("P3", out arm_pt);
+            //await armForm.MovL(arm_pt);
+            //arm_conf.Points.TryGetValue("Zero", out arm_pt);
+            //await armForm.MovL(arm_pt);
+            //Response.Text = "Moving done. ";
 
-            //await coaterForm.Spin_Coat(4000, 4000, 3);
-            //await Task.Delay(3000);
-            //Response.Text = "Coating done. ";
+            //await armForm.Release(13);
+            //Response.Text = "Gripping done. ";
 
-            //dispenser_conf.Points.TryGetValue("P1", out dispenser_pt);
+            await coaterForm.Spin_Coat(4000, 1000, 6);
+            Response.Text = "Coating done. ";
+
+            //dispenser_conf.Points.TryGetValue("P1", out dispenser_pt);// (6500,21500,100000,0)
             //await dispenserForm.MovL(dispenser_pt);
             //await dispenserForm.Tip_Suck(100);
-            //dispenser_conf.Points.TryGetValue("P2", out dispenser_pt);
+            //dispenser_conf.Points.TryGetValue("P2", out dispenser_pt);// (6500,21500,0,0)
             //await dispenserForm.MovL(dispenser_pt);
             //await dispenserForm.Tip_Spit(100);
             //dispenser_conf.Points.TryGetValue("Zero", out dispenser_pt);
             //await dispenserForm.Reverse_MovL(dispenser_pt);
             //Response.Text = "Dispensing liquid done. ";
-            //armForm.DO();
         }
     }
 }

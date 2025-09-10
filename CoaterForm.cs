@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Modbus.Device;
 using System.IO.Ports;
 using System.Timers;
+using DocumentFormat.OpenXml.Presentation;
 
 namespace WinFormsApp_Draft
 {
@@ -19,12 +20,12 @@ namespace WinFormsApp_Draft
         private static SerialPort motor_port = new SerialPort();
         public IModbusMaster master;
 
-        private static int static_spin_speed;
-        private static int static_acc_speed;
-        private static int static_spin_dur;
-        private System.Timers.Timer spin_timer = new System.Timers.Timer();
-        private CancellationTokenSource cancellationTokenSource_pos;
-        private CancellationTokenSource cancellationTokenSource_beat;
+        private static int static_spin_speed = 0;
+        private static int static_acc_speed = 0;
+        private static int static_spin_dur = 0;
+        private System.Timers.Timer spin_timer = new System.Timers.Timer(); 
+        private CancellationTokenSource cancellationTokenSource_pos = new CancellationTokenSource();
+        private CancellationTokenSource cancellationTokenSource_beat = new CancellationTokenSource();
         public bool coater_connect_state = false;
 
         public CoaterForm()
@@ -114,7 +115,6 @@ namespace WinFormsApp_Draft
                         SpinDuration.Text = "0";
                         AccSpeed.Text = "1000";
 
-                        cancellationTokenSource_beat = new CancellationTokenSource();
                         Task.Run(() => StartBeatAsync(master, cancellationTokenSource_beat.Token));
 
                         byte slaveID = 0x01;
@@ -136,7 +136,6 @@ namespace WinFormsApp_Draft
                 try
                 {
                     Response.Clear();
-                    motor_port.Close();
                     MotorSerialSwitch.Text = "Open Serial";
                     MotorConnectionState.Text = "closed";
                     if (cancellationTokenSource_beat != null)
@@ -144,6 +143,7 @@ namespace WinFormsApp_Draft
                         cancellationTokenSource_beat?.Cancel();
                     }
                     coater_connect_state = false;
+                    motor_port.Close();
                     DisableCoater();
                 }
                 catch (Exception ex)
@@ -168,7 +168,6 @@ namespace WinFormsApp_Draft
                     await Task.Delay(100);
                 }
             });
-            
         }
 
         //start the motor
@@ -240,20 +239,29 @@ namespace WinFormsApp_Draft
         }
 
         //entrance for auto spin coating
-        public async Task Spin_Coat(int spin_speed, int acc_speed, int spin_dur, bool main = false)
+        /// <summary>
+        /// spin_speed rpm; acc_speed rpm/s; spin_dur s
+        /// </summary>
+        /// <param name="spin_speed"></param>
+        /// <param name="acc_speed"></param>
+        /// <param name="spin_dur"></param>
+        /// <returns></returns>
+        public async Task Spin_Coat(int spin_speed, int acc_speed, int spin_dur)
         {
             static_spin_speed = spin_speed;
             static_acc_speed = acc_speed;
             static_spin_dur = spin_dur;
             await Task.Run(() => Send_Request());
+            await Task.Delay(spin_dur * 1000);
+            await Task.Run(() => ResetMotorAsync(master, spin_speed));
         }
 
         private async void SendRequest_Click(object sender, EventArgs e)
         {
-            int spin_speed = Convert.ToInt32(SpinSpeed.Text);
-            int acc_speed = Convert.ToInt32(AccSpeed.Text);
-            int spin_dur = Convert.ToInt32(SpinDuration.Text);
-            await Task.Run(() => Spin_Coat(spin_speed, acc_speed, spin_dur));
+            static_spin_speed = Convert.ToInt32(SpinSpeed.Text);
+            static_acc_speed = Convert.ToInt32(AccSpeed.Text);
+            static_spin_dur = Convert.ToInt32(SpinDuration.Text);
+            await Task.Run(() => Send_Request());
         }
 
         private void FreeStop_timer(object? sender, ElapsedEventArgs e)
@@ -277,21 +285,11 @@ namespace WinFormsApp_Draft
 
         private async Task FreeStopAsync(Button freestop, IModbusMaster master)
         {
-            var task_start = new TaskCompletionSource<bool>();
-            EventHandler handler = (sender, e) =>
-            {
-                byte slaveID = 0x01;
-                ushort stopAddress = 0x177E;
-                ushort modeAddress = 0x1771;
-                master.WriteSingleRegister(slaveID, stopAddress, 0x0000);
-                master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
-
-                task_start.SetResult(true);
-            };
-
-            freestop.Click += handler;
-            await task_start.Task;
-            freestop.Click -= handler;
+            byte slaveID = 0x01;
+            ushort stopAddress = 0x177E;
+            ushort modeAddress = 0x1771;
+            master.WriteSingleRegister(slaveID, stopAddress, 0x0000);
+            master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
         }
 
         //stop the motor with brutal force if button pressed
@@ -303,21 +301,11 @@ namespace WinFormsApp_Draft
 
         private async Task ForceStopAsync(Button forcestop, IModbusMaster master)
         {
-            var task_start = new TaskCompletionSource<bool>();
-            EventHandler handler = (sender, e) =>
-            {
-                byte slaveID = 0x01;
-                ushort stopAddress = 0x177E;
-                ushort modeAddress = 0x1771;
-                master.WriteSingleRegister(slaveID, stopAddress, 0x0064);
-                master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
-
-                task_start.SetResult(true);
-            };
-
-            forcestop.Click += handler;
-            await task_start.Task;
-            forcestop.Click -= handler;
+            byte slaveID = 0x01;
+            ushort stopAddress = 0x177E;
+            ushort modeAddress = 0x1771;
+            master.WriteSingleRegister(slaveID, stopAddress, 0x0064);
+            master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
         }
 
         //show motor position at live if checkbox checked
@@ -325,7 +313,6 @@ namespace WinFormsApp_Draft
         {
             if (Update.Checked)
             {
-                cancellationTokenSource_pos = new CancellationTokenSource();
                 await Task.Run(() => UpdatePositionAsync(Position, master, cancellationTokenSource_pos.Token));
             }
             else
@@ -339,8 +326,8 @@ namespace WinFormsApp_Draft
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                //try
-                //{
+                try
+                {
                     byte slaveID = 0x01;
                     ushort posAddress = 0x1392;
                     ushort[] pos = master.ReadInputRegisters(slaveID, posAddress, 2);
@@ -350,12 +337,11 @@ namespace WinFormsApp_Draft
                     
                     textBox.Invoke(() =>
                     {
-                        Response.Text = Convert.ToString(high)+Convert.ToString(low);
-                        textBox.Text = Convert.ToString(cur_pos);
+                       textBox.Text = Convert.ToString(cur_pos);
                     });
                     await Task.Delay(100);
-                //}
-                //catch { }
+                }
+                catch { }
             }
         }
 
@@ -363,70 +349,70 @@ namespace WinFormsApp_Draft
         private async void ClearPos_Click(object sender, EventArgs e)
         {
             Position.Clear();
-            await Task.Run(() => ClearPosAsync(ClearPos, master));
+            await Task.Run(() => ClearPosAsync(master));
         }
 
-        private async Task ClearPosAsync(Button clearpos, IModbusMaster master)
+        private async Task ClearPosAsync(IModbusMaster master)
         {
-            var task_start = new TaskCompletionSource<bool>();
-            EventHandler handler = (sender, e) =>
-            {
-                byte slaveID = 0x01;
-                ushort registerAddress_write = 0x177c;
-                ushort[] val = { 0x0000, 0x0000 };
-                master.WriteMultipleRegisters(slaveID, registerAddress_write, val);
-
-                task_start.SetResult(true);
-            };
-
-            clearpos.Click += handler;
-            await task_start.Task;
-            clearpos.Click -= handler;
+            byte slaveID = 0x01;
+            ushort registerAddress_write = 0x177c;
+            ushort[] val = { 0x0000, 0x0000 };
+            master.WriteMultipleRegisters(slaveID, registerAddress_write, val);
         }
 
         private async void ResetMotor_Click(object sender, EventArgs e)
         {
-            await Task.Run(() => ResetMotorAsync(ResetMotor, master, static_spin_speed));
-            static_spin_speed = 0;
+            await Task.Run(() => ResetMotorAsync(master));
         }
 
-        //reset motor to zero position if button pressed
-        private async Task ResetMotorAsync(Button reset, IModbusMaster master, int spin_speed = 14000)
+        //reset motor to zero
+        private async Task ResetMotorAsync(IModbusMaster master, int spin_speed = 0)
         {
-            var task_start = new TaskCompletionSource<bool>();
-            EventHandler handler = null;
-            handler = async (sender, e) =>
+            try
             {
-                byte slaveID = 0x01;
-                ushort modeAddress = 0x1771;
-                ushort stopAddress = 0x177E;
-                ushort cur_posAddress = 0x1392;
-                ushort resetAddress = 0x1776;
+                await Task.Run(() => slow_down(master));
+                await Task.Delay(spin_speed * 2 + 500);
+                await Task.Run(() => reset_to_pos(master));
+            }
+            catch { }
+        }
 
-                master.WriteSingleRegister(slaveID, stopAddress, 0x0000);
-                master.WriteSingleRegister(slaveID, modeAddress, 0x0006);
-                await Task.Delay(spin_speed / 7);
+        private async Task slow_down(IModbusMaster maseter)
+        {
+            byte slaveID = 0x01;
+            ushort modeAddress = 0x1771;
+            ushort speedAddress = 0x1773;
 
-                ushort[] pos = master.ReadInputRegisters(slaveID, cur_posAddress, 2);
-                int high = pos[0];
-                int low = pos[1];
-                int cur_pos = ((high << 16) + low) / 100 + 1;
+            int e_speed = 0;
+            ushort high0 = (ushort)(e_speed >> 16);
+            ushort low0 = (ushort)e_speed;
+            ushort[] speed_erpm = { high0, low0 };
 
-                int reset_pos = 100 * (cur_pos + (cur_pos % 360));
-                ushort high_convert = (ushort)(reset_pos >> 16);
-                ushort low_convert = (ushort)reset_pos;
-                ushort[] reset_to = { high_convert, low_convert };
+            master.WriteMultipleRegisters(slaveID, speedAddress, speed_erpm);
+            master.WriteSingleRegister(slaveID, modeAddress, 0x0001);
+        }
 
-                master.WriteSingleRegister(slaveID, modeAddress, 0xFFFF);
-                master.WriteMultipleRegisters(slaveID, resetAddress, reset_to);
-                master.WriteSingleRegister(slaveID, modeAddress, 0x0003);
+        private async Task reset_to_pos(IModbusMaster master)
+        {
+            byte slaveID = 0x01;
+            ushort modeAddress = 0x1771;
+            ushort cur_posAddress = 0x1392;
+            ushort resetAddress = 0x1776;
 
-                task_start.SetResult(true);
-            };
+            ushort[] pos = master.ReadInputRegisters(slaveID, cur_posAddress, 2);
+            int high = pos[0];
+            int low = pos[1];
+            int cur_pos = ((high << 16) + low) / 100 + 1;
 
-            reset.Click += handler;
-            await task_start.Task;
-            reset.Click -= handler;
+            int reset_pos = 100 * (cur_pos - (cur_pos % 360) + 360);
+            ushort high_convert = (ushort)(reset_pos >> 16);
+            ushort low_convert = (ushort)reset_pos;
+            ushort[] reset_to = { high_convert, low_convert };
+
+            master.WriteMultipleRegisters(slaveID, resetAddress, reset_to);
+            master.WriteSingleRegister(slaveID, modeAddress, 0x0003);
+
+            static_spin_speed = 0;
         }
     }
 }

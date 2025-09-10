@@ -198,21 +198,23 @@ namespace WinFormsApp_Draft
             {
                 Axes.Motor_Absolute_movement_c(index, x_id, point.x);
                 Axes.Motor_Absolute_movement_c(index, y_id, point.y);
-                do
-                {
-                    Axes.Find_status_c(index, y_id, ref x_status);
-                    Axes.Find_status_c(index, x_id, ref y_status);
-                    await Task.Delay(500);
-                } while (x_status != 1 & y_status != 1);
+                //do
+                //{
+                //    Axes.Find_status_c(index, y_id, ref x_status);
+                //    Axes.Find_status_c(index, x_id, ref y_status);
+                //    await Task.Delay(500);
+                //} while (x_status != 1 & y_status != 1);
+                await Task.Delay(2000);
 
                 Axes.Motor_Absolute_movement_c(index, left_z, point.lz);
                 Axes.Motor_Absolute_movement_c(index, right_z, point.rz);
-                do
-                {
-                    Axes.Find_status_c(index, left_z, ref left_z_status);
-                    Axes.Find_status_c(index, right_z, ref right_z_status);
-                    await Task.Delay(500);
-                } while (left_z_status != 1 & right_z_status != 1);
+                //do
+                //{
+                //    Axes.Find_status_c(index, left_z, ref left_z_status);
+                //    Axes.Find_status_c(index, right_z, ref right_z_status);
+                //    await Task.Delay(500);
+                //} while (left_z_status != 1 & right_z_status != 1);
+                await Task.Delay(2000);
             }
         }
         /// <summary>
@@ -228,21 +230,23 @@ namespace WinFormsApp_Draft
             {
                 Axes.Motor_Absolute_movement_c(index, left_z, point.lz);
                 Axes.Motor_Absolute_movement_c(index, right_z, point.rz);
-                do
-                {
-                    Axes.Find_status_c(index, left_z, ref left_z_status);
-                    Axes.Find_status_c(index, right_z, ref right_z_status);
-                    await Task.Delay(500);
-                } while (left_z_status != 1 & right_z_status != 1 );  
-                
+                //do
+                //{
+                //    Axes.Find_status_c(index, left_z, ref left_z_status);
+                //    Axes.Find_status_c(index, right_z, ref right_z_status);
+                //    await Task.Delay(500);
+                //} while (left_z_status != 1 & right_z_status != 1);
+                await Task.Delay(2000);
+
                 Axes.Motor_Absolute_movement_c(index, x_id, point.x);
                 Axes.Motor_Absolute_movement_c(index, y_id, point.y);
-                do
-                {
-                    Axes.Find_status_c(index, y_id, ref x_status);
-                    Axes.Find_status_c(index, x_id, ref y_status);
-                    await Task.Delay(500);
-                } while (x_status != 1 & y_status != 1);
+                //do
+                //{
+                //    Axes.Find_status_c(index, y_id, ref x_status);
+                //    Axes.Find_status_c(index, x_id, ref y_status);
+                //    await Task.Delay(1000);
+                //} while (x_status != 1 & y_status != 1);
+                await Task.Delay(2000);
             }
         }
 
