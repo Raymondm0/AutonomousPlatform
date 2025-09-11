@@ -32,7 +32,7 @@
             Response = new TextBox();
             DispenserConnectionState = new TextBox();
             ResetDispensor = new Button();
-            AxesManeuver = new Button();
+            AxesManeuver_front = new Button();
             X = new TextBox();
             Y = new TextBox();
             LeftZ = new TextBox();
@@ -55,6 +55,7 @@
             RightTipSpit = new Button();
             CheckTip = new Button();
             DispenserPorts = new ListBox();
+            AxesManeuver_back = new Button();
             LeftTipEnable.SuspendLayout();
             RightTipEnable.SuspendLayout();
             SuspendLayout();
@@ -88,7 +89,7 @@
             // 
             // ResetDispensor
             // 
-            ResetDispensor.Location = new Point(292, 162);
+            ResetDispensor.Location = new Point(357, 195);
             ResetDispensor.Name = "ResetDispensor";
             ResetDispensor.Size = new Size(75, 23);
             ResetDispensor.TabIndex = 3;
@@ -96,15 +97,15 @@
             ResetDispensor.UseVisualStyleBackColor = true;
             ResetDispensor.Click += ResetDispensor_Click;
             // 
-            // AxesManeuver
+            // AxesManeuver_front
             // 
-            AxesManeuver.Location = new Point(292, 133);
-            AxesManeuver.Name = "AxesManeuver";
-            AxesManeuver.Size = new Size(75, 23);
-            AxesManeuver.TabIndex = 4;
-            AxesManeuver.Text = "run";
-            AxesManeuver.UseVisualStyleBackColor = true;
-            AxesManeuver.Click += AxesManeuver_Click;
+            AxesManeuver_front.Location = new Point(292, 133);
+            AxesManeuver_front.Name = "AxesManeuver_front";
+            AxesManeuver_front.Size = new Size(96, 23);
+            AxesManeuver_front.TabIndex = 4;
+            AxesManeuver_front.Text = "run_forward";
+            AxesManeuver_front.UseVisualStyleBackColor = true;
+            AxesManeuver_front.Click += AxesManeuver_front_Click;
             // 
             // X
             // 
@@ -292,7 +293,7 @@
             // 
             // CheckTip
             // 
-            CheckTip.Location = new Point(292, 195);
+            CheckTip.Location = new Point(276, 195);
             CheckTip.Name = "CheckTip";
             CheckTip.Size = new Size(75, 23);
             CheckTip.TabIndex = 20;
@@ -309,11 +310,22 @@
             DispenserPorts.Size = new Size(120, 89);
             DispenserPorts.TabIndex = 21;
             // 
+            // AxesManeuver_back
+            // 
+            AxesManeuver_back.Location = new Point(290, 162);
+            AxesManeuver_back.Name = "AxesManeuver_back";
+            AxesManeuver_back.Size = new Size(98, 23);
+            AxesManeuver_back.TabIndex = 22;
+            AxesManeuver_back.Text = "run_backward";
+            AxesManeuver_back.UseVisualStyleBackColor = true;
+            AxesManeuver_back.Click += AxesManeuver_back_Click;
+            // 
             // DispenserForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(444, 516);
+            Controls.Add(AxesManeuver_back);
             Controls.Add(DispenserPorts);
             Controls.Add(CheckTip);
             Controls.Add(RightTipEnable);
@@ -326,7 +338,7 @@
             Controls.Add(LeftZ);
             Controls.Add(Y);
             Controls.Add(X);
-            Controls.Add(AxesManeuver);
+            Controls.Add(AxesManeuver_front);
             Controls.Add(ResetDispensor);
             Controls.Add(DispenserConnectionState);
             Controls.Add(Response);
@@ -348,7 +360,7 @@
         private TextBox Response;
         private TextBox DispenserConnectionState;
         private Button ResetDispensor;
-        private Button AxesManeuver;
+        private Button AxesManeuver_front;
         private TextBox X;
         private TextBox Y;
         private TextBox LeftZ;
@@ -371,5 +383,6 @@
         private Button LeftTipDrop;
         private Button RightTipDrop;
         private ListBox DispenserPorts;
+        private Button AxesManeuver_back;
     }
 }

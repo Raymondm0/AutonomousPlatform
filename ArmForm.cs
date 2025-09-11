@@ -360,6 +360,9 @@ namespace CSharpTcpDemo
                     }
                 }));
 
+                mDashboard.ClearError();
+                mDashboard.ResetRobot();
+
                 PrintLog(string.Format("Receive From {0}:{1}: {2}", mDashboard.IP, mDashboard.Port, ret));
 
                 OffsetPosition pt = new OffsetPosition();

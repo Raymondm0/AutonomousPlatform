@@ -24,8 +24,8 @@ namespace WinFormsApp_Draft
         private static int static_acc_speed = 0;
         private static int static_spin_dur = 0;
         private System.Timers.Timer spin_timer = new System.Timers.Timer(); 
-        private CancellationTokenSource cancellationTokenSource_pos = new CancellationTokenSource();
-        private CancellationTokenSource cancellationTokenSource_beat = new CancellationTokenSource();
+        private CancellationTokenSource cancellationTokenSource_pos;
+        private CancellationTokenSource cancellationTokenSource_beat;
         public bool coater_connect_state = false;
 
         public CoaterForm()
@@ -108,6 +108,9 @@ namespace WinFormsApp_Draft
                     if (motor_port.IsOpen)
                     {   
                         EnableCoater();
+                        cancellationTokenSource_pos = new CancellationTokenSource();
+                        cancellationTokenSource_beat = new CancellationTokenSource();   
+
                         MotorSerialSwitch.Text = "Disconnect Motor";
                         MotorConnectionState.Text = "opened";
                         coater_connect_state = true;
@@ -128,7 +131,7 @@ namespace WinFormsApp_Draft
                     motor_port.Close();
                     MotorSerialSwitch.Text = "Open Serial";
                     MotorConnectionState.Text = "closed";
-                    cancellationTokenSource_beat.Cancel();
+                    DisableCoater();
                 }
         }
             else
@@ -140,7 +143,11 @@ namespace WinFormsApp_Draft
                     MotorConnectionState.Text = "closed";
                     if (cancellationTokenSource_beat != null)
                     {
-                        cancellationTokenSource_beat?.Cancel();
+                        cancellationTokenSource_beat.Cancel();
+                    }
+                    if(cancellationTokenSource_pos != null)
+                    {
+                        cancellationTokenSource_pos.Cancel();
                     }
                     coater_connect_state = false;
                     motor_port.Close();
@@ -317,8 +324,9 @@ namespace WinFormsApp_Draft
             }
             else
             {
-                cancellationTokenSource_pos?.Cancel();
+                cancellationTokenSource_pos.Cancel();
                 Position.Clear();
+                cancellationTokenSource_pos = new CancellationTokenSource();
             }
         }
 
@@ -362,7 +370,7 @@ namespace WinFormsApp_Draft
 
         private async void ResetMotor_Click(object sender, EventArgs e)
         {
-            await Task.Run(() => ResetMotorAsync(master));
+            await Task.Run(() => ResetMotorAsync(master, static_spin_speed));
         }
 
         //reset motor to zero
@@ -373,6 +381,7 @@ namespace WinFormsApp_Draft
                 await Task.Run(() => slow_down(master));
                 await Task.Delay(spin_speed * 2 + 500);
                 await Task.Run(() => reset_to_pos(master));
+                await Task.Delay(500);
             }
             catch { }
         }

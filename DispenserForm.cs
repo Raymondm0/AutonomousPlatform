@@ -6,12 +6,15 @@ using System.Timers;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using WinFormsApp_Draft.DK;
 using System.IO.Ports;
 using System.Reflection.Metadata.Ecma335;
+using System.Drawing.Design;
+using DocumentFormat.OpenXml.Drawing.Charts;
 
 namespace WinFormsApp_Draft
 {
@@ -21,7 +24,7 @@ namespace WinFormsApp_Draft
         private Axes axes_movement = new Axes();
         private Pipette pip_action = new Pipette();
         private DKPoint point = new DKPoint();
-        private CancellationTokenSource cancellationToken_state = new CancellationTokenSource();
+        private CancellationTokenSource cancellationToken_state;
         public bool port_opened = false;
 
         private static byte index;
@@ -30,10 +33,10 @@ namespace WinFormsApp_Draft
         private const byte left_tip = 1, right_tip = 2;
         private const byte left_z = 3, right_z = 4;
         private const byte x_id = 5, y_id = 6;
-        public static byte left_tip_status = 1, right_tip_status = 1;//1为达到预定位置
-        public static byte left_z_status = 1, right_z_status = 1;
-        public static byte x_status = 1, y_status = 1;
-        public static byte pump_status = 1;
+        //private static byte left_tip_status = 1, right_tip_status = 1;//1为达到预定位置
+        //private static byte left_z_status = 1, right_z_status = 1;
+        //private static byte x_status = 1, y_status = 1;
+        //private static byte left_pump_status = 1, right_pump_status = 1;
 
         private byte left_tip_check = 2, right_tip_check = 2;
 
@@ -43,7 +46,7 @@ namespace WinFormsApp_Draft
             InitializeComponent();
         }
 
-        public void DispenserForm_Load(object sender, EventArgs e) 
+        public void DispenserForm_Load(object sender, EventArgs e)
         {
             DispenserPorts.Items.Clear();
 
@@ -53,10 +56,13 @@ namespace WinFormsApp_Draft
             string[] ports = SerialPort.GetPortNames();
             foreach (string port in ports)
             {
-                DispenserPorts.Items.Add(port[3]);
+                foreach (Match match in Regex.Matches(port, @"\d+"))
+                {
+                    DispenserPorts.Items.Add(match.Value);
+                }
             }
             DispenserPorts.SelectedIndex = 0;
-            
+
             X.Text = "0";
             Y.Text = "0";
             LeftZ.Text = "0";
@@ -109,6 +115,7 @@ namespace WinFormsApp_Draft
                 if (response == 1)
                 {
                     port_opened = true;
+                    cancellationToken_state = new CancellationTokenSource();
 
                     await Task.Run(new Action(() =>
                     {
@@ -135,6 +142,7 @@ namespace WinFormsApp_Draft
                     await reset_dispenser();
                     DispenserSerialSwitch.Text = "disconnect";
                     DispenserConnectionState.Text = "dispenser connected";
+
                 }
                 else
                 {
@@ -153,34 +161,37 @@ namespace WinFormsApp_Draft
         //reset the dispenser, moving it back to zero point and dropping the tips, but not spitting liquid even if residual
         public async Task reset_dispenser()
         {
-            Pipette.Back_tip_p(index, left_tip);
-            Pipette.Back_tip_p(index, right_tip);
-            left_tip_check = 2;
-            right_tip_check = 2;
-
             LeftTipEnable.Enabled = false;
             RightTipEnable.Enabled = false;
 
             Axes.Zero_c(index, left_z);
             Axes.Zero_c(index, right_z);
-            await Task.Delay(3000);
+            await Task.Delay(4000);
             Axes.Zero_c(index, x_id);
             Axes.Zero_c(index, y_id);
-            do
-            {
-                Axes.Find_status_c(index, y_id, ref x_status);
-                Axes.Find_status_c(index, x_id, ref y_status);
-                await Task.Delay(200);
-            } while (x_status != 1 & y_status != 1);
+            
+            Pipette.Back_tip_p(index, left_tip);
+            Pipette.Back_tip_p(index, right_tip);
+            left_tip_check = 2;
+            right_tip_check = 2;
         }
 
-        private async void AxesManeuver_Click(object sender, EventArgs e)
+        private async void AxesManeuver_front_Click(object sender, EventArgs e)
         {
             point.x = Convert.ToInt32(X.Text);
             point.y = Convert.ToInt32(Y.Text);
             point.lz = Convert.ToInt32(LeftZ.Text);
             point.rz = Convert.ToInt32(RightZ.Text);
             await Task.Run(() => MovL(point));
+            check_pipette();
+        }
+        private async void AxesManeuver_back_Click(object sender, EventArgs e)
+        {
+            point.x = Convert.ToInt32(X.Text);
+            point.y = Convert.ToInt32(Y.Text);
+            point.lz = Convert.ToInt32(LeftZ.Text);
+            point.rz = Convert.ToInt32(RightZ.Text);
+            await Task.Run(() => reverse_MovL(point));
             check_pipette();
         }
 
@@ -194,27 +205,15 @@ namespace WinFormsApp_Draft
         public async Task MovL(DKPoint point)
         {
             if (point == null) return;
-            else 
+            else
             {
                 Axes.Motor_Absolute_movement_c(index, x_id, point.x);
                 Axes.Motor_Absolute_movement_c(index, y_id, point.y);
-                //do
-                //{
-                //    Axes.Find_status_c(index, y_id, ref x_status);
-                //    Axes.Find_status_c(index, x_id, ref y_status);
-                //    await Task.Delay(500);
-                //} while (x_status != 1 & y_status != 1);
                 await Task.Delay(2000);
 
                 Axes.Motor_Absolute_movement_c(index, left_z, point.lz);
                 Axes.Motor_Absolute_movement_c(index, right_z, point.rz);
-                //do
-                //{
-                //    Axes.Find_status_c(index, left_z, ref left_z_status);
-                //    Axes.Find_status_c(index, right_z, ref right_z_status);
-                //    await Task.Delay(500);
-                //} while (left_z_status != 1 & right_z_status != 1);
-                await Task.Delay(2000);
+                await Task.Delay(1500);
             }
         }
         /// <summary>
@@ -223,29 +222,17 @@ namespace WinFormsApp_Draft
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public async Task Reverse_MovL(DKPoint point)
+        public async Task reverse_MovL(DKPoint point)
         {
             if (point == null) return;
             else
             {
                 Axes.Motor_Absolute_movement_c(index, left_z, point.lz);
                 Axes.Motor_Absolute_movement_c(index, right_z, point.rz);
-                //do
-                //{
-                //    Axes.Find_status_c(index, left_z, ref left_z_status);
-                //    Axes.Find_status_c(index, right_z, ref right_z_status);
-                //    await Task.Delay(500);
-                //} while (left_z_status != 1 & right_z_status != 1);
-                await Task.Delay(2000);
+                await Task.Delay(1500);
 
                 Axes.Motor_Absolute_movement_c(index, x_id, point.x);
                 Axes.Motor_Absolute_movement_c(index, y_id, point.y);
-                //do
-                //{
-                //    Axes.Find_status_c(index, y_id, ref x_status);
-                //    Axes.Find_status_c(index, x_id, ref y_status);
-                //    await Task.Delay(1000);
-                //} while (x_status != 1 & y_status != 1);
                 await Task.Delay(2000);
             }
         }
@@ -311,30 +298,39 @@ namespace WinFormsApp_Draft
             int flag = check_pipette();
             if (flag == tip || flag == 3)
             {
-                pump_status = 0;
-                Int16 vol_int16 = Convert.ToInt16(volume);
-                Pipette.Suck_p(index, tip, vol_int16, ref return_value);
-                do
+                if (tip == left_tip)
                 {
-                    Pipette.Find_status_p(index, tip, ref pump_status);
+                    Int16 vol_int16 = Convert.ToInt16(volume);
+                    Pipette.Suck_p(index, tip, vol_int16, ref return_value);
                     await Task.Delay(500);
-                } while (pump_status != 1);
+                }
+                else if (tip == right_tip)
+                {
+                    Int16 vol_int16 = Convert.ToInt16(volume);
+                    Pipette.Suck_p(index, tip, vol_int16, ref return_value);
+                    await Task.Delay(500);
+                }
             }
         }
+
         public async Task Tip_Spit(int volume, byte tip = left_tip)
         {
             byte return_value = 0;
             int flag = check_pipette();
             if (flag == tip || flag == 3)
             {
-                pump_status = 0;
-                Int16 vol_int16 = Convert.ToInt16(volume);
-                Pipette.Spit_p(index, tip, vol_int16, ref return_value);
-                do
+                if (tip == left_tip)
                 {
-                    Pipette.Find_status_p(index, tip, ref pump_status);
+                    Int16 vol_int16 = Convert.ToInt16(volume);
+                    Pipette.Spit_p(index, tip, vol_int16, ref return_value);
                     await Task.Delay(500);
-                } while (pump_status != 1);
+                }
+                else if (tip == right_tip)
+                {
+                    Int16 vol_int16 = Convert.ToInt16(volume);
+                    Pipette.Spit_p(index, tip, vol_int16, ref return_value);
+                    await Task.Delay(500);
+                }
             }
         }
 
