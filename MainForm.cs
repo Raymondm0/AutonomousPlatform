@@ -9,7 +9,6 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using CSharpTcpDemo;
 using CSharpTcpDemo.com.dobot.api;
 using CSharthiscpDemo.com.dobot.api;
-using WinFormsApp_Draft.Async;
 using WinFormsApp_Draft.Auto;
 using WinFormsApp_Draft.DK;
 namespace WinFormsApp_Draft
@@ -21,7 +20,6 @@ namespace WinFormsApp_Draft
         private IModbusMaster master;
 
         //coater declarations
-        private MotorAsync motorAsync = new MotorAsync();
         private static int spin_speed = 0;
         private System.Timers.Timer spin_timer = new System.Timers.Timer();
         private CancellationTokenSource cancellationTokenSource_pos;
@@ -35,11 +33,6 @@ namespace WinFormsApp_Draft
 
         //auto declarations
         private ExcelReader mExcelReader = new ExcelReader();
-        public static Workbook mWorkbook;
-        public static SharedStringTable mSharedStringTable;
-        public static WorkbookPart mWorkbookPart;
-        private static Sheet mSheet;
-        public static Worksheet mWorksheet;
         public static List<string>? param_names;
         public static List<List<string>>? param_list;
 
@@ -66,7 +59,7 @@ namespace WinFormsApp_Draft
             ErrorInfoHelper.ParseControllerJsonFile(strPath + "alarm_controller.json");
             ErrorInfoHelper.ParseServoJsonFile(strPath + "alarm_servo.json");
 
-            FilePath.Text = "C:\\Users\\DELL\\Desktop\\test.xlsx";
+            FilePath.Text = "C:\\Users\\DELL\\Desktop\\readtest.csv";
             SheetName.Text = "Sheet1";
 
             armForm.TopLevel = false;
@@ -83,31 +76,7 @@ namespace WinFormsApp_Draft
             {
                 try
                 {
-                    using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(FilePath.Text, false))
-                    {
-                        WorkbookPart mWorkbookPart = spreadsheetDocument.WorkbookPart;
-                        mWorkbook = mWorkbookPart.Workbook;
-
-                        if (mWorkbookPart != null)
-                        {
-                            mSharedStringTable = mWorkbookPart.SharedStringTablePart.SharedStringTable;
-
-                            mSheet = mWorkbook.Sheets.Elements<Sheet>().FirstOrDefault(s => s.Name == SheetName.Text);
-                            WorksheetPart worksheetPart = (WorksheetPart)mWorkbookPart.GetPartById(mSheet.Id);
-                            mWorksheet = worksheetPart.Worksheet;
-
-                            param_names = new List<string>();
-                            param_list = new List<List<string>>();
-
-                            mExcelReader.init_Properties();
-                            mExcelReader.init_ParamNames();
-                            for (int i = 1; i <= properties.rounds; i++)
-                            {
-                                param_list.Add(mExcelReader.GetRowData(i));
-                            }
-                            //mExcelReader.printData(ShowData);
-                        }
-                    }
+                    
                 }
                 catch (Exception ex)
                 {
@@ -199,6 +168,14 @@ namespace WinFormsApp_Draft
 
         private async void MoveTest_Click(object sender, EventArgs e)
         {
+            //test data reading process
+            //List<int> paramerts = mExcelReader.row_param(2, 3, "C:\\Users\\DELL\\Desktop\\readtest.csv");
+            //foreach (int i in paramerts)
+            //{
+            //    Response.Text += i.ToString();
+            //}
+
+            //test platform experiment process
             string armPath = "ArmPoints.json";
             string arm_json = File.ReadAllText(armPath);
             ArmConfig? arm_conf = JsonConvert.DeserializeObject<ArmConfig>(arm_json);
@@ -210,37 +187,37 @@ namespace WinFormsApp_Draft
             DescartesPoint arm_pt = new DescartesPoint();
             DKPoint dispenser_pt = new DKPoint();
 
-            await armForm.Grip(13);
-            Response.Text += "Gripping start.";
+            //await armForm.Grip(13);
+            //Response.Text += "Gripping start.";
 
-            arm_conf.Points.TryGetValue("Zero", out arm_pt);
-            await armForm.MovL(arm_pt);
-            arm_conf.Points.TryGetValue("P3", out arm_pt);
-            await armForm.MovL(arm_pt);
-            arm_conf.Points.TryGetValue("Zero", out arm_pt);
-            await armForm.MovL(arm_pt);
-            Response.Text += "Moving done. ";
+            //arm_conf.Points.TryGetValue("Zero", out arm_pt);
+            //await armForm.MovL(arm_pt);
+            //arm_conf.Points.TryGetValue("P3", out arm_pt);
+            //await armForm.MovL(arm_pt);
+            //arm_conf.Points.TryGetValue("Zero", out arm_pt);
+            //await armForm.MovL(arm_pt);
+            //Response.Text += "Moving done. ";
 
-            await armForm.Release(13);
-            Response.Text += "Gripping done. ";
+            //await armForm.Release(13);
+            //Response.Text += "Gripping done. ";
 
-            dispenser_conf.Points.TryGetValue("P1", out dispenser_pt);// (6500,21500,170000,0)
-            await dispenserForm.MovL(dispenser_pt);
-            await dispenserForm.Tip_Suck(100);
+            //dispenser_conf.Points.TryGetValue("P1", out dispenser_pt);// (6500,21500,170000,0)
+            //await dispenserForm.MovL(dispenser_pt);
+            //await dispenserForm.Tip_Suck(100);
 
-            dispenser_conf.Points.TryGetValue("P2", out dispenser_pt);// (6500,21500,0,0)
-            await dispenserForm.reverse_MovL(dispenser_pt);
+            //dispenser_conf.Points.TryGetValue("P2", out dispenser_pt);// (6500,21500,0,0)
+            //await dispenserForm.reverse_MovL(dispenser_pt);
 
-            dispenser_conf.Points.TryGetValue("P3", out dispenser_pt);// (6250,13500,100000,0)
-            await dispenserForm.MovL(dispenser_pt);
-            await dispenserForm.Tip_Spit(100);
+            //dispenser_conf.Points.TryGetValue("P3", out dispenser_pt);// (6250,13500,100000,0)
+            //await dispenserForm.MovL(dispenser_pt);
+            //await dispenserForm.Tip_Spit(100);
 
-            dispenser_conf.Points.TryGetValue("Zero", out dispenser_pt);
-            await dispenserForm.reverse_MovL(dispenser_pt);
-            Response.Text += "Dispensing liquid done. ";
-            
-            await coaterForm.Spin_Coat(4000, 1000, 6);
-            Response.Text += "Coating done. ";
+            //dispenser_conf.Points.TryGetValue("Zero", out dispenser_pt);
+            //await dispenserForm.reverse_MovL(dispenser_pt);
+            //Response.Text += "Dispensing liquid done. ";
+
+            //await coaterForm.Spin_Coat(4000, 1000, 6);
+            //Response.Text += "Coating done. ";
         }
     }
 }

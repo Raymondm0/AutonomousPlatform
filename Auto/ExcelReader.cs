@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using DocumentFormat.OpenXml;
@@ -12,84 +13,29 @@ using WinFormsApp_Draft;
 
 namespace WinFormsApp_Draft.Auto
 {
-    class ExcelReader
+    public class ExcelReader
     {
-        public string GetCellValue(int i, int j)
+        [DllImport("ReadExcelDLL.dll", EntryPoint = "parameters")]
+        private static extern int parameters(int row, int col, string filepath, ref int data);
+
+        public List<int> row_param(int round, int data_points, string filepath)
         {
-            try
+            List<int> result = new List<int>();
+            int data = 0;
+
+            for(int i = 0; i < data_points; i++)
             {
-                Row row = MainForm.mWorksheet.Descendants<Row>().ElementAt(i);
-                Cell cell = row.Descendants<Cell>().ElementAt(j);
-                if (cell.DataType != null && cell.DataType.Value == CellValues.SharedString)
+                int opened = parameters(round, i, filepath, ref data);
+                if (opened == 1)
                 {
-                    if (MainForm.mWorkbookPart.SharedStringTablePart != null)
-                    {
-                        int index = int.Parse(cell.InnerText);
-                        return MainForm.mSharedStringTable.ElementAt(index).InnerText;
-                    }
+                    result.Add(data);
                 }
-                return cell.InnerText;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        public void init_Properties()
-        {
-            try
-            {
-                int rounds = MainForm.mWorksheet.Descendants<Row>().Count() - 1;
-                int param_num = MainForm.mWorksheet.Descendants<Row>().ElementAt(0).Count();
-                MainForm.properties = new MainForm.sheet_properties { parameters = param_num, rounds = rounds };
-            }
-            catch { }
-        }
-               
-        public List<string> GetRowData(int round_num) 
-        {
-            List<string> round_list = new List<string>();
-            Row row = MainForm.mWorksheet.Descendants<Row>().ElementAt(round_num);
-            foreach (Cell cell in row.Elements<Cell>())
-            {
-                round_list.Add(cell.InnerText);
-            }
-            return round_list;
-        }
-
-        public void init_ParamNames()
-        {
-            MainForm.param_names = new List<string>();
-            Row row = MainForm.mWorksheet.Descendants<Row>().ElementAt(0);
-            foreach (Cell cell in row.Elements<Cell>())
-            {
-                int index = int.Parse(cell.InnerText);
-                MainForm.param_names.Add(MainForm.mSharedStringTable.ElementAt(index).InnerText);
-            }
-        }
-
-        public void printData(RichTextBox richTextBox)
-        {
-            try
-            {
-                if (MainForm.param_list != null)
+                else
                 {
-                    List<List<string>> para = MainForm.param_list;
-                    for (int i = 0; i < para.Count; i++)
-                    {
-                        for (int j = 0; j < para[0].Count; j++)
-                        {
-                            richTextBox.Text += para[i][j] + " ";
-                        }
-                        richTextBox.Text += "\n";
-                    }
-                }
+                    throw new Exception("Unable to open file");
+                }   
             }
-            catch (Exception e) 
-            {
-                richTextBox.Text = e.Message;
-            }
+            return result;
         }
     }
 }
