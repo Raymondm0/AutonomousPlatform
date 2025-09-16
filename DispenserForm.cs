@@ -24,7 +24,7 @@ namespace WinFormsApp_Draft
         private Axes axes_movement = new Axes();
         private Pipette pip_action = new Pipette();
         private DKPoint point = new DKPoint();
-        private CancellationTokenSource cancellationToken_state;
+        //private CancellationTokenSource cancellationToken_state;
         public bool port_opened = false;
 
         private static byte index;
@@ -46,8 +46,29 @@ namespace WinFormsApp_Draft
             InitializeComponent();
         }
 
-        public void DispenserForm_Load(object sender, EventArgs e)
+        public async void DispenserForm_Load(object sender, EventArgs e)
         {
+            if (port.IsOpen)
+            {
+                await Task.Run(new Action(() =>
+                {
+                    Axes.Enable_motor_c(index, x_id, 0);
+                    Axes.Enable_motor_c(index, y_id, 0);
+                    Axes.Enable_motor_c(index, left_z, 0);
+                    Axes.Enable_motor_c(index, right_z, 0);
+                    Axes.Enable_motor_c(index, left_tip, 0);
+                    Axes.Enable_motor_c(index, right_tip, 0);
+                }));
+            }
+
+            int response = Axes.CloseComPort(index);
+            Response.Text = Convert.ToString(response);
+            if (response == 1)
+            {
+                port_opened = false;
+                DispenserSerialSwitch.Text = "connect";
+                DispenserConnectionState.Text = "dispenser disconnected";
+            }
             DispenserPorts.Items.Clear();
 
             LeftTipEnable.Enabled = false;
@@ -71,11 +92,6 @@ namespace WinFormsApp_Draft
             RightTipVolume.Text = "0";
         }
 
-        private void DispenserForm_Closed(object sender, EventArgs e)
-        {
-            cancellationToken_state?.Cancel();
-        }
-
         private async void DispenserSerialSwitch_Click(object sender, EventArgs e)
         {
             string selected_port = DispenserPorts.SelectedItem.ToString();
@@ -89,7 +105,6 @@ namespace WinFormsApp_Draft
                     {
                         DispenserConnectionState.Text = "disconnecting...";
                     }));
-                    cancellationToken_state?.Cancel();
                     Axes.Enable_motor_c(index, x_id, 0);
                     Axes.Enable_motor_c(index, y_id, 0);
                     Axes.Enable_motor_c(index, left_z, 0);
@@ -115,7 +130,6 @@ namespace WinFormsApp_Draft
                 if (response == 1)
                 {
                     port_opened = true;
-                    cancellationToken_state = new CancellationTokenSource();
 
                     await Task.Run(new Action(() =>
                     {

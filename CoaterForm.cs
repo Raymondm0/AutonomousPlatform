@@ -35,6 +35,11 @@ namespace WinFormsApp_Draft
 
         public void CoaterForm_Load(object sender, EventArgs e) 
         {
+            if (motor_port.IsOpen)
+            {
+                motor_port.Close();
+                MotorSerialSwitch.Text = "Open Serial";
+            }
             MotorBaudRate.Items.Clear();
             MotorPorts.Items.Clear();
             DisableCoater();

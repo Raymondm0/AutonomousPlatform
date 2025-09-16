@@ -67,7 +67,10 @@ namespace WinFormsApp_Draft
             dispenserForm.TopLevel = false;
         }
 
-        private void Refresh_Click(object sender, EventArgs e){ }
+        private void Refresh_Click(object sender, EventArgs e)
+        {
+
+        }
 
         // auto read functions, complete automatic
         private async void AutoRead_CheckedChanged(object sender, EventArgs e)
