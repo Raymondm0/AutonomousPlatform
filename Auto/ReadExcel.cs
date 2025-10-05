@@ -13,7 +13,7 @@ using WinFormsApp_Draft;
 
 namespace WinFormsApp_Draft.Auto
 {
-    public class ExcelReader
+    public class ReadExcel
     {
         [DllImport("ReadExcelDLL.dll", EntryPoint = "parameters")]
         private static extern int parameters(int row, int col, string filepath, ref int data);

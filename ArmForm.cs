@@ -493,7 +493,7 @@ namespace CSharpTcpDemo
                 mDobotMove.Grip(index);
             });
             thd.Start();
-            await Task.Delay(1000);
+            await Task.Delay(1500);
         }
 
         public async Task Release(int index)
@@ -503,6 +503,7 @@ namespace CSharpTcpDemo
                 mDobotMove.Release(index);
             });
             thd.Start();
+            await Task.Delay(1000);
         }
 
         private void btnJointMovJ_Click(object sender, EventArgs e)

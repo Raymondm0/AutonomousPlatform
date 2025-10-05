@@ -11,6 +11,7 @@ using CSharpTcpDemo.com.dobot.api;
 using CSharthiscpDemo.com.dobot.api;
 using WinFormsApp_Draft.Auto;
 using WinFormsApp_Draft.DK;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 namespace WinFormsApp_Draft
 {
     public partial class MainForm : Form
@@ -29,19 +30,21 @@ namespace WinFormsApp_Draft
         private ArmForm armForm = new ArmForm();
         private CoaterForm coaterForm = new CoaterForm();
         private DispenserForm dispenserForm = new DispenserForm();
-        private AutoMove autoMove = new AutoMove();
 
         //auto declarations
-        private ExcelReader mExcelReader = new ExcelReader();
-        public static List<string>? param_names;
-        public static List<List<string>>? param_list;
+        private ReadExcel readExcel = new ReadExcel();
 
-        public static sheet_properties properties;
-        public struct sheet_properties
-        {
-            public int parameters { get; init; }
-            public int rounds { get; set; }
-        }
+        private const string armPath = "ArmPoints.json";
+        private static string arm_json = File.ReadAllText(armPath);
+        private ArmConfig? arm_conf = JsonConvert.DeserializeObject<ArmConfig>(arm_json);
+
+        private const string dispenserPath = "DispenserPoints.json";
+        private static string dispenser_json = File.ReadAllText(dispenserPath);
+        private DispenserConfig? dispenser_conf = JsonConvert.DeserializeObject<DispenserConfig>(dispenser_json);
+        
+        private static Queue<List<int>> exp_parameters = new Queue<List<int>>(); 
+        private static List<string> free_slides = new List<string>();
+        private static List<string> free_tips = new List<string>();
 
         public MainForm()
         {
@@ -49,6 +52,21 @@ namespace WinFormsApp_Draft
             Refresh.Click += armForm.ArmForm_Load;
             Refresh.Click += dispenserForm.DispenserForm_Load;
             Refresh.Click += coaterForm.CoaterForm_Load;
+
+            foreach(string pos in arm_conf.Points.Keys)
+            {
+                if (pos.StartsWith('P'))
+                {
+                    free_slides.Add(pos);
+                }
+            }
+            foreach(string pos in dispenser_conf.Points.Keys)
+            {
+                if (pos.StartsWith('P'))
+                {
+                   free_tips.Add(pos); 
+                }
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -169,55 +187,153 @@ namespace WinFormsApp_Draft
             public Dictionary<string, DKPoint> Points { get; set; } = new Dictionary<string, DKPoint>();
         }
 
+        /// <summary>
+        /// pass in point name(string); if direction is 1(default), will move first horizontal then verticle; if 2, vice versa.
+        /// otherwise, will do nothing
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        private async Task dispenser_MovL(string point,int direction = 1)
+        {
+            DKPoint dispenser_pt = new DKPoint();
+            dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
+            if (direction == 1)
+            {
+                await dispenserForm.MovL(dispenser_pt);  
+            }
+            else if(direction == 2)
+            {
+                await dispenserForm.reverse_MovL(dispenser_pt);
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        /// <summary>
+        /// pass in point name(string) where there should be free tips.
+        /// which tip to use must be indicated in the points' configure.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="tip"></param>
+        /// <returns></returns>
+        private async Task dispenser_tip(string point)
+        {
+            DKPoint dispenser_pt = new DKPoint();
+            dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
+            if (free_tips.Contains(point))
+            {
+                await dispenserForm.MovL(dispenser_pt);
+                dispenser_pt.rz = 0;
+                dispenser_pt.lz = 0;
+                await dispenserForm.reverse_MovL(dispenser_pt);
+                free_tips.Remove(point);
+            }
+            else
+            {
+                return;
+            }
+        }
+        /// <summary>
+        /// pass in point name(string); if gripper is "none"(default), gripper won't move.
+        /// if "pick tray", arm will descend to slide tray and grip, if "release tray", vice versa.
+        /// if "pick coater" or "release coater", similar to slides, but will descend to the height of the coater.
+        /// otherwise, will do nothing
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="gripper"></param>
+        /// <returns></returns>
+        private async Task arm_MovL(string point, string gripper = "none")
+        {
+            if (free_slides.Count == 0)
+            {
+                return;
+            }
+            DescartesPoint arm_pt = new DescartesPoint();
+            arm_conf.Points.TryGetValue(point, out arm_pt);
+            await armForm.MovL(arm_pt);
+
+            if (gripper == "pick tray" && free_slides.Contains(point))
+            {
+                arm_pt.z = 66;
+                await armForm.MovL(arm_pt);
+                await armForm.Grip(13);
+                arm_pt.z = 200;
+                await armForm.MovL(arm_pt);
+                free_slides.Remove(point);  
+            }
+            else if (gripper == "release tray" && !free_slides.Contains(point))
+            {
+                arm_pt.z = 67;
+                await armForm.MovL(arm_pt);
+                await armForm.Release(13);
+                arm_pt.z = 200;
+                await armForm.MovL(arm_pt);
+                free_slides.Add(point);
+            }
+            else if(gripper == "pick coater")
+            {
+                arm_pt.z = 100;
+                await armForm.MovL(arm_pt);
+                await armForm.Grip(13);
+                arm_pt.z = 200;
+                await armForm.MovL(arm_pt);
+            }
+            else if (gripper == "release coater")
+            {
+                arm_pt.z = 100;
+                await armForm.MovL(arm_pt);
+                await armForm.Release(13);
+                arm_pt.z = 200;
+                await armForm.MovL(arm_pt);
+            }
+            else
+            {
+                return;
+            }
+        }
+
         private async void MoveTest_Click(object sender, EventArgs e)
         {
+            foreach (string point in free_slides)
+            {
+                Response.Text += point;
+            }
+            //await arm_MovL("Calibrate");
+            //await arm_MovL("Zero");
+
             //test data reading process
-            //List<int> paramerts = mExcelReader.row_param(2, 3, "C:\\Users\\DELL\\Desktop\\readtest.csv");
+            //List<int> paramerts = readExcel.row_param(2, 3, "C:\\Users\\DELL\\Desktop\\readtest.csv");
             //foreach (int i in paramerts)
             //{
             //    Response.Text += i.ToString();
             //}
 
             //test platform experiment process
-            string armPath = "ArmPoints.json";
-            string arm_json = File.ReadAllText(armPath);
-            ArmConfig? arm_conf = JsonConvert.DeserializeObject<ArmConfig>(arm_json);
+            await arm_MovL("Calibrate");
 
-            string dispenserPath = "DispenserPoints.json";
-            string dispenser_json = File.ReadAllText(dispenserPath);
-            DispenserConfig? dispenser_conf = JsonConvert.DeserializeObject<DispenserConfig>(dispenser_json);
+            await arm_MovL("P53", "pick slide");
+            Response.Text += "Gripping start.";
 
-            DescartesPoint arm_pt = new DescartesPoint();
-            DKPoint dispenser_pt = new DKPoint();
+            await arm_MovL("P11", "release slide");
+            Response.Text += "Gripping done. ";
 
-            //await armForm.Grip(13);
-            //Response.Text += "Gripping start.";
+            await arm_MovL("Calibrate");
+            await arm_MovL("Zero");
+            Response.Text += "Moving done. ";
 
-            //arm_conf.Points.TryGetValue("Zero", out arm_pt);
-            //await armForm.MovL(arm_pt);
-            //arm_conf.Points.TryGetValue("P3", out arm_pt);
-            //await armForm.MovL(arm_pt);
-            //arm_conf.Points.TryGetValue("Zero", out arm_pt);
-            //await armForm.MovL(arm_pt);
-            //Response.Text += "Moving done. ";
+            await dispenser_MovL("P1");// (6500,21500,170000,0)
+            await dispenserForm.Tip_Suck(100);
 
-            //await armForm.Release(13);
-            //Response.Text += "Gripping done. ";
+            await dispenser_MovL("P2", 2);// (6500,21500,0,0)
 
-            //dispenser_conf.Points.TryGetValue("P1", out dispenser_pt);// (6500,21500,170000,0)
-            //await dispenserForm.MovL(dispenser_pt);
-            //await dispenserForm.Tip_Suck(100);
+            await dispenser_MovL("P3");// (6250,13500,100000,0)
+            await dispenserForm.Tip_Spit(100);
 
-            //dispenser_conf.Points.TryGetValue("P2", out dispenser_pt);// (6500,21500,0,0)
-            //await dispenserForm.reverse_MovL(dispenser_pt);
-
-            //dispenser_conf.Points.TryGetValue("P3", out dispenser_pt);// (6250,13500,100000,0)
-            //await dispenserForm.MovL(dispenser_pt);
-            //await dispenserForm.Tip_Spit(100);
-
-            //dispenser_conf.Points.TryGetValue("Zero", out dispenser_pt);
-            //await dispenserForm.reverse_MovL(dispenser_pt);
-            //Response.Text += "Dispensing liquid done. ";
+            await dispenser_MovL("Zero", 2);
+            Response.Text += "Dispensing liquid done. ";
 
             //await coaterForm.Spin_Coat(4000, 1000, 6);
             //Response.Text += "Coating done. ";

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CSharthiscpDemo.com.dobot.api;
+using Newtonsoft.Json;
+using WinFormsApp_Draft.DK;
 
 namespace WinFormsApp_Draft.Auto
 {
