@@ -4,14 +4,12 @@ using System.Net.Sockets;
 using System.Timers;
 using Modbus.Device;
 using Newtonsoft.Json;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Spreadsheet;
 using CSharpTcpDemo;
 using CSharpTcpDemo.com.dobot.api;
 using CSharthiscpDemo.com.dobot.api;
 using WinFormsApp_Draft.Auto;
 using WinFormsApp_Draft.DK;
-using DocumentFormat.OpenXml.Drawing.Diagrams;
+using DocumentFormat.OpenXml.Drawing;
 namespace WinFormsApp_Draft
 {
     public partial class MainForm : Form
@@ -42,16 +40,20 @@ namespace WinFormsApp_Draft
         private static string dispenser_json = File.ReadAllText(dispenserPath);
         private DispenserConfig? dispenser_conf = JsonConvert.DeserializeObject<DispenserConfig>(dispenser_json);
         
-        private static Queue<List<int>> exp_parameters = new Queue<List<int>>(); 
+        private static List<List<int>> exp_rounds = new List<List<int>>();
+        private static List<List<int>> features = new List<List<int>>();
         private static List<string> free_slides = new List<string>();
         private static List<string> free_tips = new List<string>();
+        private static Dictionary<string, List<int>> reagents = new Dictionary<string, List<int>>();
 
         public MainForm()
         {
             InitializeComponent();
+            
             Refresh.Click += armForm.ArmForm_Load;
             Refresh.Click += dispenserForm.DispenserForm_Load;
             Refresh.Click += coaterForm.CoaterForm_Load;
+            Refresh.Click += MainForm_Load;
 
             foreach(string pos in arm_conf.Points.Keys)
             {
@@ -69,9 +71,19 @@ namespace WinFormsApp_Draft
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void MainForm_Load(object sender, EventArgs e)
         {
-            new TipLayout().init_btns(8, 12, TipLayoutPanel, Response);
+            exp_rounds.Clear();
+            free_slides.Clear();
+            free_tips.Clear();
+            reagents.Clear();
+            ReagentLayout.Controls.Clear();
+            ExperimentParameters.Items.Clear();
+            AutoRead.Checked = false;
+            Method.Enabled = false;
+
+            init_btns(3, 4);
+            if(!Method.Contains(ReagentLayout))Method.Controls.Add(ReagentLayout);
 
             string strPath = System.Windows.Forms.Application.StartupPath + "\\";
             ErrorInfoHelper.ParseControllerJsonFile(strPath + "alarm_controller.json");
@@ -90,14 +102,156 @@ namespace WinFormsApp_Draft
 
         }
 
+        //layout of the reagent bottles
+        private void init_btns(int row_n, int col_n)
+        {
+            ReagentLayout.ColumnCount = col_n;
+            ReagentLayout.RowCount = row_n;
+            set_size(row_n, col_n);
+
+            Button[,] buttons = new Button[row_n, col_n];
+
+            for (int i = 0; i < row_n; i++)
+            {
+                for (int j = 0; j < col_n; j++)
+                {
+                    buttons[i, j] = new Button();
+                    buttons[i, j].Text = $"RP{i + 1}{j + 1}";
+                    buttons[i, j].Dock = DockStyle.Fill;
+                    buttons[i, j].BackColor = Color.Red;
+
+                    ReagentLayout.Controls.Add(buttons[i, j], j, i);
+                    buttons[i, j].Click += (sender, e) =>
+                    {
+                        Button button = (Button)sender;
+                        add_reagent(button);
+                    };
+                }
+            }
+        }
+
+        private void set_size(int row_n, int col_n)
+        {
+            ReagentLayout.ColumnStyles.Clear();
+            ReagentLayout.RowStyles.Clear();
+            for (int i = 0; i < col_n; i++)
+            {
+                ReagentLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / col_n));
+            }
+            for (int j = 0; j < row_n; j++)
+            {
+                ReagentLayout.RowStyles.Add(new ColumnStyle(SizeType.Percent, 100F / row_n));
+            }
+        }
+
+        private async void add_reagent(Button button)
+        {
+            if (button.BackColor == Color.Red)
+            {
+                button.BackColor = Color.Yellow;
+                ReagentFeatures.SelectedIndexChanged += selecting;
+                int index = 0;
+
+                while (true)
+                {
+                    if (ReagentFeatures.BackColor == Color.Yellow)
+                    {
+                        index = ReagentFeatures.SelectedIndex;
+
+                        ReagentFeatures.BackColor = Color.White;
+                        ReagentFeatures.SelectedIndexChanged -= selecting;
+                        break;
+                    }
+                    await Task.Delay(100);
+                }
+
+                reagents.Add(button.Text, features[index]);
+                button.BackColor = Color.ForestGreen;
+                Response.Text = button.Text + System.String.Format("added, correlated with feature{0}", index);
+            }
+            else
+            {
+                button.BackColor = Color.Red;
+                reagents.Remove(button.Text);
+                Response.Text = button.Text + "removed";
+            }
+        }
+
+        private void selecting(object sender, EventArgs e)
+        {
+            ReagentFeatures.BackColor = Color.Yellow;
+        }
+
         // auto read functions, complete automatic
-        private async void AutoRead_CheckedChanged(object sender, EventArgs e)
+        private void AutoRead_CheckedChanged(object sender, EventArgs e)
         {
             if (AutoRead.Checked)
             {
                 try
                 {
-                    
+                    int i = 1, x = 0;
+                    while (true)
+                    {
+                        //test data reading process
+                        List<int> row_paramerts = readExcel.row_param(i, 3, FilePath.Text);
+                        if (row_paramerts[0] != 0)
+                        {
+                            exp_rounds.Add(row_paramerts);
+                            i++;
+                            string round_params = "";
+                            for (int j = 0; j < row_paramerts.Count(); j++)
+                            {
+                                if (j < row_paramerts.Count() - 1)
+                                {
+                                    round_params += row_paramerts[j].ToString() + ",";
+                                }
+                                else
+                                {
+                                    round_params += row_paramerts[j].ToString();
+                                }
+                            }
+                            ExperimentParameters.Items.Add(round_params);
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        if (exp_rounds.Count > 0)
+                        {
+                            Method.Enabled = true;
+                        }
+                        else
+                        {
+                            Method.Enabled = false;
+                        }
+                    }
+                    while (true)
+                    {
+                        List<int> col_paramerts = readExcel.col_param(x, i - 1, FilePath.Text);
+                        if (col_paramerts[0] != 0)
+                        {
+                            features.Add(col_paramerts);
+                            x++;
+                            string round_params = "";
+                            for (int y = 0; y < col_paramerts.Count(); y++)
+                            {
+                                if (y < col_paramerts.Count() - 1)
+                                {
+                                    round_params += col_paramerts[y].ToString() + ",";
+                                }
+                                else
+                                {
+                                    round_params += col_paramerts[y].ToString();
+                                }
+                            }
+                            ReagentFeatures.Items.Add(round_params);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -115,7 +269,9 @@ namespace WinFormsApp_Draft
                     coaterForm.EnableCoater();
                 }
                 Response.Clear();
-                ShowData.Clear();
+                ExperimentParameters.Items.Clear();
+                ReagentFeatures.Items.Clear();
+                Method.Enabled = false;
             }
         }
 
@@ -238,9 +394,9 @@ namespace WinFormsApp_Draft
         }
         /// <summary>
         /// pass in point name(string); if gripper is "none"(default), gripper won't move.
-        /// if "pick tray", arm will descend to slide tray and grip, if "release tray", vice versa.
-        /// if "pick coater" or "release coater", similar to slides, but will descend to the height of the coater.
-        /// otherwise, will do nothing
+        /// if "pick at tray", arm will descend to slide tray and grip, if "release at tray", vice versa.
+        /// if "pick at coater" or "release at coater", similar to slides, but will descend to the height of the coater.
+        /// otherwise, gripper will do nothing, only arms will move
         /// </summary>
         /// <param name="point"></param>
         /// <param name="gripper"></param>
@@ -255,16 +411,16 @@ namespace WinFormsApp_Draft
             arm_conf.Points.TryGetValue(point, out arm_pt);
             await armForm.MovL(arm_pt);
 
-            if (gripper == "pick tray" && free_slides.Contains(point))
+            if (gripper == "pick at tray" && free_slides.Contains(point))
             {
-                arm_pt.z = 66;
+                arm_pt.z = 66.5;
                 await armForm.MovL(arm_pt);
                 await armForm.Grip(13);
                 arm_pt.z = 200;
                 await armForm.MovL(arm_pt);
                 free_slides.Remove(point);  
             }
-            else if (gripper == "release tray" && !free_slides.Contains(point))
+            else if (gripper == "release at tray" && !free_slides.Contains(point))
             {
                 arm_pt.z = 67;
                 await armForm.MovL(arm_pt);
@@ -273,17 +429,17 @@ namespace WinFormsApp_Draft
                 await armForm.MovL(arm_pt);
                 free_slides.Add(point);
             }
-            else if(gripper == "pick coater")
+            else if(gripper == "pick at coater")
             {
-                arm_pt.z = 100;
+                arm_pt.z = 111.5;
                 await armForm.MovL(arm_pt);
                 await armForm.Grip(13);
                 arm_pt.z = 200;
                 await armForm.MovL(arm_pt);
             }
-            else if (gripper == "release coater")
+            else if (gripper == "release at coater")
             {
-                arm_pt.z = 100;
+                arm_pt.z = 112;
                 await armForm.MovL(arm_pt);
                 await armForm.Release(13);
                 arm_pt.z = 200;
@@ -297,46 +453,51 @@ namespace WinFormsApp_Draft
 
         private async void MoveTest_Click(object sender, EventArgs e)
         {
-            foreach (string point in free_slides)
+            try
             {
-                Response.Text += point;
+                Response.Text = reagents["RP11"][0].ToString();
             }
+            catch(Exception ex) 
+            {
+                Response.Text = ex.Message;
+            }
+            //foreach (string point in free_slides)
+            //{
+            //    Response.Text += point;
+            //}
             //await arm_MovL("Calibrate");
             //await arm_MovL("Zero");
 
-            //test data reading process
-            //List<int> paramerts = readExcel.row_param(2, 3, "C:\\Users\\DELL\\Desktop\\readtest.csv");
-            //foreach (int i in paramerts)
-            //{
-            //    Response.Text += i.ToString();
-            //}
-
             //test platform experiment process
-            await arm_MovL("Calibrate");
+            //await arm_MovL("Calibrate", "release at tray");
 
-            await arm_MovL("P53", "pick slide");
-            Response.Text += "Gripping start.";
+            //await arm_MovL("P44", "pick at tray");
+            //Response.Text += "Gripping start.";
+            //await arm_MovL("Coater", "release at coater");
 
-            await arm_MovL("P11", "release slide");
-            Response.Text += "Gripping done. ";
-
-            await arm_MovL("Calibrate");
-            await arm_MovL("Zero");
-            Response.Text += "Moving done. ";
-
-            await dispenser_MovL("P1");// (6500,21500,170000,0)
-            await dispenserForm.Tip_Suck(100);
-
-            await dispenser_MovL("P2", 2);// (6500,21500,0,0)
-
-            await dispenser_MovL("P3");// (6250,13500,100000,0)
-            await dispenserForm.Tip_Spit(100);
-
-            await dispenser_MovL("Zero", 2);
-            Response.Text += "Dispensing liquid done. ";
-
-            //await coaterForm.Spin_Coat(4000, 1000, 6);
+            //await coaterForm.Spin_Coat(2000, 1000, 4);
             //Response.Text += "Coating done. ";
+
+            //await arm_MovL("Coater", "pick at coater");
+            //await arm_MovL("P44", "release at tray");
+            //Response.Text += "Gripping done. ";
+
+            //await arm_MovL("Calibrate");
+            //await arm_MovL("Zero");
+            //Response.Text += "Moving done. ";
+
+            //await dispenser_MovL("P1");// (6500,21500,170000,0)
+            //await dispenserForm.Tip_Suck(100);
+
+            //await dispenser_MovL("P2", 2);// (6500,21500,0,0)
+
+            //await dispenser_MovL("P3");// (6250,13500,100000,0)
+            //await dispenserForm.Tip_Spit(100);
+
+            //await dispenser_MovL("Zero", 2);
+            //Response.Text += "Dispensing liquid done. ";
+
+
         }
     }
 }

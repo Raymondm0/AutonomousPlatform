@@ -25,8 +25,8 @@ namespace WinFormsApp_Draft.Auto
 
             for(int i = 0; i < data_points; i++)
             {
-                int opened = parameters(round, i, filepath, ref data);
-                if (opened == 1)
+                int file_opened = parameters(round, i, filepath, ref data);
+                if (file_opened == 1)
                 {
                     result.Add(data);
                 }
@@ -34,6 +34,26 @@ namespace WinFormsApp_Draft.Auto
                 {
                     throw new Exception("Unable to open file");
                 }   
+            }
+            return result;
+        }
+
+        public List<int> col_param(int col, int data_points, string filepath)
+        {
+            List<int> result = new List<int>();
+            int data = 0;
+
+            for (int i = 1; i <= data_points; i++)
+            {
+                int file_opened = parameters(i, col, filepath, ref data);
+                if (file_opened == 1)
+                {
+                    result.Add(data);
+                }
+                else
+                {
+                    throw new Exception("Unable to open file");
+                }
             }
             return result;
         }

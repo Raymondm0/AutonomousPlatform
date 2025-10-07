@@ -39,16 +39,18 @@
             MoveTest = new Button();
             Refresh = new Button();
             FilePath = new TextBox();
-            ShowData = new RichTextBox();
             SheetName = new TextBox();
             label1 = new Label();
             label2 = new Label();
-            TipLayoutPanel = new TableLayoutPanel();
+            ReagentLayout = new TableLayoutPanel();
+            ExperimentParameters = new ListBox();
+            ReagentFeatures = new ListBox();
+            Method = new GroupBox();
             SuspendLayout();
             // 
             // Response
             // 
-            Response.Location = new Point(104, 94);
+            Response.Location = new Point(134, 22);
             Response.Margin = new Padding(2, 3, 2, 3);
             Response.Name = "Response";
             Response.ReadOnly = true;
@@ -58,7 +60,7 @@
             // AutoRead
             // 
             AutoRead.AutoSize = true;
-            AutoRead.Location = new Point(160, 190);
+            AutoRead.Location = new Point(237, 135);
             AutoRead.Name = "AutoRead";
             AutoRead.Size = new Size(84, 21);
             AutoRead.TabIndex = 47;
@@ -106,7 +108,7 @@
             // 
             // MoveTest
             // 
-            MoveTest.Location = new Point(232, 137);
+            MoveTest.Location = new Point(264, 57);
             MoveTest.Name = "MoveTest";
             MoveTest.Size = new Size(94, 23);
             MoveTest.TabIndex = 54;
@@ -126,22 +128,14 @@
             // 
             // FilePath
             // 
-            FilePath.Location = new Point(134, 217);
+            FilePath.Location = new Point(195, 180);
             FilePath.Name = "FilePath";
             FilePath.Size = new Size(174, 23);
             FilePath.TabIndex = 48;
             // 
-            // ShowData
-            // 
-            ShowData.Location = new Point(325, 175);
-            ShowData.Name = "ShowData";
-            ShowData.Size = new Size(200, 104);
-            ShowData.TabIndex = 49;
-            ShowData.Text = "";
-            // 
             // SheetName
             // 
-            SheetName.Location = new Point(134, 249);
+            SheetName.Location = new Point(195, 220);
             SheetName.Name = "SheetName";
             SheetName.Size = new Size(174, 23);
             SheetName.TabIndex = 50;
@@ -149,7 +143,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(70, 220);
+            label1.Location = new Point(104, 183);
             label1.Name = "label1";
             label1.Size = new Size(58, 17);
             label1.TabIndex = 56;
@@ -158,40 +152,68 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(50, 249);
+            label2.Location = new Point(84, 223);
             label2.Name = "label2";
             label2.Size = new Size(78, 17);
             label2.TabIndex = 57;
             label2.Text = "sheet name:";
             // 
-            // TipLayoutPanel
+            // ReagentLayout
             // 
-            TipLayoutPanel.ColumnCount = 2;
-            TipLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TipLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TipLayoutPanel.Location = new Point(54, 304);
-            TipLayoutPanel.Name = "TipLayoutPanel";
-            TipLayoutPanel.RowCount = 2;
-            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TipLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TipLayoutPanel.Size = new Size(471, 299);
-            TipLayoutPanel.TabIndex = 58;
+            ReagentLayout.ColumnCount = 2;
+            ReagentLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            ReagentLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            ReagentLayout.Location = new Point(50, 50);
+            ReagentLayout.Name = "ReagentLayout";
+            ReagentLayout.RowCount = 2;
+            ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            ReagentLayout.Size = new Size(248, 196);
+            ReagentLayout.TabIndex = 58;
+            // 
+            // ExperimentParameters
+            // 
+            ExperimentParameters.FormattingEnabled = true;
+            ExperimentParameters.ItemHeight = 17;
+            ExperimentParameters.Location = new Point(363, 334);
+            ExperimentParameters.Name = "ExperimentParameters";
+            ExperimentParameters.Size = new Size(180, 157);
+            ExperimentParameters.TabIndex = 59;
+            // 
+            // ReagentFeatures
+            // 
+            ReagentFeatures.FormattingEnabled = true;
+            ReagentFeatures.ItemHeight = 17;
+            ReagentFeatures.Location = new Point(363, 564);
+            ReagentFeatures.Name = "ReagentFeatures";
+            ReagentFeatures.Size = new Size(180, 106);
+            ReagentFeatures.TabIndex = 60;
+            // 
+            // Method
+            // 
+            Method.Location = new Point(22, 275);
+            Method.Name = "Method";
+            Method.Size = new Size(533, 446);
+            Method.TabIndex = 61;
+            Method.TabStop = false;
+            Method.Text = "Method";
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1162, 758);
-            Controls.Add(TipLayoutPanel);
+            Controls.Add(ReagentFeatures);
+            Controls.Add(ExperimentParameters);
+            Controls.Add(ReagentLayout);
             Controls.Add(label2);
             Controls.Add(label1);
-            Controls.Add(ShowData);
             Controls.Add(SheetName);
             Controls.Add(Refresh);
             Controls.Add(MoveTest);
@@ -202,10 +224,11 @@
             Controls.Add(OpenArmForm);
             Controls.Add(ControlPanel);
             Controls.Add(Response);
+            Controls.Add(Method);
             Margin = new Padding(2, 3, 2, 3);
             Name = "MainForm";
-            Text = "Form1";
-            Load += Form1_Load;
+            Text = "MainForm";
+            Load += MainForm_Load;
             ResumeLayout(false);
             PerformLayout();
         }
@@ -221,10 +244,12 @@
         private Button MoveTest;
         private Button Refresh;
         private TextBox FilePath;
-        private RichTextBox ShowData;
         private TextBox SheetName;
         private Label label1;
         private Label label2;
-        private TableLayoutPanel TipLayoutPanel;
+        private TableLayoutPanel ReagentLayout;
+        private ListBox ExperimentParameters;
+        private ListBox ReagentFeatures;
+        private GroupBox Method;
     }
 }
