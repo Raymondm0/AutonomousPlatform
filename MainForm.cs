@@ -39,7 +39,7 @@ namespace WinFormsApp_Draft
         private const string dispenserPath = "DispenserPoints.json";
         private static string dispenser_json = File.ReadAllText(dispenserPath);
         private DispenserConfig? dispenser_conf = JsonConvert.DeserializeObject<DispenserConfig>(dispenser_json);
-        
+
         private static List<List<int>> exp_rounds = new List<List<int>>();
         private static List<List<int>> features = new List<List<int>>();
         private static List<string> free_slides = new List<string>();
@@ -54,21 +54,6 @@ namespace WinFormsApp_Draft
             Refresh.Click += dispenserForm.DispenserForm_Load;
             Refresh.Click += coaterForm.CoaterForm_Load;
             Refresh.Click += MainForm_Load;
-
-            foreach(string pos in arm_conf.Points.Keys)
-            {
-                if (pos.StartsWith('P'))
-                {
-                    free_slides.Add(pos);
-                }
-            }
-            foreach(string pos in dispenser_conf.Points.Keys)
-            {
-                if (pos.StartsWith('P'))
-                {
-                   free_tips.Add(pos); 
-                }
-            }
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -79,11 +64,27 @@ namespace WinFormsApp_Draft
             reagents.Clear();
             ReagentLayout.Controls.Clear();
             ExperimentParameters.Items.Clear();
+            Method.Controls.Clear();
             AutoRead.Checked = false;
             Method.Enabled = false;
 
-            init_btns(3, 4);
-            if(!Method.Contains(ReagentLayout))Method.Controls.Add(ReagentLayout);
+            foreach (string pos in arm_conf.Points.Keys)
+            {
+                if (pos.StartsWith('P'))
+                {
+                    free_slides.Add(pos);
+                }
+            }
+            foreach (string pos in dispenser_conf.Points.Keys)
+            {
+                if (pos.StartsWith('P'))
+                {
+                    free_tips.Add(pos);
+                }
+            }
+
+            init_btns(4, 3);
+            if (!Method.Contains(ReagentLayout)) Method.Controls.Add(ReagentLayout);
 
             string strPath = System.Windows.Forms.Application.StartupPath + "\\";
             ErrorInfoHelper.ParseControllerJsonFile(strPath + "alarm_controller.json");
@@ -146,35 +147,39 @@ namespace WinFormsApp_Draft
 
         private async void add_reagent(Button button)
         {
-            if (button.BackColor == Color.Red)
+            try
             {
-                button.BackColor = Color.Yellow;
-                ReagentFeatures.SelectedIndexChanged += selecting;
-                int index = 0;
-
-                while (true)
+                if (button.BackColor == Color.Red)
                 {
-                    if (ReagentFeatures.BackColor == Color.Yellow)
+                    button.BackColor = Color.Yellow;
+                    ReagentFeatures.SelectedIndexChanged += selecting;
+                    int index = 0;
+
+                    while (true)
                     {
-                        index = ReagentFeatures.SelectedIndex;
+                        if (ReagentFeatures.BackColor == Color.Yellow)
+                        {
+                            index = ReagentFeatures.SelectedIndex;
 
-                        ReagentFeatures.BackColor = Color.White;
-                        ReagentFeatures.SelectedIndexChanged -= selecting;
-                        break;
+                            ReagentFeatures.BackColor = Color.White;
+                            ReagentFeatures.SelectedIndexChanged -= selecting;
+                            break;
+                        }
+                        await Task.Delay(100);
                     }
-                    await Task.Delay(100);
-                }
 
-                reagents.Add(button.Text, features[index]);
-                button.BackColor = Color.ForestGreen;
-                Response.Text = button.Text + System.String.Format("added, correlated with feature{0}", index);
+                    reagents.Add(button.Text, features[index]);
+                    button.BackColor = Color.ForestGreen;
+                    Response.Text = button.Text + System.String.Format(" added, correlated with feature index {0}", index);
+                }
+                else
+                {
+                    button.BackColor = Color.Red;
+                    reagents.Remove(button.Text);
+                    Response.Text = button.Text + "removed";
+                }
             }
-            else
-            {
-                button.BackColor = Color.Red;
-                reagents.Remove(button.Text);
-                Response.Text = button.Text + "removed";
-            }
+            catch { }
         }
 
         private void selecting(object sender, EventArgs e)
@@ -338,65 +343,21 @@ namespace WinFormsApp_Draft
         {
             public Dictionary<string, DescartesPoint> Points { get; set; } = new Dictionary<string, DescartesPoint>();
         }
+
         private class DispenserConfig
         {
             public Dictionary<string, DKPoint> Points { get; set; } = new Dictionary<string, DKPoint>();
         }
 
         /// <summary>
-        /// pass in point name(string); if direction is 1(default), will move first horizontal then verticle; if 2, vice versa.
-        /// otherwise, will do nothing
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="direction"></param>
-        /// <returns></returns>
-        private async Task dispenser_MovL(string point,int direction = 1)
-        {
-            DKPoint dispenser_pt = new DKPoint();
-            dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
-            if (direction == 1)
-            {
-                await dispenserForm.MovL(dispenser_pt);  
-            }
-            else if(direction == 2)
-            {
-                await dispenserForm.reverse_MovL(dispenser_pt);
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        /// <summary>
-        /// pass in point name(string) where there should be free tips.
-        /// which tip to use must be indicated in the points' configure.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="tip"></param>
-        /// <returns></returns>
-        private async Task dispenser_tip(string point)
-        {
-            DKPoint dispenser_pt = new DKPoint();
-            dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
-            if (free_tips.Contains(point))
-            {
-                await dispenserForm.MovL(dispenser_pt);
-                dispenser_pt.rz = 0;
-                dispenser_pt.lz = 0;
-                await dispenserForm.reverse_MovL(dispenser_pt);
-                free_tips.Remove(point);
-            }
-            else
-            {
-                return;
-            }
-        }
-        /// <summary>
-        /// pass in point name(string); if gripper is "none"(default), gripper won't move.
-        /// if "pick at tray", arm will descend to slide tray and grip, if "release at tray", vice versa.
+        /// <para>
+        /// pass in point name(string);
+        /// </para>
+        /// <para>
+        /// if gripper is "pick at tray", arm will descend to slide tray and grip, if "release at tray", vice versa.
         /// if "pick at coater" or "release at coater", similar to slides, but will descend to the height of the coater.
-        /// otherwise, gripper will do nothing, only arms will move
+        /// otherwise, gripper will do nothing, only arms will move.
+        /// </para>
         /// </summary>
         /// <param name="point"></param>
         /// <param name="gripper"></param>
@@ -413,25 +374,25 @@ namespace WinFormsApp_Draft
 
             if (gripper == "pick at tray" && free_slides.Contains(point))
             {
-                arm_pt.z = 66.5;
+                arm_pt.z = 63;
                 await armForm.MovL(arm_pt);
                 await armForm.Grip(13);
                 arm_pt.z = 200;
                 await armForm.MovL(arm_pt);
-                free_slides.Remove(point);  
+                free_slides.Remove(point);
             }
             else if (gripper == "release at tray" && !free_slides.Contains(point))
             {
-                arm_pt.z = 67;
+                arm_pt.z = 64;
                 await armForm.MovL(arm_pt);
                 await armForm.Release(13);
                 arm_pt.z = 200;
                 await armForm.MovL(arm_pt);
                 free_slides.Add(point);
             }
-            else if(gripper == "pick at coater")
+            else if (gripper == "pick at coater")
             {
-                arm_pt.z = 111.5;
+                arm_pt.z = 108;
                 await armForm.MovL(arm_pt);
                 await armForm.Grip(13);
                 arm_pt.z = 200;
@@ -439,7 +400,7 @@ namespace WinFormsApp_Draft
             }
             else if (gripper == "release at coater")
             {
-                arm_pt.z = 112;
+                arm_pt.z = 109;
                 await armForm.MovL(arm_pt);
                 await armForm.Release(13);
                 arm_pt.z = 200;
@@ -451,50 +412,126 @@ namespace WinFormsApp_Draft
             }
         }
 
+        /// <summary>
+        /// <para>
+        /// pass in point name(string);
+        /// </para>
+        /// <para>
+        /// if tip is "get", will descend to the pipette box and get new pipettes if tip is free; 
+        /// if tip is "pop", will drop pipette immediately. otherwise will do nothing.
+        /// </para>
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        private async Task dispenser_MovL(string point, string tip = "none")
+        {
+            int pipette_available = dispenserForm.check_pipette();
+
+            DKPoint dispenser_pt = new DKPoint();
+            dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
+            await dispenserForm.MovL_hor(dispenser_pt); 
+
+            if (tip == "get" && pipette_available != 2 && free_tips.Contains(point))
+            {
+                dispenser_pt.rz = 50000;
+                await dispenserForm.MovL_ver(dispenser_pt);
+                free_tips.Remove(point);
+            }
+            else if(tip == "pop")
+            {
+                dispenserForm.back_tip();
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        /// <summary>
+        /// <para> 
+        /// pass in point name(string);
+        /// </para> 
+        /// <para>
+        /// if pump is "spit", dispenser will descend to the coater and spit specified volume(ul) of liquid;
+        /// if pump is "suck", dispenser will descend to the reagent bottles and suck specified volume(ul) of reagent.
+        /// </para>
+        /// <para>
+        /// the default volume is 10 ul, in the experiment case, volume should be indicated by reagent Dictionary.
+        /// can only use right tip, if no pipette on pump, will do nothing.
+        /// </para>
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="tip"></param>
+        /// <returns></returns>
+        private async Task dispenser_pump(string point, string pump = "none", int volume = 10)
+        {
+            int pipette_available = dispenserForm.check_pipette();
+
+            DKPoint dispenser_pt = new DKPoint();
+            dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
+            await dispenserForm.MovL_hor(dispenser_pt);
+            
+            if (pipette_available == 2 && pump == "spit")
+            {
+                dispenser_pt.rz = 75000;
+                await dispenserForm.MovL_ver(dispenser_pt);
+                await dispenserForm.Tip_Spit(volume);//right tip by default
+                dispenser_pt.rz = 0;
+                await dispenserForm.MovL_ver(dispenser_pt);
+            }
+            else if (reagents.Keys.Contains(point) && pump == "suck")
+            {
+                dispenser_pt.rz = 125000;
+                await dispenserForm.MovL_ver(dispenser_pt);
+                await dispenserForm.Tip_Suck(volume, 2);
+                dispenser_pt.rz = 0;
+                await dispenserForm.MovL_ver(dispenser_pt);
+            }
+            else
+            {
+                return;
+            }
+        }
+
         private async void MoveTest_Click(object sender, EventArgs e)
         {
-            try
-            {
-                Response.Text = reagents["RP11"][0].ToString();
-            }
-            catch(Exception ex) 
-            {
-                Response.Text = ex.Message;
-            }
+            //try
+            //{
+            //    Response.Text = reagents["RP11"][0].ToString();
+            //}
+            //catch(Exception ex) 
+            //{
+            //    Response.Text = ex.Message;
+            //}
             //foreach (string point in free_slides)
             //{
             //    Response.Text += point;
             //}
-            //await arm_MovL("Calibrate");
-            //await arm_MovL("Zero");
 
             //test platform experiment process
-            //await arm_MovL("Calibrate", "release at tray");
+            //await arm_MovL("Zero");
+            //await arm_MovL("Calibrate");
 
             //await arm_MovL("P44", "pick at tray");
-            //Response.Text += "Gripping start.";
+            //Response.Text = "Gripping start.";
             //await arm_MovL("Coater", "release at coater");
+            //await arm_MovL("Calibrate");
+            //await arm_MovL("Zero");
 
             //await coaterForm.Spin_Coat(2000, 1000, 4);
             //Response.Text += "Coating done. ";
 
+            //await arm_MovL("Calibrate");
             //await arm_MovL("Coater", "pick at coater");
             //await arm_MovL("P44", "release at tray");
             //Response.Text += "Gripping done. ";
 
-            //await arm_MovL("Calibrate");
             //await arm_MovL("Zero");
             //Response.Text += "Moving done. ";
 
-            //await dispenser_MovL("P1");// (6500,21500,170000,0)
-            //await dispenserForm.Tip_Suck(100);
-
-            //await dispenser_MovL("P2", 2);// (6500,21500,0,0)
-
-            //await dispenser_MovL("P3");// (6250,13500,100000,0)
-            //await dispenserForm.Tip_Spit(100);
-
-            //await dispenser_MovL("Zero", 2);
+            await dispenser_pump("RP11", "suck");
+            await dispenser_pump("RP11", "spit");
             //Response.Text += "Dispensing liquid done. ";
 
 

@@ -174,7 +174,7 @@
             ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            ReagentLayout.Size = new Size(248, 196);
+            ReagentLayout.Size = new Size(248, 303);
             ReagentLayout.TabIndex = 58;
             // 
             // ExperimentParameters

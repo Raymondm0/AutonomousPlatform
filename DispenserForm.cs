@@ -183,11 +183,8 @@ namespace WinFormsApp_Draft
             await Task.Delay(4000);
             Axes.Zero_c(index, x_id);
             Axes.Zero_c(index, y_id);
-            
-            Pipette.Back_tip_p(index, left_tip);
-            Pipette.Back_tip_p(index, right_tip);
-            left_tip_check = 2;
-            right_tip_check = 2;
+
+            back_tip();
         }
 
         private async void AxesManeuver_front_Click(object sender, EventArgs e)
@@ -196,7 +193,8 @@ namespace WinFormsApp_Draft
             point.y = Convert.ToInt32(Y.Text);
             point.lz = Convert.ToInt32(LeftZ.Text);
             point.rz = Convert.ToInt32(RightZ.Text);
-            await Task.Run(() => MovL(point));
+            await Task.Run(() => MovL_hor(point));
+            await Task.Run(() => MovL_ver(point));
             check_pipette();
         }
         private async void AxesManeuver_back_Click(object sender, EventArgs e)
@@ -205,18 +203,19 @@ namespace WinFormsApp_Draft
             point.y = Convert.ToInt32(Y.Text);
             point.lz = Convert.ToInt32(LeftZ.Text);
             point.rz = Convert.ToInt32(RightZ.Text);
-            await Task.Run(() => reverse_MovL(point));
+            await Task.Run(() => MovL_ver(point));
+            await Task.Run(() => MovL_hor(point));
             check_pipette();
         }
 
         //entrance for auto moving in back and forth 
         /// <summary>
-        /// write the point name down and the dispenser will move to the correlated point, going horizontally first
+        /// write the point name down and the dispenser will move to the correlated point, going horizontally
         /// points are defined in DispenserPoints.json
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public async Task MovL(DKPoint point)
+        public async Task MovL_hor(DKPoint point)
         {
             if (point == null) return;
             else
@@ -225,29 +224,31 @@ namespace WinFormsApp_Draft
                 Axes.Motor_Absolute_movement_c(index, y_id, point.y);
                 await Task.Delay(2000);
 
-                Axes.Motor_Absolute_movement_c(index, left_z, point.lz);
-                Axes.Motor_Absolute_movement_c(index, right_z, point.rz);
-                await Task.Delay(1500);
+                //Axes.Motor_Absolute_movement_c(index, left_z, point.lz);
+                //Axes.Motor_Absolute_movement_c(index, right_z, point.rz);
+                //await Task.Delay(1500);
             }
         }
         /// <summary>
-        /// write the point name down and the dispenser will move to the correlated point, going vertically first
+        /// write the point name down and the dispenser will move to the correlated point, going vertically
         /// points are defined in DispenserPoints.json
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public async Task reverse_MovL(DKPoint point)
+        public async Task MovL_ver(DKPoint point)
         {
             if (point == null) return;
             else
             {
                 Axes.Motor_Absolute_movement_c(index, left_z, point.lz);
                 Axes.Motor_Absolute_movement_c(index, right_z, point.rz);
-                await Task.Delay(1500);
 
-                Axes.Motor_Absolute_movement_c(index, x_id, point.x);
-                Axes.Motor_Absolute_movement_c(index, y_id, point.y);
-                await Task.Delay(2000);
+                int delay = point.rz / 40;
+                await Task.Delay(delay);
+
+                //Axes.Motor_Absolute_movement_c(index, x_id, point.x);
+                //Axes.Motor_Absolute_movement_c(index, y_id, point.y);
+                //await Task.Delay(2000);
             }
         }
 
@@ -261,7 +262,7 @@ namespace WinFormsApp_Draft
         /// 0: no tip available; 1: left available; 2: right available; 3: both available 
         /// </summary>
         /// <returns></returns>
-        private int check_pipette()
+        public int check_pipette()
         {
             Pipette.Find_tip_p(index, left_tip, ref left_tip_check);
             Pipette.Find_tip_p(index, right_tip, ref right_tip_check);
@@ -306,7 +307,7 @@ namespace WinFormsApp_Draft
         /// <param name="volume"></param>
         /// <param name="tip"></param>
         /// <returns></returns>
-        public async Task Tip_Suck(int volume, byte tip = left_tip)
+        public async Task Tip_Suck(int volume, byte tip = right_tip)
         {
             byte return_value = 0;
             int flag = check_pipette();
@@ -316,36 +317,44 @@ namespace WinFormsApp_Draft
                 {
                     Int16 vol_int16 = Convert.ToInt16(volume);
                     Pipette.Suck_p(index, tip, vol_int16, ref return_value);
-                    await Task.Delay(500);
+                    await Task.Delay(1000);
                 }
                 else if (tip == right_tip)
                 {
                     Int16 vol_int16 = Convert.ToInt16(volume);
                     Pipette.Suck_p(index, tip, vol_int16, ref return_value);
+                    await Task.Delay(1000);
+                }
+            }
+        }
+
+        public async Task Tip_Spit(int volume, byte tip = right_tip)
+        {
+            byte return_value = 0;
+            int flag = check_pipette();
+            if (flag == tip || flag == 3)
+            {
+                if (tip == left_tip)
+                {
+                    Int16 vol_int16 = Convert.ToInt16(volume);
+                    Pipette.Spit_p(index, tip, vol_int16, ref return_value);
+                    await Task.Delay(500);
+                }
+                else if (tip == right_tip)
+                {
+                    Int16 vol_int16 = Convert.ToInt16(volume);
+                    Pipette.Spit_p(index, tip, vol_int16, ref return_value);
                     await Task.Delay(500);
                 }
             }
         }
 
-        public async Task Tip_Spit(int volume, byte tip = left_tip)
+        public void back_tip()
         {
-            byte return_value = 0;
-            int flag = check_pipette();
-            if (flag == tip || flag == 3)
-            {
-                if (tip == left_tip)
-                {
-                    Int16 vol_int16 = Convert.ToInt16(volume);
-                    Pipette.Spit_p(index, tip, vol_int16, ref return_value);
-                    await Task.Delay(500);
-                }
-                else if (tip == right_tip)
-                {
-                    Int16 vol_int16 = Convert.ToInt16(volume);
-                    Pipette.Spit_p(index, tip, vol_int16, ref return_value);
-                    await Task.Delay(500);
-                }
-            }
+            Pipette.Back_tip_p(index, left_tip);
+            Pipette.Back_tip_p(index, right_tip);
+            left_tip_check = 2;
+            right_tip_check = 2;
         }
 
         private void LeftTipSuck_Click(object sender, EventArgs e)
