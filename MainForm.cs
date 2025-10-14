@@ -41,10 +41,12 @@ namespace WinFormsApp_Draft
         private DispenserConfig? dispenser_conf = JsonConvert.DeserializeObject<DispenserConfig>(dispenser_json);
 
         private static List<List<int>> exp_rounds = new List<List<int>>();
-        private static List<List<int>> features = new List<List<int>>();
+        private static List<List<int>> features = new List<List<int>>();//list of volume of reagents and antisolvents
         private static List<string> free_slides = new List<string>();
         private static List<string> free_tips = new List<string>();
-        private static Dictionary<string, List<int>> reagents = new Dictionary<string, List<int>>();
+        private static Dictionary<string, List<int>> reagents = new Dictionary<string, List<int>>();//dict of reagent pos to reagent volume
+        private static Dictionary<string, List<int>> anti_solvents = new Dictionary<string, List<int>>();//dict of antisolvent pos to antisolvent volume
+        private static int feature_count = 3;
 
         public MainForm()
         {
@@ -67,6 +69,7 @@ namespace WinFormsApp_Draft
             Method.Controls.Clear();
             AutoRead.Checked = false;
             Method.Enabled = false;
+            ParamNum.Text = "3";
 
             foreach (string pos in arm_conf.Points.Keys)
             {
@@ -77,7 +80,7 @@ namespace WinFormsApp_Draft
             }
             foreach (string pos in dispenser_conf.Points.Keys)
             {
-                if (pos.StartsWith('P'))
+                if (pos.StartsWith('T'))
                 {
                     free_tips.Add(pos);
                 }
@@ -122,11 +125,12 @@ namespace WinFormsApp_Draft
                     buttons[i, j].BackColor = Color.Red;
 
                     ReagentLayout.Controls.Add(buttons[i, j], j, i);
-                    buttons[i, j].Click += (sender, e) =>
+                    buttons[i, j].MouseClick += (sender, e) =>
                     {
                         Button button = (Button)sender;
-                        add_reagent(button);
+                        add_liquid(button);
                     };
+                    //buttons[i, j].MouseClick += new MouseEventHandler(Layout_Click);
                 }
             }
         }
@@ -145,14 +149,14 @@ namespace WinFormsApp_Draft
             }
         }
 
-        private async void add_reagent(Button button)
+        private async void add_liquid(Button button)
         {
             try
             {
                 if (button.BackColor == Color.Red)
                 {
                     button.BackColor = Color.Yellow;
-                    ReagentFeatures.SelectedIndexChanged += selecting;
+                    ReagentFeatures.SelectedIndexChanged += selecting_reagent;
                     int index = 0;
 
                     while (true)
@@ -160,17 +164,49 @@ namespace WinFormsApp_Draft
                         if (ReagentFeatures.BackColor == Color.Yellow)
                         {
                             index = ReagentFeatures.SelectedIndex;
-
+                            ReagentFeatures.SelectedIndexChanged -= selecting_reagent;
                             ReagentFeatures.BackColor = Color.White;
-                            ReagentFeatures.SelectedIndexChanged -= selecting;
+
+                            reagents.Add(button.Text, features[index]);
+                            button.BackColor = Color.ForestGreen;
+                            Response.Text = button.Text + System.String.Format(" added as reagent, correlated with feature index {0}", index);
+                            break;
+                        }
+                        if(ReagentFeatures.BackColor == Color.Blue || button.BackColor == Color.Green)
+                        {
+                            ReagentFeatures.SelectedIndexChanged -= selecting_reagent;
                             break;
                         }
                         await Task.Delay(100);
                     }
+                }
+                else if (button.BackColor == Color.Yellow)
+                {
+                    button.BackColor = Color.Blue;
+                    ReagentFeatures.SelectedIndexChanged += selecting_anti_solvent;
+                    int index = 0;
 
-                    reagents.Add(button.Text, features[index]);
-                    button.BackColor = Color.ForestGreen;
-                    Response.Text = button.Text + System.String.Format(" added, correlated with feature index {0}", index);
+                    while (true)
+                    {
+                        if (ReagentFeatures.BackColor == Color.Blue)
+                        {
+                            index = ReagentFeatures.SelectedIndex;
+                            ReagentFeatures.SelectedIndexChanged -= selecting_anti_solvent;
+                            ReagentFeatures.BackColor = Color.White;
+
+                            anti_solvents.Add(button.Text, features[index]);
+                            button.BackColor = Color.ForestGreen;
+                            Response.Text = button.Text + System.String.Format(" added as anti solvent, correlated with feature index {0}", index);
+
+                            break;
+                        }
+                        if(button.BackColor == Color.Green)
+                        {
+                            ReagentFeatures.SelectedIndexChanged -= selecting_anti_solvent;
+                            break;
+                        }
+                        await Task.Delay(100);
+                    }
                 }
                 else
                 {
@@ -178,27 +214,33 @@ namespace WinFormsApp_Draft
                     reagents.Remove(button.Text);
                     Response.Text = button.Text + "removed";
                 }
+                Response.Text = reagents.Count.ToString() + anti_solvents.Count.ToString();
             }
             catch { }
         }
 
-        private void selecting(object sender, EventArgs e)
+        private void selecting_reagent(object sender, EventArgs e)
         {
             ReagentFeatures.BackColor = Color.Yellow;
         }
 
+        private void selecting_anti_solvent(object sender, EventArgs e)
+        {
+            ReagentFeatures.BackColor = Color.Blue;
+        }
         // auto read functions, complete automatic
         private void AutoRead_CheckedChanged(object sender, EventArgs e)
         {
-            if (AutoRead.Checked)
+            if (AutoRead.Checked && feature_count != 0)
             {
                 try
                 {
-                    int i = 1, x = 0;
+                    feature_count = Convert.ToInt32(ParamNum.Text);
+                    int i = 1, x = 3;
                     while (true)
                     {
                         //test data reading process
-                        List<int> row_paramerts = readExcel.row_param(i, 3, FilePath.Text);
+                        List<int> row_paramerts = readExcel.row_param(i, feature_count, FilePath.Text);
                         if (row_paramerts[0] != 0)
                         {
                             exp_rounds.Add(row_paramerts);
@@ -424,29 +466,32 @@ namespace WinFormsApp_Draft
         /// <param name="point"></param>
         /// <param name="direction"></param>
         /// <returns></returns>
-        private async Task dispenser_MovL(string point, string tip = "none")
-        {
-            int pipette_available = dispenserForm.check_pipette();
+        //private async Task dispenser_MovL(string point, string tip = "none")
+        //{
+        //    int pipette_available = dispenserForm.check_pipette();
 
-            DKPoint dispenser_pt = new DKPoint();
-            dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
-            await dispenserForm.MovL_hor(dispenser_pt); 
+        //    DKPoint dispenser_pt = new DKPoint();
+        //    dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
+        //    await dispenserForm.MovL_hor(dispenser_pt); 
 
-            if (tip == "get" && pipette_available != 2 && free_tips.Contains(point))
-            {
-                dispenser_pt.rz = 50000;
-                await dispenserForm.MovL_ver(dispenser_pt);
-                free_tips.Remove(point);
-            }
-            else if(tip == "pop")
-            {
-                dispenserForm.back_tip();
-            }
-            else
-            {
-                return;
-            }
-        }
+        //    if (tip == "get" && pipette_available != 2 && free_tips.Contains(point))
+        //    {
+        //        dispenser_pt.rz = 136000;
+        //        int wait_time = dispenserForm.MovL_ver(dispenser_pt).Result;
+        //        await dispenserForm.MovL_ver(dispenser_pt, wait_time);
+        //        free_tips.Remove(point);
+        //        dispenser_pt.rz = 0;
+        //        await dispenserForm.MovL_ver(dispenser_pt, wait_time);
+        //    }
+        //    else if(tip == "pop")
+        //    {
+        //        dispenserForm.back_tip();
+        //    }
+        //    else
+        //    {
+        //        return;
+        //    }
+        //}
 
         /// <summary>
         /// <para> 
@@ -464,60 +509,82 @@ namespace WinFormsApp_Draft
         /// <param name="point"></param>
         /// <param name="tip"></param>
         /// <returns></returns>
-        private async Task dispenser_pump(string point, string pump = "none", int volume = 10)
-        {
-            int pipette_available = dispenserForm.check_pipette();
+        //private async Task dispenser_pump(string point, string pump = "none", int volume = 10)
+        //{
+        //    int pipette_available = dispenserForm.check_pipette();
 
-            DKPoint dispenser_pt = new DKPoint();
-            dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
-            await dispenserForm.MovL_hor(dispenser_pt);
+        //    DKPoint dispenser_pt = new DKPoint();
+        //    dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
+        //    await dispenserForm.MovL_hor(dispenser_pt);
             
-            if (pipette_available == 2 && pump == "spit")
-            {
-                dispenser_pt.rz = 75000;
-                await dispenserForm.MovL_ver(dispenser_pt);
-                await dispenserForm.Tip_Spit(volume);//right tip by default
-                dispenser_pt.rz = 0;
-                await dispenserForm.MovL_ver(dispenser_pt);
-            }
-            else if (reagents.Keys.Contains(point) && pump == "suck")
-            {
-                dispenser_pt.rz = 125000;
-                await dispenserForm.MovL_ver(dispenser_pt);
-                await dispenserForm.Tip_Suck(volume, 2);
-                dispenser_pt.rz = 0;
-                await dispenserForm.MovL_ver(dispenser_pt);
-            }
-            else
-            {
-                return;
-            }
-        }
+        //    if (pipette_available == 2 && pump == "spit")
+        //    {
+        //        dispenser_pt.rz = 100000;
+        //        int wait_time = dispenserForm.MovL_ver(dispenser_pt).Result;
+        //        await dispenserForm.MovL_ver(dispenser_pt, wait_time);
+        //        await dispenserForm.Tip_Spit(volume);//right tip by default
+        //        dispenser_pt.rz = 0;
+        //        await dispenserForm.MovL_ver(dispenser_pt, wait_time);
+        //    }
+        //    else if (reagents.Keys.Contains(point) && pump == "suck")
+        //    {
+        //        dispenser_pt.rz = 175000;
+        //        int wait_time = dispenserForm.MovL_ver(dispenser_pt).Result;
+        //        await dispenserForm.MovL_ver(dispenser_pt, wait_time);
+        //        await dispenserForm.Tip_Suck(volume, 2);
+        //        dispenser_pt.rz = 0;
+        //        await dispenserForm.MovL_ver(dispenser_pt, wait_time);
+        //    }
+        //    else
+        //    {
+        //        return;
+        //    }
+        //}
 
         private async void MoveTest_Click(object sender, EventArgs e)
         {
-            //try
-            //{
-            //    Response.Text = reagents["RP11"][0].ToString();
-            //}
-            //catch(Exception ex) 
-            //{
-            //    Response.Text = ex.Message;
-            //}
-            //foreach (string point in free_slides)
-            //{
-            //    Response.Text += point;
-            //}
-
             //test platform experiment process
+            try
+            {
+                await round_test(1);
+            }
+            catch(Exception ex)
+            {
+                Response.Text = ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// load parameters for each experiment round, round = index + 1
+        /// </summary>
+        /// <param name="round">
+        /// </param>
+        /// <returns></returns>
+        private async Task round_test(int round)
+        {
+            int index = round - 1;
+            List<int> coater = new List<int>{ exp_rounds[round][0], exp_rounds[round][1], exp_rounds[round][2] };
+
             //await arm_MovL("Zero");
             //await arm_MovL("Calibrate");
 
-            //await arm_MovL("P44", "pick at tray");
+            //await arm_MovL(free_slides[0], "pick at tray");
+            //free_slides.RemoveAt(0);
             //Response.Text = "Gripping start.";
             //await arm_MovL("Coater", "release at coater");
             //await arm_MovL("Calibrate");
             //await arm_MovL("Zero");
+
+            if (feature_count > 3)
+            { 
+                
+            }
+
+            //await dispenser_MovL("TP11", "get");
+            //await dispenser_pump("RP11", "suck", 20);
+            //await dispenser_pump("Coater", "spit", 20);
+            //Response.Text += "Dispensing liquid done. ";
+            //await dispenser_MovL("Zero", "pop");
 
             //await coaterForm.Spin_Coat(2000, 1000, 4);
             //Response.Text += "Coating done. ";
@@ -529,12 +596,6 @@ namespace WinFormsApp_Draft
 
             //await arm_MovL("Zero");
             //Response.Text += "Moving done. ";
-
-            await dispenser_pump("RP11", "suck");
-            await dispenser_pump("RP11", "spit");
-            //Response.Text += "Dispensing liquid done. ";
-
-
         }
     }
 }

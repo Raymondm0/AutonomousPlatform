@@ -203,7 +203,7 @@ namespace WinFormsApp_Draft
             point.y = Convert.ToInt32(Y.Text);
             point.lz = Convert.ToInt32(LeftZ.Text);
             point.rz = Convert.ToInt32(RightZ.Text);
-            await Task.Run(() => MovL_ver(point));
+            await Task.Run(() => MovL_ver(point, 3000));
             await Task.Run(() => MovL_hor(point));
             check_pipette();
         }
@@ -230,22 +230,35 @@ namespace WinFormsApp_Draft
             }
         }
         /// <summary>
+        /// <para>
         /// write the point name down and the dispenser will move to the correlated point, going vertically
         /// points are defined in DispenserPoints.json
+        /// </para>
+        /// <para>
+        /// if delay is passed in and not 0, will wait until finishing moving the actual time(ms); 
+        /// if kept default, will calculate the wait time according to how much to go down along side the "z" axis.
+        /// the waiting time will be returned, but will not move
+        /// </para>
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public async Task MovL_ver(DKPoint point)
+        public async Task<int> MovL_ver(DKPoint point, int delay = 0)
         {
-            if (point == null) return;
+            if (point == null) return 0;
             else
             {
-                Axes.Motor_Absolute_movement_c(index, left_z, point.lz);
-                Axes.Motor_Absolute_movement_c(index, right_z, point.rz);
-
-                int delay = point.rz / 40;
-                await Task.Delay(delay);
-
+                if (delay == 0)
+                {
+                    int real_delay = point.rz / 40;
+                    return real_delay;
+                }
+                else
+                {
+                    Axes.Motor_Absolute_movement_c(index, left_z, point.lz);
+                    Axes.Motor_Absolute_movement_c(index, right_z, point.rz);
+                    await Task.Delay(delay);
+                    return delay;
+                }
                 //Axes.Motor_Absolute_movement_c(index, x_id, point.x);
                 //Axes.Motor_Absolute_movement_c(index, y_id, point.y);
                 //await Task.Delay(2000);

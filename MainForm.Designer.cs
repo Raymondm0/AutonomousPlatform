@@ -46,6 +46,11 @@
             ExperimentParameters = new ListBox();
             ReagentFeatures = new ListBox();
             Method = new GroupBox();
+            label4 = new Label();
+            label3 = new Label();
+            ParamNum = new TextBox();
+            label5 = new Label();
+            Method.SuspendLayout();
             SuspendLayout();
             // 
             // Response
@@ -197,6 +202,8 @@
             // 
             // Method
             // 
+            Method.Controls.Add(label4);
+            Method.Controls.Add(label3);
             Method.Location = new Point(22, 275);
             Method.Name = "Method";
             Method.Size = new Size(533, 446);
@@ -204,11 +211,47 @@
             Method.TabStop = false;
             Method.Text = "Method";
             // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(373, 39);
+            label4.Name = "label4";
+            label4.Size = new Size(116, 17);
+            label4.TabIndex = 1;
+            label4.Text = "Round Parameters";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(358, 269);
+            label3.Name = "label3";
+            label3.Size = new Size(146, 17);
+            label3.TabIndex = 0;
+            label3.Text = "Reagent Round Volume";
+            // 
+            // ParamNum
+            // 
+            ParamNum.Location = new Point(411, 180);
+            ParamNum.Name = "ParamNum";
+            ParamNum.Size = new Size(100, 23);
+            ParamNum.TabIndex = 62;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(411, 160);
+            label5.Name = "label5";
+            label5.Size = new Size(85, 17);
+            label5.TabIndex = 63;
+            label5.Text = "feature count";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1162, 758);
+            Controls.Add(label5);
+            Controls.Add(ParamNum);
             Controls.Add(ReagentFeatures);
             Controls.Add(ExperimentParameters);
             Controls.Add(ReagentLayout);
@@ -229,6 +272,8 @@
             Name = "MainForm";
             Text = "MainForm";
             Load += MainForm_Load;
+            Method.ResumeLayout(false);
+            Method.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -251,5 +296,9 @@
         private ListBox ExperimentParameters;
         private ListBox ReagentFeatures;
         private GroupBox Method;
+        private Label label4;
+        private Label label3;
+        private TextBox ParamNum;
+        private Label label5;
     }
 }
