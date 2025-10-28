@@ -16,7 +16,7 @@ namespace WinFormsApp_Draft.Auto
     public class ReadExcel
     {
         [DllImport("ReadExcelDLL.dll", EntryPoint = "parameters")]
-        private static extern int parameters(int row, int col, string filepath, ref int data);
+        public static extern int parameters(int row, int col, string filepath, ref int data);
 
         public List<int> row_param(int round, int data_points, string filepath)
         {

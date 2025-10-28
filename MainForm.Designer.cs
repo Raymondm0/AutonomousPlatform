@@ -46,6 +46,7 @@
             ExperimentParameters = new ListBox();
             ReagentFeatures = new ListBox();
             Method = new GroupBox();
+            Log = new RichTextBox();
             label4 = new Label();
             label3 = new Label();
             ParamNum = new TextBox();
@@ -168,7 +169,7 @@
             ReagentLayout.ColumnCount = 2;
             ReagentLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             ReagentLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            ReagentLayout.Location = new Point(50, 50);
+            ReagentLayout.Location = new Point(40, 41);
             ReagentLayout.Name = "ReagentLayout";
             ReagentLayout.RowCount = 2;
             ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -179,31 +180,34 @@
             ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             ReagentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            ReagentLayout.Size = new Size(248, 303);
+            ReagentLayout.Size = new Size(208, 261);
             ReagentLayout.TabIndex = 58;
             // 
             // ExperimentParameters
             // 
             ExperimentParameters.FormattingEnabled = true;
             ExperimentParameters.ItemHeight = 17;
-            ExperimentParameters.Location = new Point(363, 334);
+            ExperimentParameters.Location = new Point(280, 39);
             ExperimentParameters.Name = "ExperimentParameters";
-            ExperimentParameters.Size = new Size(180, 157);
+            ExperimentParameters.Size = new Size(241, 106);
             ExperimentParameters.TabIndex = 59;
             // 
             // ReagentFeatures
             // 
             ReagentFeatures.FormattingEnabled = true;
             ReagentFeatures.ItemHeight = 17;
-            ReagentFeatures.Location = new Point(363, 564);
+            ReagentFeatures.Location = new Point(28, 305);
             ReagentFeatures.Name = "ReagentFeatures";
-            ReagentFeatures.Size = new Size(180, 106);
+            ReagentFeatures.Size = new Size(230, 123);
             ReagentFeatures.TabIndex = 60;
             // 
             // Method
             // 
+            Method.Controls.Add(Log);
             Method.Controls.Add(label4);
             Method.Controls.Add(label3);
+            Method.Controls.Add(ReagentFeatures);
+            Method.Controls.Add(ExperimentParameters);
             Method.Location = new Point(22, 275);
             Method.Name = "Method";
             Method.Size = new Size(533, 446);
@@ -211,10 +215,18 @@
             Method.TabStop = false;
             Method.Text = "Method";
             // 
+            // Log
+            // 
+            Log.Location = new Point(280, 162);
+            Log.Name = "Log";
+            Log.Size = new Size(241, 266);
+            Log.TabIndex = 62;
+            Log.Text = "";
+            // 
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(373, 39);
+            label4.Location = new Point(373, 19);
             label4.Name = "label4";
             label4.Size = new Size(116, 17);
             label4.TabIndex = 1;
@@ -223,7 +235,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(358, 269);
+            label3.Location = new Point(62, 280);
             label3.Name = "label3";
             label3.Size = new Size(146, 17);
             label3.TabIndex = 0;
@@ -241,9 +253,9 @@
             label5.AutoSize = true;
             label5.Location = new Point(411, 160);
             label5.Name = "label5";
-            label5.Size = new Size(85, 17);
+            label5.Size = new Size(96, 17);
             label5.TabIndex = 63;
-            label5.Text = "feature count";
+            label5.Text = "features shown";
             // 
             // MainForm
             // 
@@ -252,8 +264,6 @@
             ClientSize = new Size(1162, 758);
             Controls.Add(label5);
             Controls.Add(ParamNum);
-            Controls.Add(ReagentFeatures);
-            Controls.Add(ExperimentParameters);
             Controls.Add(ReagentLayout);
             Controls.Add(label2);
             Controls.Add(label1);
@@ -300,5 +310,6 @@
         private Label label3;
         private TextBox ParamNum;
         private Label label5;
+        private RichTextBox Log;
     }
 }

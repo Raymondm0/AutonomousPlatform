@@ -145,8 +145,8 @@ namespace WinFormsApp_Draft
                         Axes.Enable_motor_c(index, right_tip, 1);
                         Axes.Set_speed_ac_de_time_c(index, x_id, 150, 200, 200);
                         Axes.Set_speed_ac_de_time_c(index, y_id, 150, 200, 200);
-                        Axes.Set_speed_ac_de_time_c(index, left_z, 600, 200, 200);
-                        Axes.Set_speed_ac_de_time_c(index, right_z, 300, 200, 200);
+                        Axes.Set_speed_ac_de_time_c(index, left_z, 800, 200, 200);
+                        Axes.Set_speed_ac_de_time_c(index, right_z, 800, 200, 200);
 
                         Pipette.Cpump_zero_p(index, left_tip);
                         Pipette.Cpump_zero_p(index, right_tip);
@@ -249,7 +249,7 @@ namespace WinFormsApp_Draft
             {
                 if (delay == 0)
                 {
-                    int real_delay = point.rz / 40;
+                    int real_delay = point.rz / 100;
                     return real_delay;
                 }
                 else
