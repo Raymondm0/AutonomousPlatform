@@ -43,7 +43,8 @@ namespace WinFormsApp_Draft
         private static List<List<int>> exp_rounds = new List<List<int>>();
         private static List<List<int>> features = new List<List<int>>();//list of volume of reagents and antisolvents
         private static List<string> free_substrates = new List<string>();
-        private static List<string> free_tips = new List<string>();
+        private static List<string> free_left_tips = new List<string>();
+        private static List<string> free_right_tips = new List<string>();
 
         private static Dictionary<string, List<int>> reagent = new Dictionary<string, List<int>>();//dict of reagent pos to reagent volume
         //private static Dictionary<string, List<int>> antisolvent = new Dictionary<string, List<int>>();//dict of antisolvent pos to antisolvent volume
@@ -65,7 +66,8 @@ namespace WinFormsApp_Draft
         {
             exp_rounds.Clear();
             free_substrates.Clear();
-            free_tips.Clear();
+            free_left_tips.Clear();
+            free_right_tips.Clear();
             reagent.Clear();
             //antisolvent.Clear();
             ReagentLayout.Controls.Clear();
@@ -86,9 +88,16 @@ namespace WinFormsApp_Draft
             }
             foreach (string pos in dispenser_conf.Points.Keys)
             {
-                if (pos.StartsWith('T'))
+                if (pos.StartsWith('L'))
                 {
-                    free_tips.Add(pos);
+                    free_left_tips.Add(pos);
+                }
+            }
+            foreach (string pos in dispenser_conf.Points.Keys)
+            {
+                if (pos.StartsWith('R'))
+                {
+                    free_right_tips.Add(pos);
                 }
             }
 
@@ -130,7 +139,7 @@ namespace WinFormsApp_Draft
                 for (int j = 0; j < col_n; j++)
                 {
                     buttons[i, j] = new Button();
-                    buttons[i, j].Text = $"RP{i + 1}{j + 1}";
+                    buttons[i, j].Text = $"BP{i + 1}{j + 1}";
                     buttons[i, j].Dock = DockStyle.Fill;
                     buttons[i, j].BackColor = Color.Red;
 
@@ -487,37 +496,52 @@ namespace WinFormsApp_Draft
         /// pass in point name(string);
         /// </para>
         /// <para>
-        /// if tip is "get", will descend to the pipette box and get new pipettes if tip is free; 
+        /// if tip is "get", will descend to the pipette box and get new tips if tip is free; 
         /// if tip is "pop", will drop pipette immediately. otherwise will do nothing.
         /// </para>
         /// <para>
         /// "get" removes picked tip from free_pick
         /// </para>
+        /// <para>
+        /// if pipette is 1, left pipette will do operation. if 2, the right. default is right
+        /// </para>
         /// </summary>
         /// <param name="point"></param>
         /// <param name="direction"></param>
         /// <returns></returns>
-        private async Task dispenser_MovL(string point, string tip = "none")
+        private async Task dispenser_MovL(string point, string tip = "none", byte pipette = 2)
         {
-            int pipette_available = dispenserForm.check_pipette();
-
             DKPoint dispenser_pt = new DKPoint();
             dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
             await dispenserForm.MovL_hor(dispenser_pt);
 
-            if (tip == "get" && pipette_available != 2 && free_tips.Contains(point))
+            if (pipette == 1 && tip == "get" && free_left_tips.Contains(point))
+            {
+                dispenser_pt.lz = 136000;
+                int wait_time = dispenserForm.MovL_ver(dispenser_pt, 0, 1).Result;
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time, 1);
+                free_left_tips.Remove(point);
+                dispenser_pt.lz = 0;
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time, 1);
+            }
+            else if (pipette == 2 && tip == "get" && free_right_tips.Contains(point))
             {
                 dispenser_pt.rz = 136000;
-                int wait_time = dispenserForm.MovL_ver(dispenser_pt).Result;
-                await dispenserForm.MovL_ver(dispenser_pt, wait_time);
-                free_tips.Remove(point);
+                int wait_time = dispenserForm.MovL_ver(dispenser_pt, 0, 2).Result;
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time, 2);
+                free_right_tips.Remove(point);
                 dispenser_pt.rz = 0;
-                await dispenserForm.MovL_ver(dispenser_pt, wait_time);
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time, 2);
             }
+
             else if (tip == "pop")
             {
-                dispenserForm.back_tip();
+                dispenserForm.back_tip(pipette);
                 running = 0;
+            }
+            else 
+            {
+                return;
             }
         }
 
@@ -535,50 +559,82 @@ namespace WinFormsApp_Draft
         /// the default volume is 10 ul, in the experiment case, volume should be indicated by reagent Dictionary.
         /// can only use right tip, if no pipette on pump, will do nothing.
         /// </para>
+        /// <para>
+        /// if tip is 1, left pump will do operation. if tip is 2, the right. default is 2.
+        /// </para>
         /// </summary>
         /// <param name="point"></param>
         /// <param name="tip"></param>
         /// <returns></returns>
-        private async Task dispenser_pump(string point, string pump = "none", int volume = 10)
+        private async Task dispenser_pump(string point, string pump = "none", int volume = 10, byte tip = 2)
         {
             int pipette_available = dispenserForm.check_pipette();
 
             DKPoint dispenser_pt = new DKPoint();
             dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
             await dispenserForm.MovL_hor(dispenser_pt);
+            int wait_time0 = 0;
 
-            dispenser_pt.rz = 100000;//coater z
-            int wait_time0 = dispenserForm.MovL_ver(dispenser_pt).Result;
-            //await dispenserForm.MovL_ver(dispenser_pt, wait_time0);
-
-            if (pipette_available == 2 && pump == "spit")
+            if (tip == 1)
             {
-                await dispenserForm.MovL_ver(dispenser_pt, wait_time0);
-                await dispenserForm.Tip_Spit(volume);//right tip by default
-                dispenser_pt.rz = 0;
-                await dispenserForm.MovL_ver(dispenser_pt, wait_time0);
+                dispenser_pt.lz = 100000;//coater z
+                wait_time0 = dispenserForm.MovL_ver(dispenser_pt, 0, 1).Result;
+            }
+            else if (tip == 2)
+            {
+                dispenser_pt.rz = 100000;//coater z
+                wait_time0 = dispenserForm.MovL_ver(dispenser_pt, 0, 2).Result;
+            }
+
+            if (pipette_available > 0 && pump == "spit")
+            {
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time0, tip);
+                await dispenserForm.Tip_Spit(volume, tip);//right tip by default
+                if (tip == 1)
+                {
+                    dispenser_pt.lz = 0;
+                }
+                else if (tip == 2)
+                {
+                    dispenser_pt.rz = 0;
+                }
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time0, tip);
             }
             else if (reagent.Keys.Contains(point) && pump == "suck")
             {
-                dispenser_pt.rz = 175000;//bottle z
-                int wait_time = dispenserForm.MovL_ver(dispenser_pt).Result;
-                await dispenserForm.MovL_ver(dispenser_pt, wait_time);
-                await dispenserForm.Tip_Suck(volume, 2);
-                dispenser_pt.rz = 0;
-                await dispenserForm.MovL_ver(dispenser_pt, wait_time);
+                if (tip == 1)
+                {
+                    dispenser_pt.lz = 175000;//bottle z
+                }
+                else if (tip == 2)
+                {
+                    dispenser_pt.rz = 175000;
+                }
+                int wait_time = dispenserForm.MovL_ver(dispenser_pt, 0, tip).Result;
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time, tip);
+                await dispenserForm.Tip_Suck(volume, tip);//right tip by default
+                if (tip == 1)
+                {
+                    dispenser_pt.lz = 0;
+                }
+                else if (tip == 2)
+                {
+                    dispenser_pt.rz = 0;
+                }
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time, tip);
             }
-            else if (reagent.Keys.Contains(point) && pump == "descend") 
+            else if (reagent.Keys.Contains(point) && pump == "descend")
             {
-                await dispenserForm.MovL_ver(dispenser_pt, wait_time0);
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time0, tip);
             }
             else if (reagent.Keys.Contains(point) && pump == "ascend")
             {
                 dispenser_pt.rz = 0;
-                await dispenserForm.MovL_ver(dispenser_pt, wait_time0);
+                await dispenserForm.MovL_ver(dispenser_pt, wait_time0, tip);
             }
         }
 
-        private void activate_timer(int round_index, int reagent_index,int time, int volume)
+        private void activate_timer(int round_index, int time, int volume)
         {
             running = 1;
             System.Timers.Timer timer = new System.Timers.Timer(time);
@@ -586,9 +642,8 @@ namespace WinFormsApp_Draft
             {
                 try
                 {
-                    await dispenserForm.Tip_Spit(volume, 2);
-                    await dispenser_MovL("Coater", "ascend");
-                    await dispenser_MovL("Zero", "pop");
+                    await dispenser_pump("Coater", "spit", volume, 1);
+                    await dispenser_MovL("Zero", "pop", 3);//pop all the tips
                     timer.Stop();
                     timer.Dispose();
                 }
@@ -606,6 +661,9 @@ namespace WinFormsApp_Draft
             //test platform experiment process
             try
             {
+                await arm_MovL("Zero", "pick at tray");
+                await Task.Delay(1000);
+                await arm_MovL("Zero", "release at tray");
                 //await psuedo_round_test(1);
                 //await round_test(1);
                 //Response.Text = apply_time.Count.ToString() + apply_time.Keys.ElementAt(0) + " " + apply_time[apply_time.Keys.ElementAt(0)].Count.ToString();
@@ -628,7 +686,7 @@ namespace WinFormsApp_Draft
             {
                 int index = round - 1;
                 //coater: { speed, acceleration, duration }
-                List<int> coater = new List<int>{ exp_rounds[round][0], exp_rounds[round][1], exp_rounds[round][2] };
+                List<int> coater = new List<int>{ exp_rounds[index][0], exp_rounds[index][1], exp_rounds[index][2] };
                 Log.Text += String.Format("round {0}: \n", round.ToString());
                 for(int key = 0; key < reagent.Count; key++)
                 {
@@ -648,18 +706,29 @@ namespace WinFormsApp_Draft
 
                 if (reagent.Count() > 0)
                 {
-                    await dispenser_MovL(free_tips[0], "get");
-                    await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[index]);
-                    await dispenser_pump("Coater", "spit", reagent.Values.ElementAt(0)[index]);
-                    Response.Text = "Dispensing liquid done. ";
-                    await dispenser_MovL("Zero", "pop");
-
-                    if (reagent.Count() == 2 && coater[2] > dispense_time.Values.ElementAt(1)[index])
+                    if(reagent.Count() == 1)
                     {
-                        await dispenser_MovL(free_tips[0], "get");
-                        await dispenser_pump(reagent.Keys.ElementAt(1), "suck", reagent.Values.ElementAt(1)[index]);
-                        await dispenser_pump("Coater", "descend");
-                        activate_timer(index, 1, dispense_time.Values.ElementAt(1)[index], reagent.Values.ElementAt(1)[index]);
+                        await dispenser_MovL(free_right_tips[0], "get", 2);
+                        await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[index], 2);
+                        await dispenser_pump("Coater", "spit", reagent.Values.ElementAt(0)[index], 2);
+                        Response.Text = "Dispensing liquid done. ";
+                    }
+
+                    else if (reagent.Count() == 2 && coater[2] > dispense_time.Values.ElementAt(1)[index])
+                    {
+                        await dispenser_MovL(free_right_tips[0], "get", 2);
+                        free_left_tips.Remove(free_left_tips.ElementAt(0));
+                        await dispenser_MovL(free_left_tips[0], "get", 1);
+                        free_right_tips.Remove(free_right_tips.ElementAt(0));
+
+                        await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[index], 2);
+                        await dispenser_pump(reagent.Keys.ElementAt(1), "suck", reagent.Values.ElementAt(1)[index], 1);
+                        
+                        await dispenser_pump("Coater", "spit", reagent.Values.ElementAt(0)[index], 2);
+                        await dispenser_pump("Coater", "descend", 0, 1);
+                        Response.Text = "Dispensing reagent done. Waiting to dispense antisolvent";
+
+                        activate_timer(index, dispense_time.Values.ElementAt(1)[index], reagent.Values.ElementAt(1)[index]);
                     }
 
                     await coaterForm.Spin_Coat(coater[0], coater[1], coater[2]);

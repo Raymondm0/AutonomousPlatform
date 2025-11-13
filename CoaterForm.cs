@@ -264,7 +264,7 @@ namespace WinFormsApp_Draft
             static_acc_speed = acc_speed;
             static_spin_dur = spin_dur;
             await Task.Run(() => Send_Request());
-            await Task.Delay(spin_dur * 1000);
+            await Task.Delay(spin_dur);
             await Task.Run(() => ResetMotorAsync(master, spin_speed));
         }
 

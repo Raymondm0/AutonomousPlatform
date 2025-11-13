@@ -232,25 +232,40 @@ namespace WinFormsApp_Draft
         /// <summary>
         /// <para>
         /// write the point name down and the dispenser will move to the correlated point, going vertically
-        /// points are defined in DispenserPoints.json
+        /// points are defined in DispenserPoints.json. which means moving left pipette or right depends.
         /// </para>
         /// <para>
         /// if delay is passed in and not 0, will wait until finishing moving the actual time(ms); 
         /// if kept default, will calculate the wait time according to how much to go down along side the "z" axis.
         /// the waiting time will be returned, but will not move
         /// </para>
+        /// <para>
+        /// if pipette is 1, left pipette will do the operation. if 2, the right. right by default
+        /// </para>
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public async Task<int> MovL_ver(DKPoint point, int delay = 0)
+        public async Task<int> MovL_ver(DKPoint point, int delay = 0, byte pipette = right_tip)
         {
             if (point == null) return 0;
             else
             {
                 if (delay == 0)
                 {
-                    int real_delay = point.rz / 100;
-                    return real_delay;
+                    if (pipette == left_tip)
+                    {
+                        int real_delay = point.lz / 100;
+                        return real_delay;
+                    }
+                    else if (pipette == right_tip)
+                    {
+                        int real_delay = point.rz / 100;
+                        return real_delay;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
                 else
                 {
@@ -259,9 +274,6 @@ namespace WinFormsApp_Draft
                     await Task.Delay(delay);
                     return delay;
                 }
-                //Axes.Motor_Absolute_movement_c(index, x_id, point.x);
-                //Axes.Motor_Absolute_movement_c(index, y_id, point.y);
-                //await Task.Delay(2000);
             }
         }
 
@@ -362,12 +374,25 @@ namespace WinFormsApp_Draft
             }
         }
 
-        public void back_tip()
+        public void back_tip(byte tip = right_tip)
         {
-            Pipette.Back_tip_p(index, left_tip);
-            Pipette.Back_tip_p(index, right_tip);
-            left_tip_check = 2;
-            right_tip_check = 2;
+            if(tip == left_tip)
+            {
+                Pipette.Back_tip_p(index, left_tip);
+                left_tip_check = 2;
+            }
+            else if(tip == right_tip)
+            {
+                Pipette.Back_tip_p(index, right_tip);
+                right_tip_check = 2;
+            }
+            else
+            {
+                Pipette.Back_tip_p(index, left_tip);
+                left_tip_check = 2;
+                Pipette.Back_tip_p(index, right_tip);
+                right_tip_check = 2;
+            }
         }
 
         private void LeftTipSuck_Click(object sender, EventArgs e)
