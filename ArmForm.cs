@@ -365,6 +365,8 @@ namespace CSharpTcpDemo
 
                 PrintLog(string.Format("Receive From {0}:{1}: {2}", mDashboard.IP, mDashboard.Port, ret));
 
+                string ret0 = mDashboard.SpeedFactor(100);
+
                 OffsetPosition pt = new OffsetPosition();
                 
                 pt.x = pt.y = pt.z = pt.r = 10;

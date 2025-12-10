@@ -51,6 +51,8 @@
             label3 = new Label();
             ParamNum = new TextBox();
             label5 = new Label();
+            Tipbox_Reload = new Button();
+            Substrate_Reload = new Button();
             Method.SuspendLayout();
             SuspendLayout();
             // 
@@ -257,11 +259,33 @@
             label5.TabIndex = 63;
             label5.Text = "features shown";
             // 
+            // Tipbox_Reload
+            // 
+            Tipbox_Reload.Location = new Point(423, 57);
+            Tipbox_Reload.Name = "Tipbox_Reload";
+            Tipbox_Reload.Size = new Size(120, 23);
+            Tipbox_Reload.TabIndex = 64;
+            Tipbox_Reload.Text = "Reload Tipbox";
+            Tipbox_Reload.UseVisualStyleBackColor = true;
+            Tipbox_Reload.Click += Tipbox_Reload_Click;
+            // 
+            // Substrate_Reload
+            // 
+            Substrate_Reload.Location = new Point(423, 86);
+            Substrate_Reload.Name = "Substrate_Reload";
+            Substrate_Reload.Size = new Size(120, 23);
+            Substrate_Reload.TabIndex = 65;
+            Substrate_Reload.Text = "Reload Substrate";
+            Substrate_Reload.UseVisualStyleBackColor = true;
+            Substrate_Reload.Click += Substrate_Reload_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1162, 758);
+            Controls.Add(Substrate_Reload);
+            Controls.Add(Tipbox_Reload);
             Controls.Add(label5);
             Controls.Add(ParamNum);
             Controls.Add(ReagentLayout);
@@ -311,5 +335,7 @@
         private TextBox ParamNum;
         private Label label5;
         private RichTextBox Log;
+        private Button Tipbox_Reload;
+        private Button Substrate_Reload;
     }
 }

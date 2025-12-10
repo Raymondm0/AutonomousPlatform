@@ -40,14 +40,12 @@ namespace WinFormsApp_Draft
         private static string dispenser_json = File.ReadAllText(dispenserPath);
         private DispenserConfig? dispenser_conf = JsonConvert.DeserializeObject<DispenserConfig>(dispenser_json);
 
-        private static List<List<int>> exp_rounds = new List<List<int>>();
+        private static List<List<int>> exp_rounds = new List<List<int>>();//list of coater parameters for each round
         private static List<List<int>> features = new List<List<int>>();//list of volume of reagents and antisolvents
         private static List<string> free_substrates = new List<string>();
-        private static List<string> free_left_tips = new List<string>();
         private static List<string> free_right_tips = new List<string>();
 
-        private static Dictionary<string, List<int>> reagent = new Dictionary<string, List<int>>();//dict of reagent pos to reagent volume
-        //private static Dictionary<string, List<int>> antisolvent = new Dictionary<string, List<int>>();//dict of antisolvent pos to antisolvent volume
+        private static Dictionary<string, List<int>> reagent = new Dictionary<string, List<int>>();//dict of reagent pos to reagent volume for right pump
         private static Dictionary<string, List<int>> dispense_time = new Dictionary<string, List<int>>();//dict of reagent pos to when to spit
         private static int feature_count = 3;
         private static int running = 0;
@@ -55,7 +53,7 @@ namespace WinFormsApp_Draft
         public MainForm()
         {
             InitializeComponent();
-            
+
             Refresh.Click += armForm.ArmForm_Load;
             Refresh.Click += dispenserForm.DispenserForm_Load;
             Refresh.Click += coaterForm.CoaterForm_Load;
@@ -66,10 +64,8 @@ namespace WinFormsApp_Draft
         {
             exp_rounds.Clear();
             free_substrates.Clear();
-            free_left_tips.Clear();
             free_right_tips.Clear();
             reagent.Clear();
-            //antisolvent.Clear();
             ReagentLayout.Controls.Clear();
             ExperimentParameters.Items.Clear();
             Log.Clear();
@@ -77,34 +73,15 @@ namespace WinFormsApp_Draft
             AutoRead.Checked = false;
             Method.Enabled = false;
             ReagentFeatures.Enabled = false;
-            ParamNum.Text = "3";
+            ParamNum.Text = "7";
 
-            foreach (string pos in arm_conf.Points.Keys)
-            {
-                if (pos.StartsWith('P'))
-                {
-                    free_substrates.Add(pos);
-                }
-            }
-            foreach (string pos in dispenser_conf.Points.Keys)
-            {
-                if (pos.StartsWith('L'))
-                {
-                    free_left_tips.Add(pos);
-                }
-            }
-            foreach (string pos in dispenser_conf.Points.Keys)
-            {
-                if (pos.StartsWith('R'))
-                {
-                    free_right_tips.Add(pos);
-                }
-            }
+            reload_substrate();
+            reload_tipbox();
 
-            init_btns(4, 3);
+            init_btns(6, 4);
             if (!Method.Contains(ReagentLayout)) Method.Controls.Add(ReagentLayout);
             if (!Method.Contains(ExperimentParameters)) Method.Controls.Add(ExperimentParameters);
-            if (!Method.Contains(ReagentFeatures))Method.Controls.Add(ReagentFeatures);
+            if (!Method.Contains(ReagentFeatures)) Method.Controls.Add(ReagentFeatures);
             if (!Method.Contains(Log)) Method.Controls.Add(Log);
             Log.Enabled = false;
 
@@ -120,9 +97,45 @@ namespace WinFormsApp_Draft
             dispenserForm.TopLevel = false;
         }
 
+        private void reload_tipbox()
+        {
+            free_right_tips.Clear();
+
+            foreach (string pos in dispenser_conf.Points.Keys)
+            {
+                if (pos.StartsWith('R'))
+                {
+                    free_right_tips.Add(pos);
+                }
+
+            }
+        }
+
+        private void reload_substrate()
+        {
+            free_substrates.Clear();
+            foreach (string pos in arm_conf.Points.Keys)
+            {
+                if (pos.StartsWith('P'))
+                {
+                    free_substrates.Add(pos);
+                }
+            }
+        }
+
         private void Refresh_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void Tipbox_Reload_Click(object sender, EventArgs e)
+        {
+            reload_tipbox();
+        }
+
+        private void Substrate_Reload_Click(object sender, EventArgs e)
+        {
+            reload_substrate();
         }
 
         //layout of the reagent bottles
@@ -211,7 +224,7 @@ namespace WinFormsApp_Draft
                                     Response.Clear();
                                     break;
                                 }
-                                if(button.BackColor == Color.Red)
+                                if (button.BackColor == Color.Red)
                                 {
                                     break;
                                 }
@@ -221,7 +234,7 @@ namespace WinFormsApp_Draft
                             button.Enabled = true;
                             break;
                         }
-                        else if(button.BackColor == Color.Red)
+                        else if (button.BackColor == Color.Red)
                         {
                             Response.Text = button.Text + "quit";
                             ReagentFeatures.Enabled = false;
@@ -240,7 +253,7 @@ namespace WinFormsApp_Draft
                     button.BackColor = Color.Red;
 
                     if (reagent.Keys.Contains(button.Text))
-                    { 
+                    {
                         reagent.Remove(button.Text);
                         Log.Text += "reagent " + button.Text + " removed" + "\n";
                     }
@@ -249,7 +262,7 @@ namespace WinFormsApp_Draft
                         dispense_time.Remove(button.Text);
                         Log.Text += "dispense time " + button.Text + " removed" + "\n";
                     }
-                    ReagentFeatures.Enabled = false ;
+                    ReagentFeatures.Enabled = false;
                 }
             }
             catch { }
@@ -457,7 +470,8 @@ namespace WinFormsApp_Draft
 
             if (gripper == "pick at tray" && free_substrates.Contains(point))
             {
-                arm_pt.z = 63;
+                arm_pt.z = 66;
+                arm_pt.r = 5;
                 await armForm.MovL(arm_pt);
                 await armForm.Grip(13);
                 arm_pt.z = 200;
@@ -466,7 +480,8 @@ namespace WinFormsApp_Draft
             }
             else if (gripper == "release at tray" && !free_substrates.Contains(point))
             {
-                arm_pt.z = 64;
+                arm_pt.z = 65;
+                arm_pt.r = 5;
                 await armForm.MovL(arm_pt);
                 await armForm.Release(13);
                 arm_pt.z = 200;
@@ -475,7 +490,8 @@ namespace WinFormsApp_Draft
             }
             else if (gripper == "pick at coater")
             {
-                arm_pt.z = 108;
+                arm_pt.z = 116;
+                arm_pt.r = 8;
                 await armForm.MovL(arm_pt);
                 await armForm.Grip(13);
                 arm_pt.z = 200;
@@ -483,7 +499,8 @@ namespace WinFormsApp_Draft
             }
             else if (gripper == "release at coater")
             {
-                arm_pt.z = 109;
+                arm_pt.z = 116;
+                arm_pt.r = 8;
                 await armForm.MovL(arm_pt);
                 await armForm.Release(13);
                 arm_pt.z = 200;
@@ -500,7 +517,7 @@ namespace WinFormsApp_Draft
         /// if tip is "pop", will drop pipette immediately. otherwise will do nothing.
         /// </para>
         /// <para>
-        /// "get" removes picked tip from free_pick
+        /// "get" removes picked tip from free_{left or right}_point
         /// </para>
         /// <para>
         /// if pipette is 1, left pipette will do operation. if 2, the right. default is right
@@ -513,20 +530,25 @@ namespace WinFormsApp_Draft
         {
             DKPoint dispenser_pt = new DKPoint();
             dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
+            if (pipette == 1)
+            {
+                dispenser_pt.x -= 4000;
+            }
             await dispenserForm.MovL_hor(dispenser_pt);
 
-            if (pipette == 1 && tip == "get" && free_left_tips.Contains(point))
+            if (pipette == 1 && tip == "get" && free_right_tips.Contains(point))
             {
-                dispenser_pt.lz = 136000;
+                dispenser_pt.lz = 135000;
                 int wait_time = dispenserForm.MovL_ver(dispenser_pt, 0, 1).Result;
                 await dispenserForm.MovL_ver(dispenser_pt, wait_time, 1);
-                free_left_tips.Remove(point);
+                free_right_tips.Remove(point);
                 dispenser_pt.lz = 0;
                 await dispenserForm.MovL_ver(dispenser_pt, wait_time, 1);
+                dispenser_pt.x += 4000;
             }
-            else if (pipette == 2 && tip == "get" && free_right_tips.Contains(point))
+            if (pipette == 2 && tip == "get" && free_right_tips.Contains(point))
             {
-                dispenser_pt.rz = 136000;
+                dispenser_pt.rz = 135000;
                 int wait_time = dispenserForm.MovL_ver(dispenser_pt, 0, 2).Result;
                 await dispenserForm.MovL_ver(dispenser_pt, wait_time, 2);
                 free_right_tips.Remove(point);
@@ -539,10 +561,11 @@ namespace WinFormsApp_Draft
                 dispenserForm.back_tip(pipette);
                 running = 0;
             }
-            else 
+            else
             {
                 return;
             }
+
         }
 
         /// <summary>
@@ -572,19 +595,23 @@ namespace WinFormsApp_Draft
 
             DKPoint dispenser_pt = new DKPoint();
             dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
+            if (tip == 1)
+            {
+                dispenser_pt.x -= 4000;
+            }
+
             await dispenserForm.MovL_hor(dispenser_pt);
             int wait_time0 = 0;
 
             if (tip == 1)
             {
                 dispenser_pt.lz = 100000;//coater z
-                wait_time0 = dispenserForm.MovL_ver(dispenser_pt, 0, 1).Result;
             }
             else if (tip == 2)
             {
                 dispenser_pt.rz = 100000;//coater z
-                wait_time0 = dispenserForm.MovL_ver(dispenser_pt, 0, 2).Result;
             }
+            wait_time0 = dispenserForm.MovL_ver(dispenser_pt, 0, tip).Result;
 
             if (pipette_available > 0 && pump == "spit")
             {
@@ -623,14 +650,19 @@ namespace WinFormsApp_Draft
                 }
                 await dispenserForm.MovL_ver(dispenser_pt, wait_time, tip);
             }
-            else if (reagent.Keys.Contains(point) && pump == "descend")
+            else if (pump == "descend")
             {
                 await dispenserForm.MovL_ver(dispenser_pt, wait_time0, tip);
             }
-            else if (reagent.Keys.Contains(point) && pump == "ascend")
+            else if (pump == "ascend")
             {
                 dispenser_pt.rz = 0;
                 await dispenserForm.MovL_ver(dispenser_pt, wait_time0, tip);
+            }
+
+            if (tip == 1)
+            {
+                dispenser_pt.x += 4000;
             }
         }
 
@@ -647,7 +679,7 @@ namespace WinFormsApp_Draft
                     timer.Stop();
                     timer.Dispose();
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     timer.Stop();
                     timer.Dispose();
@@ -661,14 +693,31 @@ namespace WinFormsApp_Draft
             //test platform experiment process
             try
             {
-                await arm_MovL("Zero", "pick at tray");
-                await Task.Delay(1000);
-                await arm_MovL("Zero", "release at tray");
+                //await armForm.Grip(13);
+                //await armForm.Release(13);
+
+                //string substrate = free_substrates[0];
+                //await arm_MovL(substrate, "pick at tray");
+                //await arm_MovL("Coater", "release at coater");
+
+                //await dispenser_MovL(free_right_tips[0], "get", 2);
+                //await dispenser_MovL(free_right_tips[0], "get", 1);
+
+                //await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[0], 2);
+                //await dispenser_pump(reagent.Keys.ElementAt(1), "suck", reagent.Values.ElementAt(1)[0], 1);
+
+                //await dispenser_pump("Coater", "spit", reagent.Values.ElementAt(0)[0], 2);
+                //await dispenser_pump("Coater", "descend", 0, 1);
+                //activate_timer(0, dispense_time.Values.ElementAt(1)[0], reagent.Values.ElementAt(1)[0]);
+
                 //await psuedo_round_test(1);
                 //await round_test(1);
-                //Response.Text = apply_time.Count.ToString() + apply_time.Keys.ElementAt(0) + " " + apply_time[apply_time.Keys.ElementAt(0)].Count.ToString();
+                for (int i = 1; i <= exp_rounds.Count; i++)
+                {
+                    await round_test(i);
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Response.Text = ex.Message;
             }
@@ -686,29 +735,34 @@ namespace WinFormsApp_Draft
             {
                 int index = round - 1;
                 //coater: { speed, acceleration, duration }
-                List<int> coater = new List<int>{ exp_rounds[index][0], exp_rounds[index][1], exp_rounds[index][2] };
+                List<int> coater = new List<int> { exp_rounds[index][0], exp_rounds[index][1], exp_rounds[index][2] };
                 Log.Text += String.Format("round {0}: \n", round.ToString());
-                for(int key = 0; key < reagent.Count; key++)
+                for (int key = 0; key < reagent.Count; key++)
                 {
                     Log.Text += String.Format("{0}, {1} ul at time {2}s; ", reagent.Keys.ElementAt(key), reagent.Values.ElementAt(key)[index].ToString(), dispense_time.Values.ElementAt(key)[index].ToString());
                 }
 
                 await arm_MovL("Zero");
-                await arm_MovL("Calibrate");
 
                 string substrate = free_substrates[0];
 
-                await arm_MovL(substrate, "pick at tray");
-                Response.Text = "Gripping start.";
-                await arm_MovL("Coater", "release at coater");
-                await arm_MovL("Calibrate");
-                await arm_MovL("Zero");
-
                 if (reagent.Count() > 0)
                 {
-                    if(reagent.Count() == 1)
+                    if (reagent.Count() == 1)
                     {
-                        await dispenser_MovL(free_right_tips[0], "get", 2);
+                        Thread thrd = new Thread(async () =>
+                        {
+                            await dispenser_MovL(free_right_tips[0], "get", 2);
+                        });
+                        thrd.Start();
+
+
+                        await arm_MovL(substrate, "pick at tray");
+                        Response.Text = "Gripping start.";
+                        await arm_MovL("Coater", "release at coater");
+                        await arm_MovL("Calibrate");
+                        await arm_MovL("Zero");
+
                         await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[index], 2);
                         await dispenser_pump("Coater", "spit", reagent.Values.ElementAt(0)[index], 2);
                         Response.Text = "Dispensing liquid done. ";
@@ -716,14 +770,22 @@ namespace WinFormsApp_Draft
 
                     else if (reagent.Count() == 2 && coater[2] > dispense_time.Values.ElementAt(1)[index])
                     {
-                        await dispenser_MovL(free_right_tips[0], "get", 2);
-                        free_left_tips.Remove(free_left_tips.ElementAt(0));
-                        await dispenser_MovL(free_left_tips[0], "get", 1);
-                        free_right_tips.Remove(free_right_tips.ElementAt(0));
+                        Thread thrd = new Thread(async () =>
+                        {
+                            await dispenser_MovL(free_right_tips[0], "get", 2);
+                            await dispenser_MovL(free_right_tips[0], "get", 1);
+                        });
+                        thrd.Start();
+
+                        await arm_MovL(substrate, "pick at tray");
+                        Response.Text = "Gripping start.";
+                        await arm_MovL("Coater", "release at coater");
+                        await arm_MovL("Calibrate");
+                        await arm_MovL("Zero");
 
                         await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[index], 2);
                         await dispenser_pump(reagent.Keys.ElementAt(1), "suck", reagent.Values.ElementAt(1)[index], 1);
-                        
+
                         await dispenser_pump("Coater", "spit", reagent.Values.ElementAt(0)[index], 2);
                         await dispenser_pump("Coater", "descend", 0, 1);
                         Response.Text = "Dispensing reagent done. Waiting to dispense antisolvent";
@@ -752,92 +814,6 @@ namespace WinFormsApp_Draft
                 await arm_MovL("Zero");
                 Response.Text = "Moving done. ";
             }
-        }
-
-
-        //pseudo round test for the whole procedure. using awaiting delays to simulate platform operations
-        private async Task psuedo_round_test(int round)
-        {
-            if (feature_count > 3)
-            {
-                int index = round - 1;
-                List<int> coater = new List<int> { exp_rounds[round][0], exp_rounds[round][1], exp_rounds[round][2] };
-                Log.Text += String.Format("round {0}: \n", round.ToString());
-                for (int key = 0; key < reagent.Count; key++)
-                {
-                    Log.Text += String.Format("{0}, {1} ul at time {2}s; ", reagent.Keys.ElementAt(key), reagent.Values.ElementAt(key)[index].ToString(), dispense_time.Values.ElementAt(key)[index].ToString());
-                }
-
-                await wait(1);
-
-                string substrate = free_substrates[0];
-
-                if (reagent.Count() > 0)
-                {
-                    await wait(2);
-
-                    if (reagent.Count() == 2 && coater[2] > dispense_time.Values.ElementAt(1)[index])
-                    {
-                        await wait(3);
-                        pseudo_activate_timer(3000);
-                    }
-                    await wait(5);
-                    await wait(6);
-                    await wait(7);
-                    await wait(8);//8 should pop up together with 4
-                }
-                else
-                {
-                    await wait(8);
-                }
-
-                while (running == 1)
-                {
-                    await Task.Delay(100);
-                }
-
-                await wait(9);
-            }
-        }
-        private async Task await_wait()
-        {
-            await Task.Delay(1000);
-        }
-        private async Task wait(int n)
-        {
-            if (Response.InvokeRequired)
-            {
-                Response.Invoke(() =>
-                {
-                    Response.Text += n.ToString();
-                });
-            }
-            else
-            {
-                Response.Text += n.ToString();
-            }
-            await await_wait();
-            running = 0;
-        }
-        private void pseudo_activate_timer(int time)
-        {
-            running = 1;
-            System.Timers.Timer timer = new System.Timers.Timer(time);
-            timer.Elapsed += async (sender, e) =>
-            {
-                try
-                {
-                    await wait(4);
-                    timer.Stop();
-                    timer.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    timer.Stop();
-                    timer.Dispose();
-                }
-            };
-            timer.Start();
         }
     }
 }

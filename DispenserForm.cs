@@ -143,8 +143,8 @@ namespace WinFormsApp_Draft
                         Axes.Enable_motor_c(index, right_z, 1);
                         Axes.Enable_motor_c(index, left_tip, 1);
                         Axes.Enable_motor_c(index, right_tip, 1);
-                        Axes.Set_speed_ac_de_time_c(index, x_id, 150, 200, 200);
-                        Axes.Set_speed_ac_de_time_c(index, y_id, 150, 200, 200);
+                        Axes.Set_speed_ac_de_time_c(index, x_id, 300, 200, 200);
+                        Axes.Set_speed_ac_de_time_c(index, y_id, 300, 200, 200);
                         Axes.Set_speed_ac_de_time_c(index, left_z, 800, 200, 200);
                         Axes.Set_speed_ac_de_time_c(index, right_z, 800, 200, 200);
 
