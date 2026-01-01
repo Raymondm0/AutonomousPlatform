@@ -10,6 +10,7 @@ using CSharthiscpDemo.com.dobot.api;
 using WinFormsApp_Draft.Auto;
 using WinFormsApp_Draft.DK;
 using DocumentFormat.OpenXml.Drawing;
+using Winform_platform.Auto;
 namespace WinFormsApp_Draft
 {
     public partial class MainForm : Form
@@ -693,6 +694,13 @@ namespace WinFormsApp_Draft
             //test platform experiment process
             try
             {
+                FeedRail.connect("COM15", 9600);
+                FeedRail.change_state();
+                await Task.Delay(1000);
+                FeedRail.change_direction();
+                await Task.Delay(1000);
+                FeedRail.change_state();
+
                 //await armForm.Grip(13);
                 //await armForm.Release(13);
 
@@ -711,11 +719,15 @@ namespace WinFormsApp_Draft
                 //activate_timer(0, dispense_time.Values.ElementAt(1)[0], reagent.Values.ElementAt(1)[0]);
 
                 //await psuedo_round_test(1);
+
+                //一轮
                 //await round_test(1);
-                for (int i = 1; i <= exp_rounds.Count; i++)
-                {
-                    await round_test(i);
-                }
+
+                //有几轮做几轮
+                //for (int i = 1; i <= exp_rounds.Count; i++)
+                //{
+                //    await round_test(i);
+                //}
             }
             catch (Exception ex)
             {
@@ -755,7 +767,6 @@ namespace WinFormsApp_Draft
                             await dispenser_MovL(free_right_tips[0], "get", 2);
                         });
                         thrd.Start();
-
 
                         await arm_MovL(substrate, "pick at tray");
                         Response.Text = "Gripping start.";
