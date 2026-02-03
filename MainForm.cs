@@ -29,10 +29,9 @@ namespace WinFormsApp_Draft
         private ArmForm armForm = new ArmForm();
         private CoaterForm coaterForm = new CoaterForm();
         private DispenserForm dispenserForm = new DispenserForm();
+        private SpecForm specForm = new SpecForm();
 
         //auto declarations
-        private ReadExcel readExcel = new ReadExcel();
-
         private const string armPath = "ArmPoints.json";
         private static string arm_json = File.ReadAllText(armPath);
         private ArmConfig? arm_conf = JsonConvert.DeserializeObject<ArmConfig>(arm_json);
@@ -96,6 +95,7 @@ namespace WinFormsApp_Draft
             armForm.TopLevel = false;
             coaterForm.TopLevel = false;
             dispenserForm.TopLevel = false;
+            specForm.TopLevel = false;
         }
 
         private void reload_tipbox()
@@ -291,7 +291,7 @@ namespace WinFormsApp_Draft
                     while (true)
                     {
                         //test data reading process
-                        List<int> row_paramerts = readExcel.row_param(i, feature_count, FilePath.Text);
+                        List<int> row_paramerts = ReadExcel.row_param(i, feature_count, FilePath.Text);
                         if (row_paramerts[0] != -1)
                         {
                             exp_rounds.Add(row_paramerts);
@@ -326,7 +326,7 @@ namespace WinFormsApp_Draft
                     }
                     while (true)
                     {
-                        List<int> col_paramerts = readExcel.col_param(x, i - 1, FilePath.Text);
+                        List<int> col_paramerts = ReadExcel.col_param(x, i - 1, FilePath.Text);
                         if (col_paramerts[0] != -1)
                         {
                             features.Add(col_paramerts);
@@ -386,6 +386,11 @@ namespace WinFormsApp_Draft
         {
             Open_Form(dispenserForm);
         }
+        private void OpenSpecForm_Click(object sender, EventArgs e)
+        {
+            Open_Form(specForm);
+        }
+
 
         private void Open_Form(Form form)
         {
@@ -686,6 +691,7 @@ namespace WinFormsApp_Draft
                     timer.Dispose();
                 }
             };
+
             timer.Start();
         }
 
@@ -694,31 +700,16 @@ namespace WinFormsApp_Draft
             //test platform experiment process
             try
             {
-                FeedRail.connect("COM15", 9600);
-                FeedRail.change_state();
-                await Task.Delay(1000);
-                FeedRail.change_direction();
-                await Task.Delay(1000);
-                FeedRail.change_state();
+                //»¬¹ì
+                //FeedRail.connect("COM15", 9600);
+                //FeedRail.change_state();
+                //await Task.Delay(1000);
+                //FeedRail.change_direction();
+                //await Task.Delay(1000);
+                //FeedRail.change_state();
 
-                //await armForm.Grip(13);
-                //await armForm.Release(13);
-
-                //string substrate = free_substrates[0];
-                //await arm_MovL(substrate, "pick at tray");
-                //await arm_MovL("Coater", "release at coater");
-
-                //await dispenser_MovL(free_right_tips[0], "get", 2);
-                //await dispenser_MovL(free_right_tips[0], "get", 1);
-
-                //await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[0], 2);
-                //await dispenser_pump(reagent.Keys.ElementAt(1), "suck", reagent.Values.ElementAt(1)[0], 1);
-
-                //await dispenser_pump("Coater", "spit", reagent.Values.ElementAt(0)[0], 2);
-                //await dispenser_pump("Coater", "descend", 0, 1);
-                //activate_timer(0, dispense_time.Values.ElementAt(1)[0], reagent.Values.ElementAt(1)[0]);
-
-                //await psuedo_round_test(1);
+                //¹âÆ×
+                specForm.read_in_situ_data(10000);
 
                 //Ò»ÂÖ
                 //await round_test(1);
@@ -802,6 +793,7 @@ namespace WinFormsApp_Draft
                         Response.Text = "Dispensing reagent done. Waiting to dispense antisolvent";
 
                         activate_timer(index, dispense_time.Values.ElementAt(1)[index], reagent.Values.ElementAt(1)[index]);
+                        //specForm.read_data(coater[2]);
                     }
 
                     await coaterForm.Spin_Coat(coater[0], coater[1], coater[2]);

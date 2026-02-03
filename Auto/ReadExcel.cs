@@ -18,7 +18,7 @@ namespace WinFormsApp_Draft.Auto
         [DllImport("ReadExcelDLL.dll", EntryPoint = "parameters")]
         public static extern int parameters(int row, int col, string filepath, ref int data);
 
-        public List<int> row_param(int round, int data_points, string filepath)
+        public static List<int> row_param(int round, int data_points, string filepath)
         {
             List<int> result = new List<int>();
             int data = 0;
@@ -38,7 +38,7 @@ namespace WinFormsApp_Draft.Auto
             return result;
         }
 
-        public List<int> col_param(int col, int data_points, string filepath)
+        public static List<int> col_param(int col, int data_points, string filepath)
         {
             List<int> result = new List<int>();
             int data = 0;

@@ -53,6 +53,7 @@
             label5 = new Label();
             Tipbox_Reload = new Button();
             Substrate_Reload = new Button();
+            OpenSpecForm = new Button();
             Method.SuspendLayout();
             SuspendLayout();
             // 
@@ -279,11 +280,22 @@
             Substrate_Reload.UseVisualStyleBackColor = true;
             Substrate_Reload.Click += Substrate_Reload_Click;
             // 
+            // OpenSpecForm
+            // 
+            OpenSpecForm.Location = new Point(824, 12);
+            OpenSpecForm.Name = "OpenSpecForm";
+            OpenSpecForm.Size = new Size(95, 23);
+            OpenSpecForm.TabIndex = 66;
+            OpenSpecForm.Text = "spectrometer";
+            OpenSpecForm.UseVisualStyleBackColor = true;
+            OpenSpecForm.Click += OpenSpecForm_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1162, 758);
+            Controls.Add(OpenSpecForm);
             Controls.Add(Substrate_Reload);
             Controls.Add(Tipbox_Reload);
             Controls.Add(label5);
@@ -337,5 +349,6 @@
         private RichTextBox Log;
         private Button Tipbox_Reload;
         private Button Substrate_Reload;
+        private Button OpenSpecForm;
     }
 }
