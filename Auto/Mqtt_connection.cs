@@ -56,7 +56,7 @@ namespace WinFormsApp_Draft.Auto
             client.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
         }
 
-        private static void MqttMsgReceived(object sender, MqttMsgPublishEventArgs e)
+        public static void MqttMsgReceived(object sender, MqttMsgPublishEventArgs e)
         {
             string payload = System.Text.Encoding.Default.GetString(e.Message);
             msg = payload.ToString();

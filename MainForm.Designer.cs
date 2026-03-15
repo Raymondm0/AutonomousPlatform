@@ -46,14 +46,15 @@
             ExperimentParameters = new ListBox();
             ReagentFeatures = new ListBox();
             Method = new GroupBox();
+            label6 = new Label();
+            NameReagent = new TextBox();
             Log = new RichTextBox();
             label4 = new Label();
             label3 = new Label();
-            ParamNum = new TextBox();
-            label5 = new Label();
             Tipbox_Reload = new Button();
             Substrate_Reload = new Button();
             OpenSpecForm = new Button();
+            AI_Agent = new Button();
             Method.SuspendLayout();
             SuspendLayout();
             // 
@@ -190,7 +191,7 @@
             // 
             ExperimentParameters.FormattingEnabled = true;
             ExperimentParameters.ItemHeight = 17;
-            ExperimentParameters.Location = new Point(280, 39);
+            ExperimentParameters.Location = new Point(18, 322);
             ExperimentParameters.Name = "ExperimentParameters";
             ExperimentParameters.Size = new Size(241, 106);
             ExperimentParameters.TabIndex = 59;
@@ -199,13 +200,15 @@
             // 
             ReagentFeatures.FormattingEnabled = true;
             ReagentFeatures.ItemHeight = 17;
-            ReagentFeatures.Location = new Point(28, 305);
+            ReagentFeatures.Location = new Point(280, 39);
             ReagentFeatures.Name = "ReagentFeatures";
-            ReagentFeatures.Size = new Size(230, 123);
+            ReagentFeatures.Size = new Size(241, 123);
             ReagentFeatures.TabIndex = 60;
             // 
             // Method
             // 
+            Method.Controls.Add(label6);
+            Method.Controls.Add(NameReagent);
             Method.Controls.Add(Log);
             Method.Controls.Add(label4);
             Method.Controls.Add(label3);
@@ -218,18 +221,34 @@
             Method.TabStop = false;
             Method.Text = "Method";
             // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(327, 165);
+            label6.Name = "label6";
+            label6.Size = new Size(147, 17);
+            label6.TabIndex = 64;
+            label6.Text = "Register Reagent Name";
+            // 
+            // NameReagent
+            // 
+            NameReagent.Location = new Point(280, 185);
+            NameReagent.Name = "NameReagent";
+            NameReagent.Size = new Size(241, 23);
+            NameReagent.TabIndex = 63;
+            // 
             // Log
             // 
-            Log.Location = new Point(280, 162);
+            Log.Location = new Point(280, 224);
             Log.Name = "Log";
-            Log.Size = new Size(241, 266);
+            Log.Size = new Size(241, 204);
             Log.TabIndex = 62;
             Log.Text = "";
             // 
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(373, 19);
+            label4.Location = new Point(82, 302);
             label4.Name = "label4";
             label4.Size = new Size(116, 17);
             label4.TabIndex = 1;
@@ -238,27 +257,11 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(62, 280);
+            label3.Location = new Point(298, 19);
             label3.Name = "label3";
-            label3.Size = new Size(146, 17);
+            label3.Size = new Size(204, 17);
             label3.TabIndex = 0;
-            label3.Text = "Reagent Round Volume";
-            // 
-            // ParamNum
-            // 
-            ParamNum.Location = new Point(411, 180);
-            ParamNum.Name = "ParamNum";
-            ParamNum.Size = new Size(100, 23);
-            ParamNum.TabIndex = 62;
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Location = new Point(411, 160);
-            label5.Name = "label5";
-            label5.Size = new Size(96, 17);
-            label5.TabIndex = 63;
-            label5.Text = "features shown";
+            label3.Text = "Reagent Round Volume and Time";
             // 
             // Tipbox_Reload
             // 
@@ -290,16 +293,26 @@
             OpenSpecForm.UseVisualStyleBackColor = true;
             OpenSpecForm.Click += OpenSpecForm_Click;
             // 
+            // AI_Agent
+            // 
+            AI_Agent.BackColor = Color.Red;
+            AI_Agent.Location = new Point(399, 200);
+            AI_Agent.Name = "AI_Agent";
+            AI_Agent.Size = new Size(125, 23);
+            AI_Agent.TabIndex = 67;
+            AI_Agent.Text = "ai control off";
+            AI_Agent.UseVisualStyleBackColor = false;
+            AI_Agent.Click += AI_Agent_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1162, 758);
+            Controls.Add(AI_Agent);
             Controls.Add(OpenSpecForm);
             Controls.Add(Substrate_Reload);
             Controls.Add(Tipbox_Reload);
-            Controls.Add(label5);
-            Controls.Add(ParamNum);
             Controls.Add(ReagentLayout);
             Controls.Add(label2);
             Controls.Add(label1);
@@ -344,11 +357,12 @@
         private GroupBox Method;
         private Label label4;
         private Label label3;
-        private TextBox ParamNum;
-        private Label label5;
         private RichTextBox Log;
         private Button Tipbox_Reload;
         private Button Substrate_Reload;
         private Button OpenSpecForm;
+        private Label label6;
+        private TextBox NameReagent;
+        private Button AI_Agent;
     }
 }

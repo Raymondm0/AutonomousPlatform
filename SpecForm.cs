@@ -13,7 +13,7 @@ namespace WinFormsApp_Draft
     {
         static string broker = "192.168.120.129";
         const int port = 1883;
-        private MqttClient client = new MqttClient(broker, port, false, MqttSslProtocols.None, null, null);
+        public static MqttClient client = new MqttClient(broker, port, false, MqttSslProtocols.None, null, null);
 
         //topics to publish: control, counts, wavelength, time
         string clientId = "123abc";
@@ -141,24 +141,24 @@ namespace WinFormsApp_Draft
                 SendProgress.Step = interval;
                 SendProgress.Value = 0;
             });
-            int ms = 0;
+            int ms_sum = 0;
             System.Timers.Timer timer = new System.Timers.Timer();
             timer.Interval = interval;
             timer.AutoReset = true;
             timer.Elapsed += (sender, e) =>
             {
-                ms += interval;
-                record_data(ms);
+                ms_sum += interval;
+                record_data(ms_sum);
 
                 SendProgress.Invoke(new Action(() =>
                 {
                     SendProgress.PerformStep();
                 }));
-                if (ms == spin_duration - interval)
+                if (ms_sum == spin_duration - interval)
                 {
                     timer.AutoReset = false;
                 }
-                if (ms == spin_duration)
+                else if (ms_sum == spin_duration)
                 {
                     string msg_stop = "stop";
                     Mqtt_connection.Publish(client, "control", msg_stop);
@@ -196,7 +196,7 @@ namespace WinFormsApp_Draft
         }
 
         /// <summary>
-        /// get immediate time and control the spectrometer record each frame of data
+        /// get current time and control the spectrometer to record the corresponding frame of data, then send them to data analyzing client
         /// </summary>
         /// <param name="ms"></param>
         private async void record_data(int ms)

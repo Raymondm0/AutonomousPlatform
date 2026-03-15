@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Timers;
 using Modbus.Device;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using CSharpTcpDemo;
 using CSharpTcpDemo.com.dobot.api;
 using CSharthiscpDemo.com.dobot.api;
@@ -11,6 +12,8 @@ using WinFormsApp_Draft.Auto;
 using WinFormsApp_Draft.DK;
 using DocumentFormat.OpenXml.Drawing;
 using Winform_platform.Auto;
+
+
 namespace WinFormsApp_Draft
 {
     public partial class MainForm : Form
@@ -31,7 +34,17 @@ namespace WinFormsApp_Draft
         private DispenserForm dispenserForm = new DispenserForm();
         private SpecForm specForm = new SpecForm();
 
-        //auto declarations
+        //json configurations
+        private class ArmConfig
+        {
+            public Dictionary<string, DescartesPoint> Points { get; set; } = new Dictionary<string, DescartesPoint>();
+        }
+
+        private class DispenserConfig
+        {
+            public Dictionary<string, DKPoint> Points { get; set; } = new Dictionary<string, DKPoint>();
+        }
+
         private const string armPath = "ArmPoints.json";
         private static string arm_json = File.ReadAllText(armPath);
         private ArmConfig? arm_conf = JsonConvert.DeserializeObject<ArmConfig>(arm_json);
@@ -40,6 +53,9 @@ namespace WinFormsApp_Draft
         private static string dispenser_json = File.ReadAllText(dispenserPath);
         private DispenserConfig? dispenser_conf = JsonConvert.DeserializeObject<DispenserConfig>(dispenser_json);
 
+        private const string reagentPath = "reagent_layout.json";
+
+        //auto declarations
         private static List<List<int>> exp_rounds = new List<List<int>>();//list of coater parameters for each round
         private static List<List<int>> features = new List<List<int>>();//list of volume of reagents and antisolvents
         private static List<string> free_substrates = new List<string>();
@@ -73,7 +89,6 @@ namespace WinFormsApp_Draft
             AutoRead.Checked = false;
             Method.Enabled = false;
             ReagentFeatures.Enabled = false;
-            ParamNum.Text = "7";
 
             reload_substrate();
             reload_tipbox();
@@ -83,7 +98,9 @@ namespace WinFormsApp_Draft
             if (!Method.Contains(ExperimentParameters)) Method.Controls.Add(ExperimentParameters);
             if (!Method.Contains(ReagentFeatures)) Method.Controls.Add(ReagentFeatures);
             if (!Method.Contains(Log)) Method.Controls.Add(Log);
+            if (!Method.Contains(NameReagent)) Method.Controls.Add(NameReagent);
             Log.Enabled = false;
+            NameReagent.Enabled = false;
 
             string strPath = System.Windows.Forms.Application.StartupPath + "\\";
             ErrorInfoHelper.ParseControllerJsonFile(strPath + "alarm_controller.json");
@@ -189,27 +206,38 @@ namespace WinFormsApp_Draft
                 {
                     button.BackColor = Color.Yellow;
                     ReagentFeatures.Enabled = true;
-                    ReagentFeatures.SelectedIndexChanged += selecting_reagent;
+                    ReagentFeatures.SelectedIndexChanged += selecting_reagent_vol;
                     int index = 0;
+
+                    NameReagent.Enabled = true;
 
                     while (true)
                     {
                         if (ReagentFeatures.BackColor == Color.Yellow)
                         {
+                            string reagent_name = NameReagent.Text;
+                            NameReagent.Text = "";
+                            NameReagent.Enabled = false;
+                            if (reagent_name.Length != 0)
+                            {
+                                Platform_Config.record_reagent(reagentPath, button.Text, reagent_name);
+                                Log.Text += System.String.Format("reagent at {0} is {1}", button.Text, reagent_name) + "\n";
+                            }
+
                             button.Enabled = false;
                             index = ReagentFeatures.SelectedIndex;
-                            ReagentFeatures.SelectedIndexChanged -= selecting_reagent;
+                            ReagentFeatures.SelectedIndexChanged -= selecting_reagent_vol;
                             ReagentFeatures.BackColor = Color.White;
 
                             reagent.Add(button.Text, features[index]);
 
-                            button.BackColor = Color.ForestGreen;
-                            Log.Text += System.String.Format("reagent {0}: {1}", button.Text, ReagentFeatures.SelectedItem) + "\n";
+                            //button.BackColor = Color.ForestGreen;
+                            //Log.Text += System.String.Format("reagent {0}: {1}", button.Text, ReagentFeatures.SelectedItem) + "\n";
                             //Response.Text = button.Text + System.String.Format(" added as reagent, correlated with feature index {0}", index);
 
                             //set checkpoint dict
                             button.BackColor = Color.Blue;
-                            ReagentFeatures.SelectedIndexChanged += selecting_anti_solvent;
+                            ReagentFeatures.SelectedIndexChanged += selecting_reagent_time;
 
                             while (true)
                             {
@@ -217,11 +245,11 @@ namespace WinFormsApp_Draft
                                 {
                                     index = ReagentFeatures.SelectedIndex;
                                     dispense_time.Add(button.Text, features[index]);
-                                    ReagentFeatures.SelectedIndexChanged -= selecting_anti_solvent;
+                                    ReagentFeatures.SelectedIndexChanged -= selecting_reagent_time;
                                     ReagentFeatures.BackColor = Color.White;
 
                                     button.BackColor = Color.ForestGreen;
-                                    Log.Text += System.String.Format("dispense time of {0}: {1}", button.Text, ReagentFeatures.SelectedItem) + "\n";
+                                    Log.Text += System.String.Format("dispense time of reagent at {0}: {1}", button.Text, ReagentFeatures.SelectedItem) + "\n";
                                     Response.Clear();
                                     break;
                                 }
@@ -248,15 +276,31 @@ namespace WinFormsApp_Draft
                         Response.Text = button.Text + "choosing reagent volume";
                         await Task.Delay(100);
                     }
+                    NameReagent.Text = "";
+                    NameReagent.Enabled = false;
                 }
                 else
                 {
+                    string reagent_name = NameReagent.Text;
+                    NameReagent.Text = "";
+                    NameReagent.Enabled = false;
+                    if (reagent_name.Length != 0)
+                    {
+                        Platform_Config.record_reagent(reagentPath, button.Text, reagent_name);
+                        Log.Text += System.String.Format("reagent at {0} is {1}", button.Text, reagent_name) + "\n";
+                    }
+                    else
+                    {
+                        Platform_Config.record_reagent(reagentPath, button.Text, "");
+                        Log.Text += System.String.Format("reagent at {0} is removed", button.Text) + "\n";
+                    }
+
                     button.BackColor = Color.Red;
 
                     if (reagent.Keys.Contains(button.Text))
                     {
                         reagent.Remove(button.Text);
-                        Log.Text += "reagent " + button.Text + " removed" + "\n";
+                        Log.Text += button.Text + " removed" + "\n";
                     }
                     if (dispense_time.Keys.Contains(button.Text))
                     {
@@ -269,14 +313,19 @@ namespace WinFormsApp_Draft
             catch { }
         }
 
-        private void selecting_reagent(object sender, EventArgs e)
+        private void selecting_reagent_vol(object sender, EventArgs e)
         {
             ReagentFeatures.BackColor = Color.Yellow;
         }
 
-        private void selecting_anti_solvent(object sender, EventArgs e)
+        private void selecting_reagent_time(object sender, EventArgs e)
         {
             ReagentFeatures.BackColor = Color.Blue;
+        }
+
+        private void SaveReagent_Click(object sender, EventArgs e)
+        {
+
         }
 
         // auto read functions, complete automatic
@@ -286,7 +335,6 @@ namespace WinFormsApp_Draft
             {
                 try
                 {
-                    feature_count = Convert.ToInt32(ParamNum.Text);
                     int i = 1, x = 3;
                     while (true)
                     {
@@ -437,16 +485,6 @@ namespace WinFormsApp_Draft
         }
 
         //test arm and dispenser, do group move round
-        private class ArmConfig
-        {
-            public Dictionary<string, DescartesPoint> Points { get; set; } = new Dictionary<string, DescartesPoint>();
-        }
-
-        private class DispenserConfig
-        {
-            public Dictionary<string, DKPoint> Points { get; set; } = new Dictionary<string, DKPoint>();
-        }
-
         /// <summary>
         /// <para>
         /// pass in point name(string);
@@ -454,7 +492,7 @@ namespace WinFormsApp_Draft
         /// <para>
         /// if gripper is "pick at tray", arm will descend to substrate tray and grip, if "release at tray", vice versa.
         /// if "pick at coater" or "release at coater", similar to substrates, but will descend to the height of the coater.
-        /// otherwise, gripper will do nothing, only arms will move.
+        /// otherwise, gripper will do nothing, only arm will move.
         /// </para>
         /// <para>
         /// "pick at tray" removes picked substrate from free_substrates; 
@@ -709,7 +747,7 @@ namespace WinFormsApp_Draft
                 //FeedRail.change_state();
 
                 //¹âÆ×
-                specForm.read_in_situ_data(10000);
+                //specForm.read_in_situ_data(10000);
 
                 //Ò»ÂÖ
                 //await round_test(1);
@@ -732,13 +770,13 @@ namespace WinFormsApp_Draft
         /// <param name="round">
         /// </param>
         /// <returns></returns>
-        private async Task round_test(int round)
+        private async Task round_test(int round)//parametersL: round number
         {
             if (feature_count > 3)
             {
                 int index = round - 1;
                 //coater: { speed, acceleration, duration }
-                List<int> coater = new List<int> { exp_rounds[index][0], exp_rounds[index][1], exp_rounds[index][2] };
+                List<int> coater = new List<int> { exp_rounds[index][0], exp_rounds[index][1], exp_rounds[index][2] };//parameters: spin speed, acceleration, spin duration
                 Log.Text += String.Format("round {0}: \n", round.ToString());
                 for (int key = 0; key < reagent.Count; key++)
                 {
@@ -747,7 +785,7 @@ namespace WinFormsApp_Draft
 
                 await arm_MovL("Zero");
 
-                string substrate = free_substrates[0];
+                string substrate = free_substrates[0];//paramerter free_substrates[0]: position of the substrate to use
 
                 if (reagent.Count() > 0)
                 {
@@ -755,7 +793,7 @@ namespace WinFormsApp_Draft
                     {
                         Thread thrd = new Thread(async () =>
                         {
-                            await dispenser_MovL(free_right_tips[0], "get", 2);
+                            await dispenser_MovL(free_right_tips[0], "get", 2);//parameter free_right_tips[0]: position of the tip for reagent
                         });
                         thrd.Start();
 
@@ -765,8 +803,10 @@ namespace WinFormsApp_Draft
                         await arm_MovL("Calibrate");
                         await arm_MovL("Zero");
 
-                        await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[index], 2);
+                        await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[index], 2);//parameter reagent.Keys.ElementAt(0): position of reagent bottle
+                                                                                                                       //parameter reagent.Values.ElementAt(0)[index]: volume of reagent to suck this round
                         await dispenser_pump("Coater", "spit", reagent.Values.ElementAt(0)[index], 2);
+                        await dispenser_MovL("Zero", "pop", 3);
                         Response.Text = "Dispensing liquid done. ";
                     }
 
@@ -785,17 +825,18 @@ namespace WinFormsApp_Draft
                         await arm_MovL("Calibrate");
                         await arm_MovL("Zero");
 
-                        await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[index], 2);
-                        await dispenser_pump(reagent.Keys.ElementAt(1), "suck", reagent.Values.ElementAt(1)[index], 1);
+                        await dispenser_pump(reagent.Keys.ElementAt(0), "suck", reagent.Values.ElementAt(0)[index], 2);//parameter reagent.Keys.ElementAt(0): position of reagent bottle
+                                                                                                                       //parameter reagent.Values.ElementAt(0)[index]: volume of reagent to suck
+                        await dispenser_pump(reagent.Keys.ElementAt(1), "suck", reagent.Values.ElementAt(1)[index], 1);//parameter reagent.Keys.ElementAt(0): position of reagent bottle
+                                                                                                                       //parameter reagent.Values.ElementAt(0)[index]: volume of reagent to suck
 
                         await dispenser_pump("Coater", "spit", reagent.Values.ElementAt(0)[index], 2);
                         await dispenser_pump("Coater", "descend", 0, 1);
                         Response.Text = "Dispensing reagent done. Waiting to dispense antisolvent";
 
                         activate_timer(index, dispense_time.Values.ElementAt(1)[index], reagent.Values.ElementAt(1)[index]);
-                        //specForm.read_data(coater[2]);
                     }
-
+                    //specForm.read_in_situ_data(coater[2]);
                     await coaterForm.Spin_Coat(coater[0], coater[1], coater[2]);
                 }
                 else
@@ -818,5 +859,84 @@ namespace WinFormsApp_Draft
                 Response.Text = "Moving done. ";
             }
         }
+
+        // ai control
+        /// <summary>
+        /// starts ai control. when it is initiallizing, the platform will first check mqtt connection with broker to make sure it
+        /// can successfully receive data from ai agent. connection can be secured in SpecForm
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AI_Agent_Click(object sender, EventArgs e)
+        {
+            if (Mqtt_connection.Connection_check(SpecForm.client))
+            {
+                AI_Agent.BackColor = Color.Green;
+            }
+            else
+            {
+                AI_Agent.BackColor = Color.Red;
+                return;
+            }
+
+            Thread listening_thrd = new Thread(() =>
+            {
+
+            });
+        }
+
+        /// <summary>
+        /// when ai agent handles the experiment, it can tell the platform to do rounds with a fixed routine and flexible parameters
+        /// </summary>
+        /// <param name="spin_speed">the speed of spinning in rpm</param>
+        /// <param name="spin_acc">the acceleration speed of spinning</param>
+        /// <param name="spin_dur">the duration of spinning</param>
+        /// <param name="reagent">the position of the reagent to use, exp: "BP24".  
+        /// the reagent corresponding to a certain point should be preset, and can later be found in reagent_layout.json</param>
+        /// <param name="volume">the volume for the dispenser to suck and spit onto substrate</param>
+        /// <returns></returns>
+        private async Task agent_round_test(int spin_speed, int spin_acc, int spin_dur, string reagent, int volume)
+        {
+            if (feature_count > 3)
+            {
+                await arm_MovL("Zero");
+
+                string substrate = free_substrates[0];
+
+                Thread thrd = new Thread(async () =>
+                {
+                    await dispenser_MovL(free_right_tips[0], "get", 2);
+                });
+                thrd.Start();
+
+                await arm_MovL(substrate, "pick at tray");
+                Response.Text = "Gripping start.";
+                await arm_MovL("Coater", "release at coater");
+                await arm_MovL("Calibrate");
+                await arm_MovL("Zero");
+
+                await dispenser_pump(reagent, "suck", volume, 2);
+                await dispenser_pump("Coater", "spit", volume, 2);
+                await dispenser_MovL("Zero", "pop", 3);
+                Response.Text = "Dispensing liquid done. ";
+
+                specForm.read_in_situ_data(spin_dur);
+
+                while (running == 1)
+                {
+                    await Task.Delay(100);
+                }
+
+                await arm_MovL("Calibrate");
+                await arm_MovL("Coater", "pick at coater");
+                await arm_MovL(substrate, "release at tray");
+                Response.Text = "Gripping done. ";
+
+                await arm_MovL("Zero");
+                Response.Text = "Moving done. ";
+            }
+        }
+
+
     }
 }
