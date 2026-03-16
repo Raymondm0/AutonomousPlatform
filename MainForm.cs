@@ -920,7 +920,7 @@ namespace WinFormsApp_Draft
                 await dispenser_MovL("Zero", "pop", 3);
                 Response.Text = "Dispensing liquid done. ";
 
-                specForm.read_in_situ_data(spin_dur);
+                //specForm.read_in_situ_data(spin_dur);
 
                 while (running == 1)
                 {
