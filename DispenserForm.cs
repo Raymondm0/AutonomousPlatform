@@ -324,7 +324,7 @@ namespace WinFormsApp_Draft
             return flag;
         }
 
-        //entrance for auto spit and suck
+        //auto spit and suck
         /// <summary>
         /// the unit of volume is ul; 1 for left tip and 2 for right;
         /// max of volume is 32767, otherwise higher bits will be cut off
@@ -335,43 +335,43 @@ namespace WinFormsApp_Draft
         public async Task Tip_Suck(int volume, byte tip = right_tip)
         {
             byte return_value = 0;
-            int flag = check_pipette();
-            if (flag == tip || flag == 3)
+            //int flag = check_pipette();
+            //if (flag == tip || flag == 3)
+            //{
+            if (tip == left_tip)
             {
-                if (tip == left_tip)
-                {
-                    Int16 vol_int16 = Convert.ToInt16(volume);
-                    Pipette.Suck_p(index, tip, vol_int16, ref return_value);
-                    await Task.Delay(1000);
-                }
-                else if (tip == right_tip)
-                {
-                    Int16 vol_int16 = Convert.ToInt16(volume);
-                    Pipette.Suck_p(index, tip, vol_int16, ref return_value);
-                    await Task.Delay(1000);
-                }
+                Int16 vol_int16 = Convert.ToInt16(volume);
+                Pipette.Suck_p(index, tip, vol_int16, ref return_value);
+                await Task.Delay(1000);
             }
+            else if (tip == right_tip)
+            {
+                Int16 vol_int16 = Convert.ToInt16(volume);
+                Pipette.Suck_p(index, tip, vol_int16, ref return_value);
+                await Task.Delay(1000);
+            }
+            //}
         }
 
         public async Task Tip_Spit(int volume, byte tip = right_tip)
         {
             byte return_value = 0;
-            int flag = check_pipette();
-            if (flag == tip || flag == 3)
+            //int flag = check_pipette();
+            //if (flag == tip || flag == 3)
+            //{
+            if (tip == left_tip)
             {
-                if (tip == left_tip)
-                {
-                    Int16 vol_int16 = Convert.ToInt16(volume);
-                    Pipette.Spit_p(index, tip, vol_int16, ref return_value);
-                    await Task.Delay(500);
-                }
-                else if (tip == right_tip)
-                {
-                    Int16 vol_int16 = Convert.ToInt16(volume);
-                    Pipette.Spit_p(index, tip, vol_int16, ref return_value);
-                    await Task.Delay(500);
-                }
+                Int16 vol_int16 = Convert.ToInt16(volume);
+                Pipette.Spit_p(index, tip, vol_int16, ref return_value);
+                await Task.Delay(500);
             }
+            else if (tip == right_tip)
+            {
+                Int16 vol_int16 = Convert.ToInt16(volume);
+                Pipette.Spit_p(index, tip, vol_int16, ref return_value);
+                await Task.Delay(500);
+            }
+            //}
         }
 
         public void back_tip(byte tip = right_tip)

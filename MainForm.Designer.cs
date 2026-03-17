@@ -55,6 +55,9 @@
             Substrate_Reload = new Button();
             OpenSpecForm = new Button();
             AI_Agent = new Button();
+            ClearConf = new Label();
+            ClearReagent = new Button();
+            label5 = new Label();
             Method.SuspendLayout();
             SuspendLayout();
             // 
@@ -202,11 +205,14 @@
             ReagentFeatures.ItemHeight = 17;
             ReagentFeatures.Location = new Point(280, 39);
             ReagentFeatures.Name = "ReagentFeatures";
-            ReagentFeatures.Size = new Size(241, 123);
+            ReagentFeatures.Size = new Size(241, 89);
             ReagentFeatures.TabIndex = 60;
             // 
             // Method
             // 
+            Method.Controls.Add(label5);
+            Method.Controls.Add(ClearConf);
+            Method.Controls.Add(ClearReagent);
             Method.Controls.Add(label6);
             Method.Controls.Add(NameReagent);
             Method.Controls.Add(Log);
@@ -224,7 +230,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(327, 165);
+            label6.Location = new Point(327, 131);
             label6.Name = "label6";
             label6.Size = new Size(147, 17);
             label6.TabIndex = 64;
@@ -232,16 +238,16 @@
             // 
             // NameReagent
             // 
-            NameReagent.Location = new Point(280, 185);
+            NameReagent.Location = new Point(280, 151);
             NameReagent.Name = "NameReagent";
             NameReagent.Size = new Size(241, 23);
             NameReagent.TabIndex = 63;
             // 
             // Log
             // 
-            Log.Location = new Point(280, 224);
+            Log.Location = new Point(280, 232);
             Log.Name = "Log";
-            Log.Size = new Size(241, 204);
+            Log.Size = new Size(241, 196);
             Log.TabIndex = 62;
             Log.Text = "";
             // 
@@ -296,13 +302,41 @@
             // AI_Agent
             // 
             AI_Agent.BackColor = Color.Red;
-            AI_Agent.Location = new Point(399, 200);
+            AI_Agent.Location = new Point(399, 183);
             AI_Agent.Name = "AI_Agent";
             AI_Agent.Size = new Size(125, 23);
             AI_Agent.TabIndex = 67;
             AI_Agent.Text = "ai control off";
             AI_Agent.UseVisualStyleBackColor = false;
             AI_Agent.Click += AI_Agent_Click;
+            // 
+            // ClearConf
+            // 
+            ClearConf.AutoSize = true;
+            ClearConf.Location = new Point(443, 166);
+            ClearConf.Name = "ClearConf";
+            ClearConf.Size = new Size(0, 17);
+            ClearConf.TabIndex = 69;
+            // 
+            // ClearReagent
+            // 
+            ClearReagent.AccessibleRole = AccessibleRole.None;
+            ClearReagent.Location = new Point(355, 203);
+            ClearReagent.Name = "ClearReagent";
+            ClearReagent.Size = new Size(88, 23);
+            ClearReagent.TabIndex = 68;
+            ClearReagent.Text = "clear";
+            ClearReagent.UseVisualStyleBackColor = true;
+            ClearReagent.Click += ClearReagent_Click;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(306, 183);
+            label5.Name = "label5";
+            label5.Size = new Size(196, 17);
+            label5.TabIndex = 70;
+            label5.Text = "Clear all Reagent Configurations";
             // 
             // MainForm
             // 
@@ -364,5 +398,8 @@
         private Label label6;
         private TextBox NameReagent;
         private Button AI_Agent;
+        private Label label5;
+        private Label ClearConf;
+        private Button ClearReagent;
     }
 }

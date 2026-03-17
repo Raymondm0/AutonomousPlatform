@@ -3,7 +3,7 @@ import paho.mqtt.client as mqtt
 
 class Client_Conf:
     """
-    class saving the configurations of the agent client, including client id, user name, password, server ip and port
+    Class saving the configurations of the agent client, including client id, username, password, server ip and port
     """
     def __init__(self):
         self.client_id = "bibilabu"
@@ -21,7 +21,7 @@ class MQTTConnector:
         self.connect_event = threading.Event()
 
     def on_connect(self, client, userdata, flags, rc):
-        """connection recall"""
+        """Connection recall"""
         if rc == 0:
             print('Connected to emqx server')
             self.is_connected = True
@@ -33,7 +33,7 @@ class MQTTConnector:
 
     def connect(self, timeout=5) -> bool:
         """
-        connect the emqx server. automatically initiallizes mqtt.Client() class object
+        Connect the emqx server. Automatically initiallizes mqtt.Client() class object
         :param timeout: how long the thread waits for connection recall. if timeout, connection is considered fail
         :return: True if connection success, False if failed
         """
@@ -59,7 +59,18 @@ class MQTTConnector:
             print(f"Error: {e}")
             return False
 
+    def check_connect(self) -> bool:
+        """
+        Check connection with emqx server.
+        :return: The current connection state. True if agent_client is already or successfully connected, otherwise, False
+        """
+        if self.is_connected:
+            return True
+        else:
+            return False
+
     def publish(self, topic:str, msg:str):
+        """Publish string data"""
         self.client.publish(topic, msg)
 
 # test code
@@ -68,5 +79,6 @@ class MQTTConnector:
 #     print("Success logic")
 # else:
 #     print("Fail logic")
+# print(connector.check_connect())
 # while True:
 #     connector.publish("test topic", "test msg")

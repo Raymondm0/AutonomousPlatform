@@ -12,6 +12,9 @@ using WinFormsApp_Draft.Auto;
 using WinFormsApp_Draft.DK;
 using DocumentFormat.OpenXml.Drawing;
 using Winform_platform.Auto;
+using uPLibrary.Networking.M2Mqtt;
+using Microsoft.VisualBasic;
+using System.Threading.Tasks;
 
 
 namespace WinFormsApp_Draft
@@ -56,6 +59,8 @@ namespace WinFormsApp_Draft
         private const string reagentPath = "reagent_layout.json";
 
         //auto declarations
+        private static MqttClient client = SpecForm.client;
+
         private static List<List<int>> exp_rounds = new List<List<int>>();//list of coater parameters for each round
         private static List<List<int>> features = new List<List<int>>();//list of volume of reagents and antisolvents
         private static List<string> free_substrates = new List<string>();
@@ -99,6 +104,11 @@ namespace WinFormsApp_Draft
             if (!Method.Contains(ReagentFeatures)) Method.Controls.Add(ReagentFeatures);
             if (!Method.Contains(Log)) Method.Controls.Add(Log);
             if (!Method.Contains(NameReagent)) Method.Controls.Add(NameReagent);
+            if (!Method.Contains(ClearReagent)) Method.Controls.Add(ClearReagent);
+            if (!Method.Contains(label3)) Method.Controls.Add(label3);
+            if (!Method.Contains(label4)) Method.Controls.Add(label4);
+            if (!Method.Contains(label5)) Method.Controls.Add(label5);
+            if (!Method.Contains(label6)) Method.Controls.Add(label6);
             Log.Enabled = false;
             NameReagent.Enabled = false;
 
@@ -323,9 +333,11 @@ namespace WinFormsApp_Draft
             ReagentFeatures.BackColor = Color.Blue;
         }
 
-        private void SaveReagent_Click(object sender, EventArgs e)
-        {
 
+        private void ClearReagent_Click(object sender, EventArgs e)
+        {
+            Platform_Config.clear_all_reagents(reagentPath);
+            Log.Text += "all reagents cleared from layout pannel" + "\n";
         }
 
         // auto read functions, complete automatic
@@ -635,7 +647,7 @@ namespace WinFormsApp_Draft
         /// <returns></returns>
         private async Task dispenser_pump(string point, string pump = "none", int volume = 10, byte tip = 2)
         {
-            int pipette_available = dispenserForm.check_pipette();
+            //int pipette_available = dispenserForm.check_pipette();
 
             DKPoint dispenser_pt = new DKPoint();
             dispenser_conf.Points.TryGetValue(point, out dispenser_pt);
@@ -657,7 +669,7 @@ namespace WinFormsApp_Draft
             }
             wait_time0 = dispenserForm.MovL_ver(dispenser_pt, 0, tip).Result;
 
-            if (pipette_available > 0 && pump == "spit")
+            if (pump == "spit")
             {
                 await dispenserForm.MovL_ver(dispenser_pt, wait_time0, tip);
                 await dispenserForm.Tip_Spit(volume, tip);//right tip by default
@@ -671,7 +683,7 @@ namespace WinFormsApp_Draft
                 }
                 await dispenserForm.MovL_ver(dispenser_pt, wait_time0, tip);
             }
-            else if (reagent.Keys.Contains(point) && pump == "suck")
+            else if (pump == "suck")
             {
                 if (tip == 1)
                 {
@@ -772,7 +784,7 @@ namespace WinFormsApp_Draft
         /// <returns></returns>
         private async Task round_test(int round)//parametersL: round number
         {
-            if (feature_count > 3)
+            if (feature_count >= 3)
             {
                 int index = round - 1;
                 //coater: { speed, acceleration, duration }
@@ -867,22 +879,64 @@ namespace WinFormsApp_Draft
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void AI_Agent_Click(object sender, EventArgs e)
+        private async void AI_Agent_Click(object sender, EventArgs e)
         {
-            if (Mqtt_connection.Connection_check(SpecForm.client))
+            if (AI_Agent.BackColor == Color.Red)
             {
-                AI_Agent.BackColor = Color.Green;
+                if (Mqtt_connection.Connection_check(client))
+                {
+                    AI_Agent.BackColor = Color.Green;
+                    AI_Agent.Text = "ai agent on";
+
+                    Mqtt_connection.Subscribe(client, Agent.topic);
+                    Response.Text = "client subscript to agent";
+
+                    await Task.Run(async () =>
+                    {
+                        while (true)
+                        {
+                            if (Mqtt_connection.msg[0] == 'p')
+                            {
+                                string[] parameters = Mqtt_connection.msg.Substring(1).Split(",");
+
+                                int spin_speed = Convert.ToInt32(parameters[0]);
+                                int spin_acc = Convert.ToInt32(parameters[1]);
+                                int spin_dur = Convert.ToInt32(parameters[2]);
+                                string reagent = parameters[3];
+                                int volume = Convert.ToInt32(parameters[4]);
+                                Mqtt_connection.clear_msg();
+
+                                //Response.Invoke(() =>
+                                //{
+                                //    for (int i = 0; i < parameters.Length; i++)
+                                //    {
+                                //        Response.Text += parameters[i] + " ";
+                                //    }
+                                //});
+
+                                await agent_round_test(spin_speed, spin_acc, spin_dur, reagent, volume);
+                                Mqtt_connection.clear_msg();
+                            }
+                            if (AI_Agent.BackColor == Color.Red) break;
+                        }
+                    });
+                }
             }
             else
             {
+                if (Mqtt_connection.Connection_check(client))
+                {
+                    Mqtt_connection.Unsubscribe(client, Agent.topic);
+                    Response.Text = "client unsubscript to agent";
+                }
+                else
+                {
+                    Response.Text = "client not connected";
+                }
                 AI_Agent.BackColor = Color.Red;
+                AI_Agent.Text = "ai agent off";
                 return;
             }
-
-            Thread listening_thrd = new Thread(() =>
-            {
-
-            });
         }
 
         /// <summary>
@@ -897,46 +951,44 @@ namespace WinFormsApp_Draft
         /// <returns></returns>
         private async Task agent_round_test(int spin_speed, int spin_acc, int spin_dur, string reagent, int volume)
         {
-            if (feature_count > 3)
+            await arm_MovL("Zero");
+
+            string substrate = free_substrates[0];
+
+            Thread thrd = new Thread(async () =>
             {
-                await arm_MovL("Zero");
+                await dispenser_MovL(free_right_tips[0], "get", 2);
+            });
+            thrd.Start();
 
-                string substrate = free_substrates[0];
+            await arm_MovL(substrate, "pick at tray");
+            //Response.Text = "Gripping start.";
+            await arm_MovL("Coater", "release at coater");
+            await arm_MovL("Calibrate");
+            await arm_MovL("Zero");
 
-                Thread thrd = new Thread(async () =>
-                {
-                    await dispenser_MovL(free_right_tips[0], "get", 2);
-                });
-                thrd.Start();
+            await dispenser_pump(reagent, "suck", volume, 2);
+            await dispenser_pump("Coater", "spit", volume, 2);
+            await dispenser_MovL("Zero", "pop", 3);
+            //Response.Text = "Dispensing liquid done. ";
 
-                await arm_MovL(substrate, "pick at tray");
-                Response.Text = "Gripping start.";
-                await arm_MovL("Coater", "release at coater");
-                await arm_MovL("Calibrate");
-                await arm_MovL("Zero");
+            await coaterForm.Spin_Coat(spin_speed, spin_acc, spin_dur);
+            //specForm.read_in_situ_data(spin_dur);
+            //Response.Text = "Coating done. ";
 
-                await dispenser_pump(reagent, "suck", volume, 2);
-                await dispenser_pump("Coater", "spit", volume, 2);
-                await dispenser_MovL("Zero", "pop", 3);
-                Response.Text = "Dispensing liquid done. ";
-
-                //specForm.read_in_situ_data(spin_dur);
-
-                while (running == 1)
-                {
-                    await Task.Delay(100);
-                }
-
-                await arm_MovL("Calibrate");
-                await arm_MovL("Coater", "pick at coater");
-                await arm_MovL(substrate, "release at tray");
-                Response.Text = "Gripping done. ";
-
-                await arm_MovL("Zero");
-                Response.Text = "Moving done. ";
+            while (running == 1)
+            {
+                await Task.Delay(100);
             }
+
+            await arm_MovL("Calibrate");
+            await arm_MovL("Coater", "pick at coater");
+            await arm_MovL(substrate, "release at tray");
+            //Response.Text = "Gripping done. ";
+
+            await arm_MovL("Zero");
+            //Response.Text = "Moving done. ";
+  
         }
-
-
     }
 }

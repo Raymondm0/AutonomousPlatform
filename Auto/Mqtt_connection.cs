@@ -62,6 +62,11 @@ namespace WinFormsApp_Draft.Auto
             msg = payload.ToString();
         }
 
+        public static void clear_msg()
+        {
+            msg = "none";
+        }
+
         public static void Unsubscribe(MqttClient client, string topic)
         {
             client.MqttMsgPublishReceived -= MqttMsgReceived;

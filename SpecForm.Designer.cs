@@ -39,7 +39,7 @@
             label4 = new Label();
             Connect_Spectrum = new Button();
             SendProgress = new ProgressBar();
-            DisconnectClient = new Button();
+            DisconnectPyClient = new Button();
             SuspendLayout();
             // 
             // Connect_Brocker
@@ -135,22 +135,22 @@
             SendProgress.Size = new Size(149, 23);
             SendProgress.TabIndex = 11;
             // 
-            // DisconnectClient
+            // DisconnectPyClient
             // 
-            DisconnectClient.Location = new Point(205, 230);
-            DisconnectClient.Name = "DisconnectClient";
-            DisconnectClient.Size = new Size(83, 52);
-            DisconnectClient.TabIndex = 12;
-            DisconnectClient.Text = "disconnect client";
-            DisconnectClient.UseVisualStyleBackColor = true;
-            DisconnectClient.Click += DisconnectClient_Click;
+            DisconnectPyClient.Location = new Point(205, 230);
+            DisconnectPyClient.Name = "DisconnectPyClient";
+            DisconnectPyClient.Size = new Size(125, 52);
+            DisconnectPyClient.TabIndex = 12;
+            DisconnectPyClient.Text = "disconnect python client";
+            DisconnectPyClient.UseVisualStyleBackColor = true;
+            DisconnectPyClient.Click += DisconnectPyClient_Click;
             // 
             // SpecForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(665, 406);
-            Controls.Add(DisconnectClient);
+            Controls.Add(DisconnectPyClient);
             Controls.Add(SendProgress);
             Controls.Add(Connect_Spectrum);
             Controls.Add(label4);
@@ -182,6 +182,6 @@
         private Label label4;
         private Button Connect_Spectrum;
         private ProgressBar SendProgress;
-        private Button DisconnectClient;
+        private Button DisconnectPyClient;
     }
 }

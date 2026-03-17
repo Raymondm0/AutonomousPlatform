@@ -107,7 +107,7 @@ namespace WinFormsApp_Draft
                 Response0.Text = ex.Message;
             }
         }
-        private void DisconnectClient_Click(object sender, EventArgs e)
+        private void DisconnectPyClient_Click(object sender, EventArgs e)
         {
             string msg_quit = "quit";
             Mqtt_connection.Publish(client, "control", msg_quit);
