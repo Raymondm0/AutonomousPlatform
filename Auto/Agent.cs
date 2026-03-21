@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CSharpTcpDemo.com.dobot.api;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -22,6 +23,11 @@ namespace Winform_platform.Auto
 
     class Platform_Config
     {
+        public static void connect_arm()
+        {
+
+        }
+
         public static void record_reagent(string json_path, string pos, string reagent)
         {
             try

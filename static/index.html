@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materials Science Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        #pdf-panel img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        /* Style for rendered markdown inside chat bubbles */
+        .markdown-content {
+            line-height: 1.6;
+        }
+        .markdown-content h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content h2 {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content h3 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content ul, .markdown-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content code {
+            background-color: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        .markdown-content pre {
+            background-color: #f3f4f6;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+        .markdown-content pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #d1d5db;
+            padding-left: 1rem;
+            color: #6b7280;
+            margin: 0.5rem 0;
+        }
+        .markdown-content a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col">
+    <!-- Header with upload button -->
+    <header class="bg-white shadow p-4 flex items-center gap-4">
+        <h1 class="text-xl font-semibold">🧪 Materials Agent</h1>
+        <input type="file" id="pdf-upload" accept=".pdf" class="block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+        <div id="upload-status" class="text-sm text-gray-600"></div>
+    </header>
+
+    <!-- Main area: chat left, PDF panel right -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Chat panel -->
+        <div class="flex-1 flex flex-col p-4 overflow-hidden">
+            <div id="messages" class="flex-1 overflow-y-auto space-y-4 pr-2">
+                <!-- Messages appear here -->
+            </div>
+            <div class="mt-4 flex gap-2">
+                <input type="text" id="user-input" placeholder="Ask about materials or PDF content..." class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <button id="send-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Send</button>
+            </div>
+        </div>
+
+        <!-- PDF panel (right side) -->
+        <div id="pdf-panel" class="w-96 bg-white border-l p-4 flex flex-col overflow-hidden">
+            <h2 class="font-semibold mb-2">📄 PDF Viewer</h2>
+            <div class="flex-1 overflow-auto bg-gray-200 rounded flex items-center justify-center">
+                <img id="pdf-image" src="" alt="PDF page will appear here" class="hidden">
+                <p id="pdf-placeholder" class="text-gray-500">No page displayed</p>
+            </div>
+            <p id="page-caption" class="text-sm text-center mt-2"></p>
+        </div>
+    </div>
+
+    <script>
+        // Generate or retrieve session ID
+        const sessionId = localStorage.getItem('sessionId') || (() => {
+            const id = 'sess-' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('sessionId', id);
+            return id;
+        })();
+
+        // WebSocket connection
+        const ws = new WebSocket(`ws://${window.location.host}/ws/${sessionId}`);
+
+        // DOM elements
+        const messagesDiv = document.getElementById('messages');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const pdfUpload = document.getElementById('pdf-upload');
+        const uploadStatus = document.getElementById('upload-status');
+        const pdfImage = document.getElementById('pdf-image');
+        const pdfPlaceholder = document.getElementById('pdf-placeholder');
+        const pageCaption = document.getElementById('page-caption');
+
+        // Helper: append a message to the chat
+        function appendMessage(role, content, isMarkdown = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `p-3 rounded-lg ${role === 'user' ? 'bg-blue-100 self-end' : 'bg-white border'}`;
+            const prefix = role === 'user' ? 'You' : (role === 'assistant' ? 'Agent' : role);
+            if (isMarkdown && role === 'assistant') {
+                // Render markdown as HTML
+                const htmlContent = marked.parse(content);
+                msgDiv.innerHTML = `<strong>${prefix}:</strong> <div class="markdown-content">${htmlContent}</div>`;
+            } else {
+                // Plain text
+                msgDiv.innerHTML = `<strong>${prefix}:</strong> ${content}`;
+            }
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Handle incoming WebSocket messages
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            switch (data.type) {
+                case 'assistant_response':
+                    // Render the response with Markdown
+                    appendMessage('assistant', data.content, true);
+                    break;
+                case 'tool_call':
+                    appendMessage('assistant', `🔧 Calling tool: ${data.name} with args: ${JSON.stringify(data.args)}`);
+                    break;
+                case 'tool_result':
+                    appendMessage('assistant', `✅ Tool result: ${data.result}`);
+                    break;
+                case 'pdf_page_image':
+                    pdfImage.src = `data:image/png;base64,${data.image}`;
+                    pdfImage.classList.remove('hidden');
+                    pdfPlaceholder.classList.add('hidden');
+                    pageCaption.innerText = `Page ${data.page}`;
+                    break;
+                case 'error':
+                    appendMessage('error', data.content);
+                    break;
+                case 'warning':
+                    appendMessage('system', `⚠️ ${data.content}`);
+                    break;
+                default:
+                    console.log('Unknown event', data);
+            }
+        };
+
+        ws.onopen = () => console.log('WebSocket connected');
+
+        // Send user message
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+            appendMessage('user', text);
+            ws.send(JSON.stringify({ text }));
+            userInput.value = '';
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // PDF upload
+        pdfUpload.addEventListener('change', async () => {
+            const file = pdfUpload.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            uploadStatus.innerText = 'Uploading...';
+
+            try {
+                const res = await fetch(`/upload?session_id=${sessionId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                uploadStatus.innerText = `✅ Uploaded: ${data.filename}`;
+                appendMessage('system', `📎 PDF uploaded: ${file.name}`);
+            } catch (err) {
+                uploadStatus.innerText = '❌ Upload failed';
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
