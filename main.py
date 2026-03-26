@@ -34,12 +34,14 @@ agent = Agent(
         "You are an experienced materials scientist. "
         "When the user uploads a PDF, you can read it with `read_pdf(file_path, page_number)`. "
         "The file path will be provided by the system. "
-        "You may also run spin‑coating experiments with `do_experiment`."
+        "You may also register spin‑coating steps with `save_experiment_step`."
+        "You can start the whole experiment round with `start_experiment`. "
+        "When the human scientist ask you to do spin-coating experiments, remember to check how many steps the"
+        " experiment round takes."
     ),
     deps_type=tools.Deps,
-    tools=[tools.read_pdf, tools.do_experiment],
+    tools=[tools.read_pdf, tools.save_experiment_step, tools.start_experiment],
 )
-
 
 # session storage (in‑memory, for demo)
 sessions: Dict[str, dict] = {}

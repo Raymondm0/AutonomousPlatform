@@ -14,19 +14,20 @@ namespace Winform_platform.Auto
     class Agent
     {
         public const string topic = "do_experiment";
+        public static List<string> step_buffer = new List<string>();
 
-        public static void read_params(MqttClient client)
+        public static void to_step_buffer(string parameters)
         {
-
+            step_buffer.Add(parameters);
+        }
+        public static void clear_step_buffer()
+        {
+            step_buffer.Clear();
         }
     }
 
     class Platform_Config
     {
-        public static void connect_arm()
-        {
-
-        }
 
         public static void record_reagent(string json_path, string pos, string reagent)
         {

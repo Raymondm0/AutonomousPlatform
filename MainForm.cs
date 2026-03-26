@@ -10,7 +10,6 @@ using CSharpTcpDemo.com.dobot.api;
 using CSharthiscpDemo.com.dobot.api;
 using WinFormsApp_Draft.Auto;
 using WinFormsApp_Draft.DK;
-using DocumentFormat.OpenXml.Drawing;
 using Winform_platform.Auto;
 using uPLibrary.Networking.M2Mqtt;
 using Microsoft.VisualBasic;
@@ -887,6 +886,7 @@ namespace WinFormsApp_Draft
                 {
                     AI_Agent.BackColor = Color.Green;
                     AI_Agent.Text = "ai agent on";
+                    Agent.clear_step_buffer();
 
                     Mqtt_connection.Subscribe(client, Agent.topic);
                     Response.Text = "client subscript to agent";
@@ -897,25 +897,40 @@ namespace WinFormsApp_Draft
                         {
                             if (Mqtt_connection.msg[0] == 'p')
                             {
-                                string[] parameters = Mqtt_connection.msg.Substring(1).Split(",");
+                                if(Mqtt_connection.msg.Substring(1) == "start")// get step parameters from step_buffer
+                                {
+                                    for(int i = 0; i < Agent.step_buffer.Count; i++)
+                                    {
+                                        string[] parameters = Agent.step_buffer[i].Split(",");
+                                        int spin_speed = Convert.ToInt32(parameters[0]);
+                                        int spin_acc = Convert.ToInt32(parameters[1]);
+                                        int spin_dur = Convert.ToInt32(parameters[2]);
+                                        string reagent = parameters[3];
+                                        int volume = Convert.ToInt32(parameters[4]);
 
-                                int spin_speed = Convert.ToInt32(parameters[0]);
-                                int spin_acc = Convert.ToInt32(parameters[1]);
-                                int spin_dur = Convert.ToInt32(parameters[2]);
-                                string reagent = parameters[3];
-                                int volume = Convert.ToInt32(parameters[4]);
-                                Mqtt_connection.clear_msg();
+                                        Response.Invoke(() =>
+                                        {
+                                            Response.Text += parameters[i] + " ";
+                                        });
 
-                                //Response.Invoke(() =>
-                                //{
-                                //    for (int i = 0; i < parameters.Length; i++)
-                                //    {
-                                //        Response.Text += parameters[i] + " ";
-                                //    }
-                                //});
+                                        //await agent_round_test(spin_speed, spin_acc, spin_dur, reagent, volume);
+                                    }
+                                    Agent.clear_step_buffer();
+                                }
+                                else// save step parameters to step_buffer
+                                {
+                                    string parameters = Mqtt_connection.msg.Substring(1);
+                                    Agent.to_step_buffer(parameters);
+                                    Mqtt_connection.clear_msg();
 
-                                await agent_round_test(spin_speed, spin_acc, spin_dur, reagent, volume);
-                                Mqtt_connection.clear_msg();
+                                    //Response.Invoke(() =>
+                                    //{
+                                    //    for (int i = 0; i < parameters.Length; i++)
+                                    //    {
+                                    //        Response.Text += parameters[i] + " ";
+                                    //    }
+                                    //});
+                                }
                             }
                             if (AI_Agent.BackColor == Color.Red) break;
                         }

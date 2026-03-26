@@ -103,18 +103,18 @@ def get_reagent(name:str, path = json_path) -> str:
         err = str(e)
         return err
 
-async def do_experiment(
+async def save_experiment_step(
         ctx: RunContext[Deps],
         spin_speed:int = 3000,
         spin_acc:int = 1000,
         spin_dur:int = 30000,
         reagent:str = "",
-        volume:int = 10
+        volume:int = 10,
 ) -> str:
     """
-    Tell the platform to conduct a single round of an in-situ spin coating experiment. This function will send all the
-    parameters you have set one by one to the emqx server, and then it will pass them on to the platform to start the
-    experiment.
+    Register a single step of an in-situ spin coating experiment to the platform. This function will send all the
+    parameters you have set one by one to the emqx server, and then it will pass them on to the platform for saving them.
+    You have to first make sure parameters for each step is registered, then call start() to do whole round.
     :param spin_speed: spin speed for spin coating, max 6000rpm, default 3000rpm
     :param spin_acc: acceleration of the spin coater, must be integer and default 1000rpm/s
     :param spin_dur: spin duration for spin coating in ms, default 30000ms
@@ -128,13 +128,13 @@ async def do_experiment(
     try:
         await ctx.deps.send_event({
             "type": "tool_call",
-            "name": "do_experiment",
+            "name": "save_experiment_step",
             "args": {
                 "spin_speed": spin_speed,
                 "spin_acc": spin_acc,
                 "spin_dur": spin_dur,
                 "reagent": reagent,
-                "volume": volume
+                "volume": volume,
             }
         })
 
@@ -144,7 +144,7 @@ async def do_experiment(
 
         if local_client.is_connected:
             local_client.publish(topic, f"p{spin_speed},{spin_acc},{spin_dur},{reagent_pos},{volume}")
-            msg = (f"✅ Experiment started: seeking {reagent} at {reagent_pos}, {spin_speed} rpm, "
+            msg = (f"✅ Experiment registered: seeking {reagent} at {reagent_pos}, {spin_speed} rpm, "
                    f"acc {spin_acc} rpm/s, duration {spin_dur} ms, volume {volume} µl.")
             await ctx.deps.send_event({"type": "tool_result", "name": "do_experiment", "result": msg})
 
@@ -153,7 +153,7 @@ async def do_experiment(
             connect_state = local_client.connect()
             if connect_state:
                 local_client.publish(topic, f"p{spin_speed},{spin_acc},{spin_dur},{reagent_pos},{volume}")
-                msg = (f"✅ Experiment started: seeking {reagent} at {reagent_pos}, {spin_speed} rpm, "
+                msg = (f"✅ Experiment registered: seeking {reagent} at {reagent_pos}, {spin_speed} rpm, "
                        f"acc {spin_acc} rpm/s, duration {spin_dur} ms, volume {volume} µl.")
                 await ctx.deps.send_event({"type": "tool_result", "name": "do_experiment", "result": msg})
 
@@ -164,3 +164,36 @@ async def do_experiment(
         err = f"Error occurred: {str(e)}"
         return err
 
+async def start_experiment(
+        ctx: RunContext[Deps],
+) -> bool:
+    """
+    Tell the platform to do the whole experiment round step by step according to the parameters you have registered.
+    This function should be called AFTER registering all experiment steps with save_experiment_steps().
+    It triggers the platform to execute the registered spin-coating steps in sequence.
+    :return: Whether successfully started the experiment round
+    """
+    try:
+        await ctx.deps.send_event({
+            "type": "tool_call",
+            "name": "start_experiment",
+            "args": {}
+            })
+
+        if local_client.is_connected:
+            local_client.publish(topic, "pstart")
+            msg = (f"✅ Experiment started")
+            await ctx.deps.send_event({"type": "tool_result", "name": "do_experiment", "result": msg})
+            return True
+        else:
+            connect_state = local_client.connect()
+            if connect_state:
+                local_client.publish(topic, "pstart")
+                msg = (f"✅ Experiment started")
+                await ctx.deps.send_event({"type": "tool_result", "name": "do_experiment", "result": msg})
+                return True
+            else:
+                return False
+
+    except Exception:
+        return False
