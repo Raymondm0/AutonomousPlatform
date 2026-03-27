@@ -40,7 +40,7 @@ agent = Agent(
         " experiment round takes."
     ),
     deps_type=tools.Deps,
-    tools=[tools.read_pdf, tools.save_experiment_step, tools.start_experiment],
+    tools=[tools.read_pdf, tools.save_experiment_step, tools.start_experiment, tools.get_all_reagents],
 )
 
 # session storage (in‑memory, for demo)

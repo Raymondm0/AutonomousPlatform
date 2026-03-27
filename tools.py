@@ -72,7 +72,7 @@ async def read_pdf(
                     text += f"\n--- Page {i+1} ---\n"
                     text += page.extract_text() or ""
 
-        await ctx.deps.send_event({"type": "tool_result", "name": "read_pdf", "result": f"reading text: {text[:20]}…"})
+        # await ctx.deps.send_event({"type": "tool_result", "name": "read_pdf", "result": "reading"})
         return text
 
     except Exception as e:
@@ -80,7 +80,7 @@ async def read_pdf(
         # await ctx.deps.send_event({"type": "tool_result", "name": "read_pdf", "result": err})
         return err
 
-def get_reagent(name:str, path = json_path) -> str:
+def find_reagent(name:str, path = json_path) -> str:
     """
     Search through reagent_layout.json to find if the reagent we need is already loaded onto the experiment platform.
     Not callable, used in do_experiment()
@@ -103,6 +103,41 @@ def get_reagent(name:str, path = json_path) -> str:
         err = str(e)
         return err
 
+async def get_all_reagents(
+        ctx: RunContext[Deps],
+        path = json_path
+) -> str:
+    """
+    Scan reagent_layout.json for knowledge of all available reagents to use. When received "Reagent is missing", you can
+    do this to check if there is simply any mistakes in spelling, or tell if the reagent is configured to platform
+    :param path: The path of reagent_layout.json
+    :return: All the reagent names available in a single string with the format of "reagent1, reagent2, ...". Otherwise,
+    an error has occurred. Please seek human scientists for help
+    """
+    try:
+        await ctx.deps.send_event({
+            "type": "tool_call",
+            "name": "get_all_reagents",
+            "args": {}
+        })
+
+        with open(path, "r", encoding="utf-8") as f:
+            available_reagents = ""
+            idx = 0
+            data = json.load(f)
+            points = data.get("Points", {})
+            for point_id, info in points.items():
+                if info.get("name") != "":
+                    available_reagents += f"{info.get("name")}, "
+                    idx += 1
+            msg = f"scan complete, found {idx} available reagents"
+            await ctx.deps.send_event({"type": "tool_result", "name": "get_all_reagents", "result": msg})
+            return available_reagents
+
+    except Exception as e:
+        err = str(e)
+        return err
+
 async def save_experiment_step(
         ctx: RunContext[Deps],
         spin_speed:int = 3000,
@@ -121,9 +156,8 @@ async def save_experiment_step(
     :param reagent: Name of the reagent to be used this round.
     :param volume: The volume of the reagent to be dispensed onto substrate, default 10ul
     :return: Whether there is any errors. No errors will return an "Experiment started" message. If the reagent is not
-    ready, will return "Reagent is missing". You can ask the scientists to check the spelling or change your spelling.
-    If the server is not connected, will return "Connect server failed". You can ask the scientists to check emqx
-    connection.
+    ready, will return "Reagent is missing". You can do get_all_reagents() to figure out where the problem is. If the
+    server is not connected, will return "Connect server failed". You can ask the scientists to check emqx connection.
     """
     try:
         await ctx.deps.send_event({
@@ -138,7 +172,7 @@ async def save_experiment_step(
             }
         })
 
-        reagent_pos = get_reagent(reagent)
+        reagent_pos = find_reagent(reagent)
         if reagent_pos[:2] != "BP":
             return reagent_pos
 

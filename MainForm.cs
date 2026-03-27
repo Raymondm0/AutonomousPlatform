@@ -910,9 +910,10 @@ namespace WinFormsApp_Draft
 
                                         Response.Invoke(() =>
                                         {
-                                            Response.Text += parameters[i] + " ";
+                                            Response.Text += Agent.step_buffer[i] + " ";
                                         });
-
+                                        await Task.Delay(3000);
+                                        
                                         //await agent_round_test(spin_speed, spin_acc, spin_dur, reagent, volume);
                                     }
                                     Agent.clear_step_buffer();
