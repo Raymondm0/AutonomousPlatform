@@ -6,8 +6,16 @@
     <title>Materials Science Agent</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
-        #pdf-panel img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        /* PDF panel styling */
+        #pdf-panel {
+            resize: horizontal;
+            overflow: auto;
+            min-width: 400px;
+            max-width: 90vw;
+        }
+
         /* Style for rendered markdown inside chat bubbles */
         .markdown-content {
             line-height: 1.6;
@@ -61,6 +69,209 @@
             color: #3b82f6;
             text-decoration: underline;
         }
+
+        /* Custom scrollbar for messages */
+        #messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        #messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        #messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        #messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Textarea focus style */
+        #user-input:focus {
+            outline: none;
+            ring: 2px solid #3b82f6;
+        }
+
+        /* PDF viewer styles */
+        .pdf-viewer-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .pdf-controls {
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pdf-controls button {
+            padding: 4px 12px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .pdf-controls button:hover {
+            background: #e5e7eb;
+        }
+
+        .pdf-controls button.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .page-navigation {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .page-navigation input {
+            width: 60px;
+            padding: 4px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* Main page view */
+        .main-page-view {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            min-height: 400px;
+            max-height: 60vh;
+        }
+
+        #main-pdf-image {
+            max-width: 100%;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        #main-pdf-image.zoomed {
+            max-width: none;
+            width: auto;
+            cursor: zoom-out;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Thumbnail strip */
+        .thumbnail-strip {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 8px;
+            max-height: 200px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+
+        .thumbnail-container {
+            display: inline-flex;
+            gap: 8px;
+            padding: 4px;
+        }
+
+        .thumbnail {
+            display: inline-block;
+            width: 80px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .thumbnail:hover {
+            transform: scale(1.05);
+            border-color: #9ca3af;
+        }
+
+        .thumbnail.active {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+
+        .thumbnail.agent-reading {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .thumbnail-caption {
+            font-size: 10px;
+            text-align: center;
+            padding: 2px;
+            background: #f9fafb;
+        }
+
+        .agent-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pdf-loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        /* Fade out animation for reading indicator */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .reading-complete {
+            animation: fadeOut 0.5s ease-out;
+        }
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col">
@@ -79,23 +290,64 @@
                 <!-- Messages appear here -->
             </div>
             <div class="mt-4 flex gap-2">
-                <input type="text" id="user-input" placeholder="Ask about materials or PDF content..." class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <button id="send-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Send</button>
+                <textarea id="user-input"
+                          placeholder="Ask about materials or PDF content... (Shift+Enter for new line, Enter to send)"
+                          rows="3"
+                          class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 resize-y font-sans"></textarea>
+                <button id="send-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 self-end">Send</button>
             </div>
         </div>
 
-        <!-- PDF panel (right side) -->
-        <div id="pdf-panel" class="w-96 bg-white border-l p-4 flex flex-col overflow-hidden">
-            <h2 class="font-semibold mb-2">📄 PDF Viewer</h2>
-            <div class="flex-1 overflow-auto bg-gray-200 rounded flex items-center justify-center">
-                <img id="pdf-image" src="" alt="PDF page will appear here" class="hidden">
-                <p id="pdf-placeholder" class="text-gray-500">No page displayed</p>
+        <!-- PDF panel (right side) - Full PDF Viewer -->
+        <div id="pdf-panel" class="bg-white border-l p-4 flex flex-col overflow-hidden" style="width: 600px; min-width: 400px; max-width: 90vw;">
+            <div class="pdf-viewer-container">
+                <!-- Controls -->
+                <div class="pdf-controls">
+                    <button id="prev-page-btn" title="Previous Page">◀ Prev</button>
+                    <div class="page-navigation">
+                        <span>Page</span>
+                        <input type="number" id="page-number-input" min="1" value="1">
+                        <span id="total-pages">of 0</span>
+                    </div>
+                    <button id="next-page-btn" title="Next Page">Next ▶</button>
+                    <button id="zoom-in-btn" title="Zoom In">🔍+</button>
+                    <button id="zoom-out-btn" title="Zoom Out">🔍-</button>
+                    <button id="reset-zoom-btn" title="Reset Zoom">⟳ Reset</button>
+                    <button id="toggle-thumbnails-btn" title="Toggle Thumbnails">📑 Thumbnails</button>
+                </div>
+
+                <!-- Main page view -->
+                <div class="main-page-view" id="main-page-view">
+                    <canvas id="pdf-canvas" style="display: none;"></canvas>
+                    <img id="main-pdf-image" src="" alt="PDF page will appear here" style="display: none;">
+                    <div id="loading-indicator" class="hidden pdf-loading">
+                        <div class="loading-spinner"></div>
+                        <span>Loading PDF...</span>
+                    </div>
+                    <p id="pdf-placeholder" class="text-gray-500">No PDF loaded. Upload a PDF to view.</p>
+                </div>
+
+                <!-- Page info -->
+                <p id="page-caption" class="text-sm text-center mt-2"></p>
+
+                <!-- Thumbnail strip -->
+                <div id="thumbnail-strip" class="thumbnail-strip hidden">
+                    <div id="thumbnail-container" class="thumbnail-container">
+                        <!-- Thumbnails will be added here -->
+                    </div>
+                </div>
+
+                <div class="text-xs text-gray-400 text-center mt-1">
+                    💡 Drag left edge to resize | Click image to zoom | Agent's current page is highlighted in green
+                </div>
             </div>
-            <p id="page-caption" class="text-sm text-center mt-2"></p>
         </div>
     </div>
 
     <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
         // Generate or retrieve session ID
         const sessionId = localStorage.getItem('sessionId') || (() => {
             const id = 'sess-' + Math.random().toString(36).substr(2, 9);
@@ -112,9 +364,345 @@
         const sendBtn = document.getElementById('send-btn');
         const pdfUpload = document.getElementById('pdf-upload');
         const uploadStatus = document.getElementById('upload-status');
-        const pdfImage = document.getElementById('pdf-image');
+
+        // PDF viewer elements
+        const pdfCanvas = document.getElementById('pdf-canvas');
+        const mainPdfImage = document.getElementById('main-pdf-image');
         const pdfPlaceholder = document.getElementById('pdf-placeholder');
         const pageCaption = document.getElementById('page-caption');
+        const prevPageBtn = document.getElementById('prev-page-btn');
+        const nextPageBtn = document.getElementById('next-page-btn');
+        const pageNumberInput = document.getElementById('page-number-input');
+        const totalPagesSpan = document.getElementById('total-pages');
+        const thumbnailStrip = document.getElementById('thumbnail-strip');
+        const thumbnailContainer = document.getElementById('thumbnail-container');
+        const toggleThumbnailsBtn = document.getElementById('toggle-thumbnails-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const mainPageView = document.getElementById('main-page-view');
+
+        // PDF state
+        let pdfDoc = null;
+        let currentPage = 1;
+        let totalPages = 0;
+        let currentZoom = 1.0;
+        let thumbnailsVisible = true;
+        let agentReadingPage = null;
+        let currentPdfUrl = null;
+        let readingTimeout = null;  // Timeout to clear reading indicator
+
+        // Zoom controls
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const resetZoomBtn = document.getElementById('reset-zoom-btn');
+
+        // Render a page using PDF.js
+        async function renderPage(pageNumber) {
+            if (!pdfDoc) return;
+
+            try {
+                const page = await pdfDoc.getPage(pageNumber);
+                const viewport = page.getViewport({ scale: currentZoom });
+
+                // Set canvas size
+                pdfCanvas.width = viewport.width;
+                pdfCanvas.height = viewport.height;
+
+                const context = pdfCanvas.getContext('2d');
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                // Show canvas, hide image
+                pdfCanvas.style.display = 'block';
+                mainPdfImage.style.display = 'none';
+                loadingIndicator.classList.add('hidden');
+
+                await page.render(renderContext).promise;
+
+                updatePageCaption();
+
+            } catch (error) {
+                console.error('Error rendering page:', error);
+                loadingIndicator.classList.add('hidden');
+                pdfPlaceholder.textContent = 'Error rendering page';
+                pdfPlaceholder.classList.remove('hidden');
+            }
+        }
+
+        // Update page caption with agent reading status
+        function updatePageCaption() {
+            if (!pdfDoc) return;
+
+            if (agentReadingPage === currentPage) {
+                pageCaption.innerHTML = `Page ${currentPage} of ${totalPages} <span style="color: #10b981;">🤖 Agent is reading this page</span>`;
+            } else {
+                pageCaption.innerHTML = `Page ${currentPage} of ${totalPages}`;
+            }
+        }
+
+        // Generate thumbnail for a page
+        async function generateThumbnail(pageNumber) {
+            if (!pdfDoc) return null;
+
+            try {
+                const page = await pdfDoc.getPage(pageNumber);
+                const viewport = page.getViewport({ scale: 0.2 }); // Small scale for thumbnail
+
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                const context = canvas.getContext('2d');
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                return canvas.toDataURL();
+            } catch (error) {
+                console.error('Error generating thumbnail:', error);
+                return null;
+            }
+        }
+
+        // Add thumbnail to strip
+        async function addThumbnail(pageNumber) {
+            // Check if thumbnail already exists
+            if (document.querySelector(`.thumbnail[data-page="${pageNumber}"]`)) {
+                return;
+            }
+
+            const thumbnailDiv = document.createElement('div');
+            thumbnailDiv.className = 'thumbnail';
+            thumbnailDiv.dataset.page = pageNumber;
+
+            const img = document.createElement('img');
+            img.alt = `Page ${pageNumber}`;
+            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="100" viewBox="0 0 80 100"%3E%3Crect width="80" height="100" fill="%23f3f4f6"/%3E%3Ctext x="40" y="50" text-anchor="middle" fill="%239ca3af" font-size="12"%3ELoading...%3C/text%3E%3C/svg%3E'; // Placeholder
+
+            const caption = document.createElement('div');
+            caption.className = 'thumbnail-caption';
+            caption.innerHTML = `Page ${pageNumber}`;
+
+            thumbnailDiv.appendChild(img);
+            thumbnailDiv.appendChild(caption);
+
+            thumbnailDiv.addEventListener('click', () => {
+                goToPage(pageNumber);
+            });
+
+            thumbnailContainer.appendChild(thumbnailDiv);
+
+            // Generate and set thumbnail image
+            const thumbnailData = await generateThumbnail(pageNumber);
+            if (thumbnailData) {
+                img.src = thumbnailData;
+            }
+
+            // Update agent reading badge
+            updateAllThumbnailBadges();
+        }
+
+        // Update all thumbnail badges based on current agent reading page
+        function updateAllThumbnailBadges() {
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                const caption = thumb.querySelector('.thumbnail-caption');
+                const thumbPage = parseInt(thumb.dataset.page);
+
+                if (thumbPage === agentReadingPage) {
+                    thumb.classList.add('agent-reading');
+                    if (!caption.innerHTML.includes('🤖 Reading')) {
+                        caption.innerHTML = `Page ${thumbPage} <span class="agent-badge">🤖 Reading</span>`;
+                    }
+                } else {
+                    thumb.classList.remove('agent-reading');
+                    caption.innerHTML = `Page ${thumbPage}`;
+                }
+            });
+        }
+
+        // Clear agent reading indicator
+        function clearAgentReadingIndicator() {
+            if (agentReadingPage !== null) {
+                // Store the page that was being read for animation
+                const oldReadingPage = agentReadingPage;
+                agentReadingPage = null;
+
+                // Update all thumbnails
+                updateAllThumbnailBadges();
+
+                // Update main caption
+                updatePageCaption();
+
+                // Add fade out animation to the old reading page thumbnail
+                const oldThumb = document.querySelector(`.thumbnail[data-page="${oldReadingPage}"]`);
+                if (oldThumb) {
+                    oldThumb.classList.add('reading-complete');
+                    setTimeout(() => {
+                        oldThumb.classList.remove('reading-complete');
+                    }, 500);
+                }
+            }
+        }
+
+        // Set agent reading indicator with auto-clear timeout
+        function setAgentReadingPage(pageNumber) {
+            // Clear any existing timeout
+            if (readingTimeout) {
+                clearTimeout(readingTimeout);
+            }
+
+            // Set the new reading page
+            agentReadingPage = pageNumber;
+
+            // Update UI
+            updateAllThumbnailBadges();
+            updatePageCaption();
+
+            // Auto-clear after 3 seconds (enough time for the agent to finish reading)
+            readingTimeout = setTimeout(() => {
+                clearAgentReadingIndicator();
+            }, 3000);
+        }
+
+        // Generate all thumbnails
+        async function generateAllThumbnails() {
+            thumbnailContainer.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                await addThumbnail(i);
+            }
+        }
+
+        // Navigate to page
+        function goToPage(page) {
+            if (!pdfDoc || page < 1 || page > totalPages) return;
+            currentPage = page;
+            pageNumberInput.value = currentPage;
+
+            loadingIndicator.classList.remove('hidden');
+            pdfCanvas.style.display = 'none';
+
+            setTimeout(async () => {
+                await renderPage(currentPage);
+                loadingIndicator.classList.add('hidden');
+
+                // Update active thumbnail
+                document.querySelectorAll('.thumbnail').forEach(thumb => {
+                    thumb.classList.remove('active');
+                    if (thumb.dataset.page == currentPage) {
+                        thumb.classList.add('active');
+                    }
+                });
+            }, 100);
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+        }
+
+        prevPageBtn.addEventListener('click', prevPage);
+        nextPageBtn.addEventListener('click', nextPage);
+        pageNumberInput.addEventListener('change', () => {
+            goToPage(parseInt(pageNumberInput.value));
+        });
+
+        // Zoom functions
+        async function updateZoom() {
+            if (pdfDoc) {
+                await renderPage(currentPage);
+            }
+        }
+
+        zoomInBtn.addEventListener('click', () => {
+            currentZoom = Math.min(currentZoom + 0.25, 3.0);
+            updateZoom();
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            currentZoom = Math.max(currentZoom - 0.25, 0.5);
+            updateZoom();
+        });
+
+        resetZoomBtn.addEventListener('click', () => {
+            currentZoom = 1.0;
+            updateZoom();
+        });
+
+        // Toggle thumbnails
+        toggleThumbnailsBtn.addEventListener('click', () => {
+            thumbnailsVisible = !thumbnailsVisible;
+            thumbnailStrip.classList.toggle('hidden', !thumbnailsVisible);
+            toggleThumbnailsBtn.classList.toggle('active', thumbnailsVisible);
+        });
+
+        // Load PDF from URL
+        async function loadPdfFromUrl(url) {
+            loadingIndicator.classList.remove('hidden');
+            pdfPlaceholder.classList.add('hidden');
+            pdfCanvas.style.display = 'none';
+
+            try {
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDoc = await loadingTask.promise;
+                totalPages = pdfDoc.numPages;
+                totalPagesSpan.innerText = totalPages;
+                pageNumberInput.max = totalPages;
+                currentPage = 1;
+                pageNumberInput.value = 1;
+
+                // Clear any existing reading indicator
+                clearAgentReadingIndicator();
+
+                await renderPage(1);
+                await generateAllThumbnails();
+
+                loadingIndicator.classList.add('hidden');
+                pdfCanvas.style.display = 'block';
+
+                // Show thumbnails by default
+                thumbnailStrip.classList.remove('hidden');
+                thumbnailsVisible = true;
+                toggleThumbnailsBtn.classList.add('active');
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                loadingIndicator.classList.add('hidden');
+                pdfPlaceholder.textContent = 'Error loading PDF. The file may be corrupted.';
+                pdfPlaceholder.classList.remove('hidden');
+            }
+        }
+
+        // Make PDF panel resizable
+        const pdfPanel = document.getElementById('pdf-panel');
+        let isResizing = false;
+
+        pdfPanel.addEventListener('mousedown', (e) => {
+            if (e.offsetX < 10) {
+                isResizing = true;
+                document.body.style.cursor = 'ew-resize';
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isResizing) {
+                const newWidth = window.innerWidth - e.clientX;
+                if (newWidth >= 400 && newWidth <= window.innerWidth * 0.9) {
+                    pdfPanel.style.width = `${newWidth}px`;
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isResizing = false;
+            document.body.style.cursor = '';
+        });
 
         // Helper: append a message to the chat
         function appendMessage(role, content, isMarkdown = false) {
@@ -122,11 +710,9 @@
             msgDiv.className = `p-3 rounded-lg ${role === 'user' ? 'bg-blue-100 self-end' : 'bg-white border'}`;
             const prefix = role === 'user' ? 'You' : (role === 'assistant' ? 'Agent' : role);
             if (isMarkdown && role === 'assistant') {
-                // Render markdown as HTML
                 const htmlContent = marked.parse(content);
                 msgDiv.innerHTML = `<strong>${prefix}:</strong> <div class="markdown-content">${htmlContent}</div>`;
             } else {
-                // Plain text
                 msgDiv.innerHTML = `<strong>${prefix}:</strong> ${content}`;
             }
             messagesDiv.appendChild(msgDiv);
@@ -138,23 +724,29 @@
             const data = JSON.parse(event.data);
             switch (data.type) {
                 case 'assistant_response':
-                    // Render the response with Markdown
                     appendMessage('assistant', data.content, true);
+                    // Clear reading indicator after agent finishes responding
+                    clearAgentReadingIndicator();
                     break;
                 case 'tool_call':
                     appendMessage('assistant', `🔧 Calling tool: ${data.name} with args: ${JSON.stringify(data.args)}`);
                     break;
                 case 'tool_result':
                     appendMessage('assistant', `✅ Tool result: ${data.result}`);
+                    // When the tool result comes back, the agent has finished reading
+                    clearAgentReadingIndicator();
                     break;
                 case 'pdf_page_image':
-                    pdfImage.src = `data:image/png;base64,${data.image}`;
-                    pdfImage.classList.remove('hidden');
-                    pdfPlaceholder.classList.add('hidden');
-                    pageCaption.innerText = `Page ${data.page}`;
+                    // Show which page the agent is reading
+                    if (pdfDoc) {
+                        setAgentReadingPage(data.page);
+                        // Optional: Auto-navigate to the page the agent is reading
+                        // goToPage(data.page);
+                    }
                     break;
                 case 'error':
                     appendMessage('error', data.content);
+                    clearAgentReadingIndicator();
                     break;
                 case 'warning':
                     appendMessage('system', `⚠️ ${data.content}`);
@@ -173,21 +765,48 @@
             appendMessage('user', text);
             ws.send(JSON.stringify({ text }));
             userInput.value = '';
+            userInput.style.height = 'auto';
         }
 
-        sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
+        // Handle Enter key
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
         });
 
-        // PDF upload
+        // Auto-resize textarea
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        // PDF upload - load immediately
         pdfUpload.addEventListener('change', async () => {
             const file = pdfUpload.files[0];
             if (!file) return;
 
+            uploadStatus.innerText = 'Uploading...';
+
+            // Create object URL for immediate viewing
+            const objectUrl = URL.createObjectURL(file);
+
+            // Reset state
+            if (currentPdfUrl) {
+                URL.revokeObjectURL(currentPdfUrl);
+            }
+            currentPdfUrl = objectUrl;
+            clearAgentReadingIndicator();
+
+            // Load PDF immediately
+            await loadPdfFromUrl(objectUrl);
+
+            // Upload to server for agent access
             const formData = new FormData();
             formData.append('file', file);
-            uploadStatus.innerText = 'Uploading...';
 
             try {
                 const res = await fetch(`/upload?session_id=${sessionId}`, {
@@ -196,7 +815,7 @@
                 });
                 const data = await res.json();
                 uploadStatus.innerText = `✅ Uploaded: ${data.filename}`;
-                appendMessage('system', `📎 PDF uploaded: ${file.name}`);
+                appendMessage('system', `📎 PDF uploaded: ${file.name}. You can now browse it in the viewer.`);
             } catch (err) {
                 uploadStatus.innerText = '❌ Upload failed';
                 console.error(err);
