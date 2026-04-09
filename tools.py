@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Optional, List
 import os
 import base64
@@ -9,7 +10,7 @@ from pydantic_ai import RunContext
 from agent_client import MQTTConnector
 
 local_client = MQTTConnector()
-topic = "do_experiment"
+experiment_topic = "do_experiment"
 json_path = "bin\\Debug\\net8.0-windows\\reagent_layout.json"
 
 class Deps:
@@ -177,7 +178,7 @@ async def save_experiment_step(
             return reagent_pos
 
         if local_client.is_connected:
-            local_client.publish(topic, f"p{spin_speed},{spin_acc},{spin_dur},{reagent_pos},{volume}")
+            local_client.publish(experiment_topic, f"p{spin_speed},{spin_acc},{spin_dur},{reagent_pos},{volume}")
             msg = (f"✅ Experiment registered: seeking {reagent} at {reagent_pos}, {spin_speed} rpm, "
                    f"acc {spin_acc} rpm/s, duration {spin_dur} ms, volume {volume} µl.")
             await ctx.deps.send_event({"type": "tool_result", "name": "do_experiment", "result": msg})
@@ -186,7 +187,7 @@ async def save_experiment_step(
         else:
             connect_state = local_client.connect()
             if connect_state:
-                local_client.publish(topic, f"p{spin_speed},{spin_acc},{spin_dur},{reagent_pos},{volume}")
+                local_client.publish(experiment_topic, f"p{spin_speed},{spin_acc},{spin_dur},{reagent_pos},{volume}")
                 msg = (f"✅ Experiment registered: seeking {reagent} at {reagent_pos}, {spin_speed} rpm, "
                        f"acc {spin_acc} rpm/s, duration {spin_dur} ms, volume {volume} µl.")
                 await ctx.deps.send_event({"type": "tool_result", "name": "do_experiment", "result": msg})
@@ -215,14 +216,14 @@ async def start_experiment(
             })
 
         if local_client.is_connected:
-            local_client.publish(topic, "pstart")
+            local_client.publish(experiment_topic, "pstart")
             msg = (f"✅ Experiment started")
             await ctx.deps.send_event({"type": "tool_result", "name": "do_experiment", "result": msg})
             return True
         else:
             connect_state = local_client.connect()
             if connect_state:
-                local_client.publish(topic, "pstart")
+                local_client.publish(experiment_topic, "pstart")
                 msg = (f"✅ Experiment started")
                 await ctx.deps.send_event({"type": "tool_result", "name": "do_experiment", "result": msg})
                 return True
@@ -231,3 +232,47 @@ async def start_experiment(
 
     except Exception:
         return False
+
+async def move_arm(
+        ctx: RunContext[Deps],
+        x:int = 220,
+        y:int = -220,
+        z:int = 200,
+        r:int = 0
+) -> bool:
+    """
+    Move the robot arm of the platform to specific point. {220, -220, 200, 0} is set as a safe position when the arm is
+    not in use. This tool function must not be used together with start_experiment
+    :param x: Position of X axis
+    :param y: Position of Y axis
+    :param z: Position of Z axis
+    :param r: Position of R axis, how much the claw will rotate
+    :return: Whether there is any problems. If returned True, the arm will move successfully
+    """
+    await ctx.deps.send_event({
+        "type": "tool_call",
+        "name": "move_arm",
+        "args": {
+            "x": x,
+            "y": y,
+            "z": z,
+            "r": r
+        }
+    })
+
+    if local_client.is_connected:
+        local_client.publish(experiment_topic, f"a{x},{y},{z},{r}")
+        local_client.publish(experiment_topic, "astart")
+        msg = (f"✅ Arm moving")
+        await ctx.deps.send_event({"type": "tool_result", "name": "move_arm", "result": msg})
+        return True
+    else:
+        connect_state = local_client.connect()
+        if connect_state:
+            local_client.publish(experiment_topic, f"a{x},{y},{z},{r}")
+            local_client.publish(experiment_topic, "astart")
+            msg = (f"✅ Arm moving")
+            await ctx.deps.send_event({"type": "tool_result", "name": "move_arm", "result": msg})
+            return True
+        else:
+            return False

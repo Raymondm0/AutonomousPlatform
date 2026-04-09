@@ -923,14 +923,33 @@ namespace WinFormsApp_Draft
                                     string parameters = Mqtt_connection.msg.Substring(1);
                                     Agent.to_step_buffer(parameters);
                                     Mqtt_connection.clear_msg();
+                                }
+                            }
 
-                                    //Response.Invoke(() =>
-                                    //{
-                                    //    for (int i = 0; i < parameters.Length; i++)
-                                    //    {
-                                    //        Response.Text += parameters[i] + " ";
-                                    //    }
-                                    //});
+                            //control arm only
+                            else if (Mqtt_connection.msg[0] == 'a')
+                            {
+                                if (Mqtt_connection.msg == "astart")// get step parameters from step_buffer
+                                {
+                                    for (int i = 0; i < Agent.arm_buffer.Count; i++)
+                                    {
+                                        string[] points = Agent.arm_buffer[i].Split(",");
+                                        double x = Convert.ToDouble(points[0]);
+                                        double y = Convert.ToDouble(points[1]);
+                                        double z = Convert.ToDouble(points[2]);
+                                        double r = Convert.ToDouble(points[3]);
+                                        DescartesPoint pt = new DescartesPoint();
+                                        pt.x = x; pt.y = y; pt.z = z; pt.r = r;
+
+                                        await armForm.MovL(pt);
+                                    }
+                                    Agent.clear_arm_buffer();
+                                }
+                                else// save step points to arm_buffer
+                                {
+                                    string points = Mqtt_connection.msg.Substring(1);
+                                    Agent.to_arm_buffer(points);
+                                    Mqtt_connection.clear_msg();
                                 }
                             }
                             if (AI_Agent.BackColor == Color.Red) break;

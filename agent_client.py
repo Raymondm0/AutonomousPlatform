@@ -16,9 +16,10 @@ class MQTTConnector:
     """emqx server connection class"""
     def __init__(self):
         self.client_config = Client_Conf()
-        self.client = None
+        self.client:mqtt.Client() = None
         self.is_connected = False
         self.connect_event = threading.Event()
+        self.message_received = None
 
     def on_connect(self, client, userdata, flags, rc):
         """Connection recall"""

@@ -15,6 +15,7 @@ namespace Winform_platform.Auto
     {
         public const string topic = "do_experiment";
         public static List<string> step_buffer = new List<string>();
+        public static List<string> arm_buffer = new List<string>();
 
         public static void to_step_buffer(string parameters)
         {
@@ -23,6 +24,15 @@ namespace Winform_platform.Auto
         public static void clear_step_buffer()
         {
             step_buffer.Clear();
+        }
+
+        public static void to_arm_buffer(string points)
+        {
+            arm_buffer.Add(points);
+        }
+        public static void clear_arm_buffer()
+        {
+            arm_buffer.Clear();
         }
     }
 
