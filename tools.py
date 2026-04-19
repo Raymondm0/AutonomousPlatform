@@ -8,6 +8,7 @@ import fitz  # PyMuPDF
 from pydantic_ai import RunContext
 
 from agent_client import MQTTConnector
+import vision.platform_scan as scan
 
 local_client = MQTTConnector()
 experiment_topic = "do_experiment"
@@ -81,6 +82,42 @@ async def read_pdf(
         # await ctx.deps.send_event({"type": "tool_result", "name": "read_pdf", "result": err})
         return err
 
+async def scan_layout(
+        ctx: RunContext[Deps]
+) -> None:
+    """
+    :param rows: The number of rows of the platform block layout
+    :param cols: The number of columns of the platform block layout
+    """
+    # TODO: Use the dispenser to do the whole platform scan process with two for loops
+    await ctx.deps.send_event({
+        "type": "tool_call",
+        "name": "scan_layout",
+        "args": { }
+    })
+    for block_id in range(1, 7):
+        if local_client.is_connected:
+            local_client.publish(experiment_topic, "scan")
+            msg = (f"✅ Dispenser moving")
+            await ctx.deps.send_event({"type": "tool_result", "name": "move_arm", "result": msg})
+        else:
+            connect_state = local_client.connect()
+            if connect_state:
+                local_client.publish(experiment_topic, "scan")
+                msg = (f"✅ Dispenser moving")
+                await ctx.deps.send_event({"type": "tool_result", "name": "move_arm", "result": msg})
+        pos_conf = scan.run_scan(block_id)
+        results = pos_conf[block_id]
+        substrate_pos = results["substrate_trays"]
+        bottle_pos = results["bottle_trays"]
+        if len(substrate_pos) > 0:
+            for pos in substrate_pos:
+                scan.write_tray_pos(float(pos[0]), float(pos[1]), block_id, "substrate_trays")
+        if len(bottle_pos) > 0:
+            for pos in bottle_pos:
+                scan.write_tray_pos(float(pos[0]), float(pos[1]), block_id, "bottle_trays")
+
+
 def find_reagent(name:str, path = json_path) -> str:
     """
     Search through reagent_layout.json to find if the reagent we need is already loaded onto the experiment platform.
@@ -129,7 +166,7 @@ async def get_all_reagents(
             points = data.get("Points", {})
             for point_id, info in points.items():
                 if info.get("name") != "":
-                    available_reagents += f"{info.get("name")}, "
+                    available_reagents += f"{info.get('name')}, "
                     idx += 1
             msg = f"scan complete, found {idx} available reagents"
             await ctx.deps.send_event({"type": "tool_result", "name": "get_all_reagents", "result": msg})

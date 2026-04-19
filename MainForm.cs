@@ -75,7 +75,7 @@ namespace WinFormsApp_Draft
             InitializeComponent();
 
             Refresh.Click += armForm.ArmForm_Load;
-            Refresh.Click += dispenserForm.DispenserForm_Load;
+            Refresh.Click += DispenserForm_Load;
             Refresh.Click += coaterForm.CoaterForm_Load;
             Refresh.Click += MainForm_Load;
         }
@@ -895,6 +895,7 @@ namespace WinFormsApp_Draft
                     {
                         while (true)
                         {
+                            //do a whole round
                             if (Mqtt_connection.msg[0] == 'p')
                             {
                                 if(Mqtt_connection.msg.Substring(1) == "start")// get step parameters from step_buffer
@@ -952,6 +953,30 @@ namespace WinFormsApp_Draft
                                     Mqtt_connection.clear_msg();
                                 }
                             }
+
+                            //scan the platform
+                            else if (Mqtt_connection.msg == "scan")
+                            {
+                                Mqtt_connection.clear_msg();
+                                for (int i = 0; i < 6; i++)
+                                {
+                                    Agent.init_queue();
+                                    string point_name = Agent.dispenser_buffer.Dequeue();
+                                    DKPoint tar_point = new DKPoint();
+                                    dispenser_conf.Points.TryGetValue(point_name, out tar_point);
+                                    await dispenserForm.MovL_hor(tar_point);
+                                    await Task.Run(() => {
+                                        while (i != 5)
+                                        {
+                                            if (Mqtt_connection.msg == "scan")
+                                            {
+                                                break;
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                            
                             if (AI_Agent.BackColor == Color.Red) break;
                         }
                     });

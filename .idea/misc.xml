@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="platform_venv" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="platform_venv" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="SDL_agent" project-jdk-type="Python SDK" />
 </project>
