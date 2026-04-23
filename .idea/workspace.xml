@@ -5,15 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15fb65fe-a98f-4ebc-857d-de077b6043cb" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/vision/blocks.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vision/template.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Ray_platform.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Ray_platform.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Auto/Agent.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Auto/Agent.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MainForm.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainForm.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vision/platform_scan.py" beforeDir="false" afterPath="$PROJECT_DIR$/vision/platform_scan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vision/tray.json" beforeDir="false" afterPath="$PROJECT_DIR$/vision/tray.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +44,7 @@
     &quot;git-widget-placeholder&quot;: &quot;master&quot;
   }
 }</component>
-  <component name="RunManager" selected="Python.platform_scan (1)">
+  <component name="RunManager" selected="Python.tools">
     <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Ray_platform" />
       <option name="ENV_FILES" value="" />
@@ -135,10 +135,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.tools" />
         <item itemvalue="Python.platform_scan (1)" />
         <item itemvalue="Python.platform_scan" />
         <item itemvalue="Python.app" />
-        <item itemvalue="Python.tools" />
       </list>
     </recent_temporary>
   </component>

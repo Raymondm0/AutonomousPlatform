@@ -1,5 +1,4 @@
 import json
-import time
 from typing import Optional, List
 import os
 import base64
@@ -89,12 +88,13 @@ async def scan_layout(
     :param rows: The number of rows of the platform block layout
     :param cols: The number of columns of the platform block layout
     """
-    # TODO: Use the dispenser to do the whole platform scan process with two for loops
     await ctx.deps.send_event({
         "type": "tool_call",
         "name": "scan_layout",
         "args": { }
     })
+
+    scan.reset_layout()
     for block_id in range(1, 7):
         if local_client.is_connected:
             local_client.publish(experiment_topic, "scan")
@@ -106,12 +106,15 @@ async def scan_layout(
                 local_client.publish(experiment_topic, "scan")
                 msg = (f"✅ Dispenser moving")
                 await ctx.deps.send_event({"type": "tool_result", "name": "move_arm", "result": msg})
-        pos_conf = scan.run_scan(block_id)
+        pos_conf = await scan.run_scan("vision/runs/detect/train_tray_and_block/weights/best.pt", block_id)
+        print(pos_conf)
         results = pos_conf[block_id]
         substrate_pos = results["substrate_trays"]
         bottle_pos = results["bottle_trays"]
+        print(substrate_pos, bottle_pos)
         if len(substrate_pos) > 0:
             for pos in substrate_pos:
+                print("a")
                 scan.write_tray_pos(float(pos[0]), float(pos[1]), block_id, "substrate_trays")
         if len(bottle_pos) > 0:
             for pos in bottle_pos:

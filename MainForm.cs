@@ -75,7 +75,7 @@ namespace WinFormsApp_Draft
             InitializeComponent();
 
             Refresh.Click += armForm.ArmForm_Load;
-            Refresh.Click += DispenserForm_Load;
+            Refresh.Click += dispenserForm.DispenserForm_Load;
             Refresh.Click += coaterForm.CoaterForm_Load;
             Refresh.Click += MainForm_Load;
         }
@@ -965,7 +965,8 @@ namespace WinFormsApp_Draft
                                     DKPoint tar_point = new DKPoint();
                                     dispenser_conf.Points.TryGetValue(point_name, out tar_point);
                                     await dispenserForm.MovL_hor(tar_point);
-                                    await Task.Run(() => {
+                                    Mqtt_connection.clear_msg();
+                                    await Task.Run(async () => {
                                         while (i != 5)
                                         {
                                             if (Mqtt_connection.msg == "scan")
@@ -975,6 +976,7 @@ namespace WinFormsApp_Draft
                                         }
                                     });
                                 }
+                                Agent.clear_queue();
                             }
                             
                             if (AI_Agent.BackColor == Color.Red) break;

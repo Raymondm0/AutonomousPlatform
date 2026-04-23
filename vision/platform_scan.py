@@ -5,7 +5,7 @@ from ultralytics import YOLO
 import json
 
 # Load a pretrained YOLO model
-model = YOLO("yolo26n.pt")
+# model = YOLO("yolo26n.pt")
 
 def train():
     # Train the model
@@ -22,8 +22,16 @@ def write_tray_pos(x:float, y:float, block_id: int, name:str = "substrate_trays"
     :param block_id: Which block the tray is located in
     :param name: What kind of tray. We have substrate_trays and bottle_trays
     """
-    with open('./tray.json', 'r') as file:
+    with open('vision/tray.json', 'r') as file:
         tray_data = json.load(file)
+    with open('vision/template.json', 'r') as file:
+        conf_template = json.load(file)
+
+    template = None
+    if name == "substrate_trays":
+        template = conf_template["substrate_trays"]
+    elif name == "bottle_trays":
+        template = conf_template["bottle_trays"]
 
     block_conf = read_layout_block(block_id)
     x0 = block_conf['x']
@@ -31,23 +39,30 @@ def write_tray_pos(x:float, y:float, block_id: int, name:str = "substrate_trays"
     w = block_conf['w']
     h = block_conf['h']
 
-    tray_data[name][block_id - 1]['position']['x'] = int(x0+x*w)
-    tray_data[name][block_id - 1]['position']['y'] = int(y0+y*h)
+    template['position']['x'] = int(x0+x*w)
+    template['position']['y'] = int(y0+y*h)
+
+    tray_data[name].append(template)
 
     # Write the updated data back to the file
-    with open('tray.json', 'w') as file:
+    with open('vision/tray.json', 'w') as file:
         json.dump(tray_data, file, indent=2)
 
 def read_layout_block(block_id: int):
-    with open('blocks.json', 'r') as file:
+    with open('vision/blocks.json', 'r') as file:
         layout = json.load(file)
     return layout['blocks'][block_id]
 
+def reset_layout() -> None:
+    empty_platform = {"substrate_trays": [],"bottle_trays": []}
+    with open('vision/tray.json', 'w') as file:
+        json.dump(empty_platform, file, indent=2)
+
 #start tracking
-def run_scan(block_id:int = 1) -> Optional[Dict[int, Dict]]:
+async def run_scan(model_path: str, block_id: int = 1) -> Optional[Dict[int, Dict]]:
     scan_result = {"bottle_trays": [], "substrate_trays": []}
 
-    model = YOLO(model="runs/detect/train_tray_and_block/weights/best.pt")
+    model = YOLO(model=model_path)
     # Initialize webcam
     cap = cv2.VideoCapture(0)
 
@@ -66,7 +81,7 @@ def run_scan(block_id:int = 1) -> Optional[Dict[int, Dict]]:
     frame_center_x = actual_width / 2
     frame_center_y = actual_height / 2
 
-    for i in range(500):# Start recording for 500 loops, each frame has 1ms delay
+    for i in range(50):# Start recording for 50 frames, each frame has 1ms delay
         # Read frame from camera
         ret, frame = cap.read()
 
@@ -85,7 +100,7 @@ def run_scan(block_id:int = 1) -> Optional[Dict[int, Dict]]:
         cv2.imshow("Camera", results[0].plot())
 
 
-        if i == 499:
+        if i == 49:
             # Filter boxes, only the most centered layout block and trays in it are reserved
             if results[0].boxes is not None and len(results[0].boxes) > 0:
                 boxes = results[0].boxes.xyxy.cpu().numpy()
@@ -95,6 +110,7 @@ def run_scan(block_id:int = 1) -> Optional[Dict[int, Dict]]:
                 min_distance = float('inf')
                 center_block_idx = -1
                 center_block_pos = None
+
                 for i,class_id in enumerate(classes):
                     if class_id == 1:
                         x1, y1, x2, y2 = boxes[i]
@@ -125,7 +141,7 @@ def run_scan(block_id:int = 1) -> Optional[Dict[int, Dict]]:
                             elif class_id == 2:
                                 scan_result["substrate_trays"].append(pos_norm)
 
-            results[0].boxes = results[0].boxes[indices_to_keep]
+                results[0].boxes = results[0].boxes[indices_to_keep]
 
         # Wait for key press (1ms delay for real-time display)
         key = cv2.waitKey(1) & 0xFF
@@ -142,6 +158,7 @@ def run_scan(block_id:int = 1) -> Optional[Dict[int, Dict]]:
 
 # block_id = 1
 # pos_conf = run_scan(block_id)
+# print(pos_conf)
 # results = pos_conf[block_id]
 # substrate_pos = results["substrate_trays"]
 # bottle_pos = results["bottle_trays"]

@@ -44,6 +44,11 @@ namespace Winform_platform.Auto
                 dispenser_buffer.Enqueue(String.Format("{0}{1}", point_prefix, i));
             }
         }
+        
+        public static void clear_queue()
+        {
+            dispenser_buffer.Clear();
+        }
     }
 
     class Platform_Config
